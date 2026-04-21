@@ -276,7 +276,7 @@
       <div class="field">
         <label>Valoare bon de masă</label>
         <div class="input-wrap">
-          <input type="number" id="valoareBon" value="40" min="0" oninput="calculeaza()">
+          <input type="number" id="valoareBon" value="45" min="0" oninput="calculeaza()">
           <span class="input-unit">RON</span>
         </div>
       </div>
@@ -289,9 +289,9 @@
     <div class="card-title"><span class="dot dot-red"></span> Procent avans</div>
     <div class="grid">
       <div class="field">
-        <label>Procent avans din salariu NET</label>
+        <label>Procent avans din salariul de încadrare</label>
         <div class="input-wrap">
-          <input type="number" id="procentAvans" value="32" min="0" max="100" oninput="calculeaza()">
+          <input type="number" id="procentAvans" value="37" min="0" max="100" oninput="calculeaza()">
           <span class="input-unit">%</span>
         </div>
       </div>
@@ -391,7 +391,7 @@ function calculeaza() {
   const totalBonuri = nrBonuri * valoareBon;
 
   // ── AVANS & LICHIDARE (din NET) ─────────────────────────────
-  const avans     = totalNet * (procentAvans / 100);
+  const avans     = salBaza * (procentAvans / 100);
   const lichidare = totalNet - avans;
 
   // ── BONURI INFO ─────────────────────────────────────────────
@@ -480,7 +480,7 @@ function calculeaza() {
   // Rezultate mari
   document.getElementById('rezAvans').textContent         = fmtInt(avans) + ' RON';
   document.getElementById('rezLichidare').textContent     = fmtInt(lichidare) + ' RON';
-  document.getElementById('rezAvansInfo').textContent     = `${procentAvans}% din net ${fmt(totalNet)} RON`;
+  document.getElementById('rezAvansInfo').textContent     = `${procentAvans}% din încadrare ${fmt(salBaza)} RON`;
   document.getElementById('rezLichidareInfo').textContent = `Rest ${100-procentAvans}% din net ${fmt(totalNet)} RON`;
 }
 
