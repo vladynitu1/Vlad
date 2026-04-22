@@ -1,0 +1,17 @@
+{
+  "people": [
+    {
+      "id": 100,
+      "name": "test",
+      "entries": [
+        {
+          "id": 200,
+          "amount": 3,
+          "reason": "ssstt"
+        }
+      ]
+    }
+  ],
+  "nextPersonId": 101,
+  "nextEntryId": 201
+}
