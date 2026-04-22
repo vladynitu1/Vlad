@@ -1,17 +1,60 @@
 {
   "people": [
     {
-      "id": 100,
-      "name": "test",
+      "id": 101,
+      "name": "Bomba",
       "entries": [
         {
-          "id": 200,
-          "amount": 3,
-          "reason": "ssstt"
+          "id": 201,
+          "amount": 430,
+          "reason": "Up"
+        }
+      ]
+    },
+    {
+      "id": 102,
+      "name": "Gena",
+      "entries": [
+        {
+          "id": 202,
+          "amount": 300,
+          "reason": "Temu"
+        }
+      ]
+    },
+    {
+      "id": 103,
+      "name": "Cristi",
+      "entries": [
+        {
+          "id": 203,
+          "amount": 2200,
+          "reason": "Paza"
+        },
+        {
+          "id": 204,
+          "amount": 500,
+          "reason": "Imprumut"
+        },
+        {
+          "id": 205,
+          "amount": 500,
+          "reason": "Imprumut"
+        }
+      ]
+    },
+    {
+      "id": 104,
+      "name": "Bologa",
+      "entries": [
+        {
+          "id": 206,
+          "amount": 9000,
+          "reason": "Masina"
         }
       ]
     }
   ],
-  "nextPersonId": 101,
-  "nextEntryId": 201
+  "nextPersonId": 105,
+  "nextEntryId": 207
 }
