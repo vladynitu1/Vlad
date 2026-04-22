@@ -1,0 +1,368 @@
+import { useState, useEffect } from “react”;
+
+const GIST_FILENAME = “emx-debts.json”;
+
+const formatLei = (n) =>
+n.toLocaleString(“ro-RO”, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + “ lei”;
+
+let nextPersonId = 100;
+let nextEntryId = 200;
+
+const defaultData = [
+{ id: 1, name: “Vlad”, entries: [{ id: 1, amount: 50, reason: “Împrumut” }] },
+{ id: 2, name: “Ionuț”, entries: [{ id: 1, amount: 30, reason: “Cină” }] },
+];
+
+export default function App() {
+const [people, setPeople] = useState(defaultData);
+const [addingTo, setAddingTo] = useState(null);
+const [newEntry, setNewEntry] = useState({ amount: “”, reason: “” });
+const [addingPerson, setAddingPerson] = useState(false);
+const [newPerson, setNewPerson] = useState({ name: “”, amount: “”, reason: “” });
+const [deletingEntry, setDeletingEntry] = useState(null);
+
+const [token, setToken] = useState(() => { try { return localStorage.getItem(“emx_gh_token”) || “”; } catch { return “”; } });
+const [gistId, setGistId] = useState(() => { try { return localStorage.getItem(“emx_gist_id”) || “”; } catch { return “”; } });
+const [showTokenModal, setShowTokenModal] = useState(false);
+const [tokenInput, setTokenInput] = useState(””);
+const [syncStatus, setSyncStatus] = useState(“idle”);
+const [syncMsg, setSyncMsg] = useState(””);
+
+useEffect(() => {
+if (token && gistId) loadFromGist();
+}, []);
+
+const totalAll = people.reduce((s, p) => s + p.entries.reduce((a, e) => a + e.amount, 0), 0);
+
+const saveToGist = async () => {
+if (!token) { setShowTokenModal(true); return; }
+setSyncStatus(“saving”);
+setSyncMsg(“Se salvează…”);
+const content = JSON.stringify({ people, nextPersonId, nextEntryId }, null, 2);
+try {
+let res;
+if (gistId) {
+res = await fetch(`https://api.github.com/gists/${gistId}`, {
+method: “PATCH”,
+headers: { Authorization: `token ${token}`, “Content-Type”: “application/json” },
+body: JSON.stringify({ files: { [GIST_FILENAME]: { content } } }),
+});
+} else {
+res = await fetch(“https://api.github.com/gists”, {
+method: “POST”,
+headers: { Authorization: `token ${token}`, “Content-Type”: “application/json” },
+body: JSON.stringify({
+description: “EMX Debt Tracker”,
+public: false,
+files: { [GIST_FILENAME]: { content } },
+}),
+});
+}
+if (!res.ok) throw new Error(`GitHub error ${res.status}`);
+const data = await res.json();
+try { localStorage.setItem(“emx_gist_id”, data.id); } catch {}
+setGistId(data.id);
+setSyncStatus(“saved”);
+setSyncMsg(“✓ Salvat pe GitHub”);
+setTimeout(() => setSyncStatus(“idle”), 3000);
+} catch (e) {
+setSyncStatus(“error”);
+setSyncMsg(“✗ Eroare: “ + e.message);
+}
+};
+
+const loadFromGist = async () => {
+if (!token || !gistId) return;
+setSyncStatus(“loading”);
+setSyncMsg(“Se încarcă…”);
+try {
+const res = await fetch(`https://api.github.com/gists/${gistId}`, {
+headers: { Authorization: `token ${token}` },
+});
+if (!res.ok) throw new Error(`GitHub error ${res.status}`);
+const data = await res.json();
+const raw = data.files[GIST_FILENAME]?.content;
+if (!raw) throw new Error(“Fișier negăsit în Gist”);
+const parsed = JSON.parse(raw);
+setPeople(parsed.people || []);
+nextPersonId = parsed.nextPersonId || 100;
+nextEntryId = parsed.nextEntryId || 200;
+setSyncStatus(“saved”);
+setSyncMsg(“✓ Sincronizat”);
+setTimeout(() => setSyncStatus(“idle”), 3000);
+} catch (e) {
+setSyncStatus(“error”);
+setSyncMsg(“✗ “ + e.message);
+}
+};
+
+const saveToken = () => {
+const t = tokenInput.trim();
+if (!t) return;
+setToken(t);
+try { localStorage.setItem(“emx_gh_token”, t); } catch {}
+setTokenInput(””);
+setShowTokenModal(false);
+setSyncMsg(“Token salvat! Apasă Salvează.”);
+setSyncStatus(“saved”);
+setTimeout(() => setSyncStatus(“idle”), 4000);
+};
+
+const clearToken = () => {
+setToken(””); setGistId(””);
+try { localStorage.removeItem(“emx_gh_token”); localStorage.removeItem(“emx_gist_id”); } catch {}
+setShowTokenModal(false);
+setSyncStatus(“idle”); setSyncMsg(””);
+};
+
+const addEntry = (personId) => {
+const amt = parseFloat(newEntry.amount);
+if (!amt || !newEntry.reason.trim()) return;
+setPeople((prev) => prev.map((p) =>
+p.id === personId ? { …p, entries: […p.entries, { id: nextEntryId++, amount: amt, reason: newEntry.reason.trim() }] } : p
+));
+setNewEntry({ amount: “”, reason: “” });
+setAddingTo(null);
+};
+
+const deleteEntry = (personId, entryId) => {
+setPeople((prev) =>
+prev.map((p) => p.id === personId ? { …p, entries: p.entries.filter((e) => e.id !== entryId) } : p)
+.filter((p) => p.entries.length > 0)
+);
+setDeletingEntry(null);
+};
+
+const addPerson = () => {
+const amt = parseFloat(newPerson.amount);
+if (!newPerson.name.trim() || !amt || !newPerson.reason.trim()) return;
+setPeople((prev) => […prev, { id: nextPersonId++, name: newPerson.name.trim(), entries: [{ id: nextEntryId++, amount: amt, reason: newPerson.reason.trim() }] }]);
+setNewPerson({ name: “”, amount: “”, reason: “” });
+setAddingPerson(false);
+};
+
+const syncColor = syncStatus === “saved” ? “#7ec89a” : syncStatus === “error” ? “#e07a7a” : syncStatus === “saving” || syncStatus === “loading” ? “#e8b84b” : “#5a5a72”;
+
+return (
+<div style={s.page}>
+
+```
+  {/* BANNER */}
+  <div style={s.banner}>
+    <div style={s.bannerLeft}>
+      <span style={s.bannerEMX}>EMX</span>
+      <span style={s.bannerSub}>Finance Tracker</span>
+    </div>
+    <button style={s.tokenBtn} onClick={() => { setTokenInput(token); setShowTokenModal(true); }}>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ marginRight: 5, flexShrink: 0 }}>
+        <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+      </svg>
+      {token ? "Token ✓" : "Token GitHub"}
+    </button>
+  </div>
+
+  <div style={s.container}>
+
+    {/* Sub-header */}
+    <div style={s.subHeader}>
+      <div>
+        <div style={s.headerLabel}>REGISTRU</div>
+        <div style={s.headerTitle}>Bani de luat</div>
+      </div>
+      <div style={s.totalBadge}>
+        <div style={s.totalLabel}>TOTAL</div>
+        <div style={s.totalAmount}>{formatLei(totalAll)}</div>
+      </div>
+    </div>
+
+    {/* Sync bar */}
+    <div style={s.syncBar}>
+      <span style={{ ...s.syncMsg, color: syncColor }}>
+        {syncMsg || (token ? (gistId ? "Conectat la GitHub Gist" : "Token setat, fără Gist încă") : "Fără token — datele nu se sincronizează")}
+      </span>
+      <div style={s.syncBtns}>
+        {token && gistId && (
+          <button style={s.loadBtn} onClick={loadFromGist}>↓ Sync</button>
+        )}
+        <button style={s.saveGistBtn} onClick={saveToGist}>💾 Salvează</button>
+      </div>
+    </div>
+
+    {/* Cards */}
+    <div style={s.cardList}>
+      {people.map((person) => {
+        const personTotal = person.entries.reduce((sum, e) => sum + e.amount, 0);
+        return (
+          <div key={person.id} style={s.card}>
+            <div style={s.cardHeader}>
+              <div style={s.avatar}>{person.name.charAt(0).toUpperCase()}</div>
+              <div style={s.cardName}>{person.name}</div>
+              <div style={s.personTotal}>{formatLei(personTotal)}</div>
+            </div>
+            <div style={s.entries}>
+              {person.entries.map((entry, idx) => (
+                <div key={entry.id} style={{ ...s.entry, ...(idx % 2 === 0 ? s.entryEven : {}) }}>
+                  <span style={s.entryReason}>{entry.reason}</span>
+                  <span style={s.entryAmount}>{formatLei(entry.amount)}</span>
+                  <button style={s.deleteBtn} onClick={() => setDeletingEntry({ personId: person.id, entryId: entry.id })}>×</button>
+                </div>
+              ))}
+            </div>
+            {addingTo === person.id ? (
+              <div style={s.addRow}>
+                <div style={s.addRowInputs}>
+                  <input style={s.inputAmt} type="number" placeholder="Sumă (lei)" value={newEntry.amount} onChange={(e) => setNewEntry({ ...newEntry, amount: e.target.value })} />
+                  <input style={s.inputReason} placeholder="Motiv" value={newEntry.reason} onChange={(e) => setNewEntry({ ...newEntry, reason: e.target.value })} />
+                </div>
+                <div style={s.addRowBtns}>
+                  <button style={s.confirmBtn} onClick={() => addEntry(person.id)}>✓ Salvează</button>
+                  <button style={s.cancelBtn} onClick={() => { setAddingTo(null); setNewEntry({ amount: "", reason: "" }); }}>✕ Anulează</button>
+                </div>
+              </div>
+            ) : (
+              <button style={s.addEntryBtn} onClick={() => { setAddingTo(person.id); setNewEntry({ amount: "", reason: "" }); }}>+ Adaugă rând</button>
+            )}
+            <div style={s.totalRow}>
+              <span style={s.totalRowLabel}>Total {person.name}</span>
+              <span style={s.totalRowAmt}>{formatLei(personTotal)}</span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+
+    {/* Add person */}
+    {addingPerson ? (
+      <div style={s.newPersonCard}>
+        <div style={s.newPersonTitle}>Persoană nouă</div>
+        <input style={s.inputFull} placeholder="Nume" value={newPerson.name} onChange={(e) => setNewPerson({ ...newPerson, name: e.target.value })} />
+        <div style={s.inputRow}>
+          <input style={s.inputAmt} type="number" placeholder="Sumă (lei)" value={newPerson.amount} onChange={(e) => setNewPerson({ ...newPerson, amount: e.target.value })} />
+          <input style={{ ...s.inputReason, flex: 2 }} placeholder="Motiv" value={newPerson.reason} onChange={(e) => setNewPerson({ ...newPerson, reason: e.target.value })} />
+        </div>
+        <div style={s.addRowBtns}>
+          <button style={s.confirmBtn} onClick={addPerson}>Salvează</button>
+          <button style={s.cancelBtn} onClick={() => { setAddingPerson(false); setNewPerson({ name: "", amount: "", reason: "" }); }}>Anulează</button>
+        </div>
+      </div>
+    ) : (
+      <button style={s.addPersonBtn} onClick={() => setAddingPerson(true)}>+ Adaugă persoană</button>
+    )}
+  </div>
+
+  {/* TOKEN MODAL */}
+  {showTokenModal && (
+    <div style={s.overlay}>
+      <div style={s.modal}>
+        <div style={s.modalHeader}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e8b84b" strokeWidth="2" style={{ marginRight: 8, flexShrink: 0 }}>
+            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+          </svg>
+          <span style={s.modalTitle}>Token GitHub</span>
+        </div>
+        <p style={s.modalHint}>
+          Mergi la{" "}
+          <a href="https://github.com/settings/tokens/new" target="_blank" rel="noreferrer" style={{ color: "#e8b84b" }}>
+            github.com/settings/tokens
+          </a>{" "}
+          → generează un token PAT cu permisiunea <strong style={{ color: "#e0ddf0" }}>gist</strong>. Datele se vor salva ca un Gist privat.
+        </p>
+        <input
+          style={s.tokenInput}
+          type="password"
+          placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+          value={tokenInput}
+          onChange={(e) => setTokenInput(e.target.value)}
+        />
+        <div style={s.addRowBtns}>
+          <button style={s.confirmBtn} onClick={saveToken}>Salvează token</button>
+          <button style={s.cancelBtn} onClick={() => setShowTokenModal(false)}>Închide</button>
+        </div>
+        {token && (
+          <button style={s.clearTokenBtn} onClick={clearToken}>🗑 Șterge token salvat</button>
+        )}
+      </div>
+    </div>
+  )}
+
+  {/* DELETE MODAL */}
+  {deletingEntry && (
+    <div style={s.overlay}>
+      <div style={s.modal}>
+        <div style={{ ...s.modalTitle, marginBottom: 20, textAlign: "center" }}>Ștergi acest rând?</div>
+        <div style={s.addRowBtns}>
+          <button style={{ ...s.cancelBtn, background: "#3a1a1a", borderColor: "#7a3030", color: "#e07a7a" }} onClick={() => deleteEntry(deletingEntry.personId, deletingEntry.entryId)}>Da, șterge</button>
+          <button style={s.cancelBtn} onClick={() => setDeletingEntry(null)}>Anulează</button>
+        </div>
+      </div>
+    </div>
+  )}
+</div>
+```
+
+);
+}
+
+const s = {
+page: { minHeight: “100vh”, background: “#0b0b10”, fontFamily: “‘Georgia’,‘Times New Roman’,serif”, display: “flex”, flexDirection: “column”, alignItems: “center” },
+
+banner: { width: “100%”, background: “linear-gradient(135deg,#0f0f1a 0%,#18122a 50%,#0f0f1a 100%)”, borderBottom: “2px solid #e8b84b33”, display: “flex”, justifyContent: “space-between”, alignItems: “center”, padding: “14px 20px”, boxSizing: “border-box” },
+bannerLeft: { display: “flex”, alignItems: “baseline”, gap: 10 },
+bannerEMX: { fontSize: 28, fontWeight: “bold”, letterSpacing: 7, color: “#e8b84b”, fontFamily: “monospace”, textShadow: “0 0 24px #e8b84b66” },
+bannerSub: { fontSize: 10, letterSpacing: 3, color: “#6a6a80”, fontFamily: “monospace”, textTransform: “uppercase” },
+tokenBtn: { display: “flex”, alignItems: “center”, background: “#1a1a28”, border: “1px solid #3a3a55”, color: “#9996b0”, borderRadius: 8, padding: “7px 13px”, cursor: “pointer”, fontSize: 12, fontFamily: “monospace” },
+
+container: { width: “100%”, maxWidth: 520, padding: “20px 16px 48px”, boxSizing: “border-box” },
+
+subHeader: { display: “flex”, justifyContent: “space-between”, alignItems: “flex-end”, marginBottom: 12, paddingBottom: 16, borderBottom: “1px solid #1e1e2a” },
+headerLabel: { fontSize: 9, letterSpacing: 4, color: “#4a4a62”, fontFamily: “monospace”, marginBottom: 4 },
+headerTitle: { fontSize: 24, fontWeight: “bold”, color: “#e8e4d9” },
+totalBadge: { background: “#16161f”, border: “1px solid #e8b84b33”, borderRadius: 10, padding: “8px 14px”, textAlign: “right” },
+totalLabel: { fontSize: 8, letterSpacing: 3, color: “#e8b84b88”, fontFamily: “monospace”, marginBottom: 2 },
+totalAmount: { fontSize: 18, fontWeight: “bold”, color: “#e8b84b”, fontFamily: “monospace” },
+
+syncBar: { display: “flex”, justifyContent: “space-between”, alignItems: “center”, background: “#13131a”, border: “1px solid #1e1e2a”, borderRadius: 10, padding: “8px 14px”, marginBottom: 18, gap: 8 },
+syncMsg: { fontSize: 11, fontFamily: “monospace”, color: “#5a5a72”, flex: 1 },
+syncBtns: { display: “flex”, gap: 6, flexShrink: 0 },
+loadBtn: { background: “#1e1e2a”, border: “1px solid #303045”, color: “#7ec0e8”, borderRadius: 7, padding: “5px 10px”, cursor: “pointer”, fontSize: 11, fontFamily: “monospace” },
+saveGistBtn: { background: “#2a3d28”, border: “1px solid #3d7a3a”, color: “#7ec89a”, borderRadius: 7, padding: “5px 12px”, cursor: “pointer”, fontSize: 11, fontFamily: “monospace”, fontWeight: “bold” },
+
+cardList: { display: “flex”, flexDirection: “column”, gap: 16 },
+card: { background: “#16161f”, border: “1px solid #252530”, borderRadius: 14, overflow: “hidden” },
+cardHeader: { display: “flex”, alignItems: “center”, gap: 12, padding: “13px 16px”, background: “#1c1c28”, borderBottom: “1px solid #252530” },
+avatar: { width: 34, height: 34, borderRadius: “50%”, background: “#2d2d42”, border: “2px solid #3d3d58”, display: “flex”, alignItems: “center”, justifyContent: “center”, fontSize: 14, fontWeight: “bold”, color: “#a8a4c0”, flexShrink: 0 },
+cardName: { flex: 1, fontSize: 16, fontWeight: “bold”, color: “#e0ddf0” },
+personTotal: { fontSize: 13, fontWeight: “bold”, color: “#7ec89a”, fontFamily: “monospace” },
+entries: { padding: “4px 0” },
+entry: { display: “flex”, alignItems: “center”, padding: “9px 16px”, gap: 8 },
+entryEven: { background: “#18181f” },
+entryReason: { flex: 1, fontSize: 13, color: “#9996b0”, fontFamily: “monospace” },
+entryAmount: { fontSize: 13, color: “#e0ddf0”, fontFamily: “monospace”, fontWeight: “bold”, minWidth: 80, textAlign: “right” },
+deleteBtn: { background: “none”, border: “none”, color: “#5a3a3a”, fontSize: 18, cursor: “pointer”, padding: “0 2px”, lineHeight: 1 },
+
+addRow: { display: “flex”, flexDirection: “column”, gap: 8, padding: “12px 16px”, background: “#13131a”, borderTop: “1px dashed #303045” },
+addRowInputs: { display: “flex”, gap: 8 },
+inputAmt: { width: “38%”, background: “#1e1e2a”, border: “1px solid #3a3a55”, borderRadius: 7, padding: “9px 10px”, color: “#e0ddf0”, fontSize: 14, fontFamily: “monospace”, outline: “none”, boxSizing: “border-box” },
+inputReason: { flex: 1, background: “#1e1e2a”, border: “1px solid #3a3a55”, borderRadius: 7, padding: “9px 10px”, color: “#e0ddf0”, fontSize: 14, fontFamily: “monospace”, outline: “none” },
+addRowBtns: { display: “flex”, gap: 8 },
+confirmBtn: { flex: 1, background: “#2a4a35”, border: “1px solid #3d7a52”, color: “#7ec89a”, borderRadius: 7, padding: “9px”, cursor: “pointer”, fontSize: 14, fontWeight: “bold”, fontFamily: “monospace” },
+cancelBtn: { flex: 1, background: “#2a1a1a”, border: “1px solid #5a3030”, color: “#c87e7e”, borderRadius: 7, padding: “9px”, cursor: “pointer”, fontSize: 14, fontFamily: “monospace” },
+addEntryBtn: { width: “100%”, background: “none”, border: “none”, borderTop: “1px dashed #252530”, color: “#4a4a65”, padding: “10px 16px”, textAlign: “left”, cursor: “pointer”, fontSize: 12, fontFamily: “monospace”, letterSpacing: 1 },
+totalRow: { display: “flex”, justifyContent: “space-between”, alignItems: “center”, padding: “10px 16px”, background: “#1a1f1a”, borderTop: “1px solid #252530” },
+totalRowLabel: { fontSize: 11, color: “#5a7a65”, fontFamily: “monospace”, letterSpacing: 1, textTransform: “uppercase” },
+totalRowAmt: { fontSize: 15, fontWeight: “bold”, color: “#7ec89a”, fontFamily: “monospace” },
+
+newPersonCard: { marginTop: 16, background: “#16161f”, border: “1px dashed #303045”, borderRadius: 14, padding: 20 },
+newPersonTitle: { fontSize: 10, letterSpacing: 3, color: “#5a5a72”, fontFamily: “monospace”, marginBottom: 14, textTransform: “uppercase” },
+inputFull: { width: “100%”, background: “#1e1e2a”, border: “1px solid #303045”, borderRadius: 8, padding: “9px 12px”, color: “#e0ddf0”, fontSize: 14, fontFamily: “monospace”, outline: “none”, marginBottom: 10, boxSizing: “border-box” },
+inputRow: { display: “flex”, gap: 8, marginBottom: 10 },
+addPersonBtn: { marginTop: 16, width: “100%”, background: “#16161f”, border: “1px dashed #303045”, borderRadius: 14, color: “#4a4a65”, padding: “14px”, cursor: “pointer”, fontFamily: “monospace”, fontSize: 12, letterSpacing: 2 },
+
+overlay: { position: “fixed”, inset: 0, background: “#000c”, display: “flex”, alignItems: “center”, justifyContent: “center”, zIndex: 100, padding: 16 },
+modal: { background: “#1c1c28”, border: “1px solid #303045”, borderRadius: 16, padding: 24, width: “100%”, maxWidth: 380 },
+modalHeader: { display: “flex”, alignItems: “center”, marginBottom: 12 },
+modalTitle: { color: “#e0ddf0”, fontSize: 15, fontFamily: “monospace”, fontWeight: “bold” },
+modalHint: { fontSize: 12, color: “#7a7a90”, fontFamily: “monospace”, lineHeight: 1.7, marginBottom: 14 },
+tokenInput: { width: “100%”, background: “#13131a”, border: “1px solid #3a3a55”, borderRadius: 8, padding: “10px 12px”, color: “#e0ddf0”, fontSize: 13, fontFamily: “monospace”, outline: “none”, boxSizing: “border-box”, marginBottom: 14 },
+clearTokenBtn: { marginTop: 10, width: “100%”, background: “#2a1a1a”, border: “1px solid #5a3030”, color: “#c87e7e”, borderRadius: 8, padding: “8px”, cursor: “pointer”, fontFamily: “monospace”, fontSize: 12 },
+};
