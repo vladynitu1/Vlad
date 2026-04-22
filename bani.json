@@ -8,6 +8,11 @@
           "id": 201,
           "amount": 430,
           "reason": "Up"
+        },
+        {
+          "id": 208,
+          "amount": -30,
+          "reason": "T"
         }
       ]
     },
@@ -56,5 +61,5 @@
     }
   ],
   "nextPersonId": 105,
-  "nextEntryId": 208
+  "nextEntryId": 209
 }
