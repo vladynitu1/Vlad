@@ -292,6 +292,7 @@
       <button class="confirm-btn" onclick="saveToken()">Salvează token</button>
       <button class="cancel-btn" onclick="closeTokenModal()">Închide</button>
     </div>
+    <button class="test-token-btn" id="test-token-btn" onclick="testToken()" style="margin-top:10px;width:100%;background:#1a1a2a;border:1px solid #3a3a6a;color:#9996b0;border-radius:8px;padding:8px;cursor:pointer;font-family:monospace;font-size:12px;">🔍 Testează token-ul curent</button>
     <button class="clear-token-btn hidden" id="clear-token-btn" onclick="clearToken()">🗑 Șterge token salvat</button>
     <button class="reset-gist-btn hidden" id="reset-gist-btn" onclick="resetGistId()">🔄 Resetează Gist ID (creează unul nou la salvare)</button>
   </div>
@@ -488,6 +489,57 @@
     document.getElementById("token-btn-label").textContent = ghToken ? "Token ✓" : "Token GitHub";
     const loadBtn = document.getElementById("sync-load-btn");
     (ghToken && gistId) ? loadBtn.classList.remove("hidden") : loadBtn.classList.add("hidden");
+  }
+
+  async function testToken() {
+    const tokenToTest = document.getElementById("token-input").value.trim() || ghToken;
+    if (!tokenToTest) {
+      showTokenError("⚠️ Nu ai niciun token. Introdu un token mai întâi.");
+      return;
+    }
+    const errEl = document.getElementById("token-error");
+    errEl.style.color = "#e8b84b";
+    errEl.textContent = "⏳ Se testează tokenul...";
+    errEl.classList.remove("hidden");
+
+    try {
+      // Step 1: check token identity
+      const meRes = await fetch("https://api.github.com/user", {
+        headers: { Authorization: `token ${tokenToTest}`, Accept: "application/vnd.github+json" }
+      });
+      if (meRes.status === 401) {
+        showTokenError("❌ Token invalid sau expirat (401).\nGenerează un token nou pe GitHub.");
+        return;
+      }
+      const me = await meRes.json();
+
+      // Step 2: check scopes
+      const scopes = meRes.headers.get("x-oauth-scopes") || "";
+      if (!scopes.includes("gist")) {
+        showTokenError(`❌ Token valid pentru userul: ${me.login}\nDAR lipsește permisiunea 'gist'!\nScopes actuale: "${scopes || "niciuna"}"\n\nGenerează un token nou cu 'gist' bifat.`);
+        return;
+      }
+
+      // Step 3: check gist if we have one
+      if (gistId) {
+        const gistRes = await fetch(`https://api.github.com/gists/${gistId}`, {
+          headers: { Authorization: `token ${tokenToTest}`, Accept: "application/vnd.github+json" }
+        });
+        if (gistRes.status === 404) {
+          errEl.style.color = "#e8b84b";
+          errEl.textContent = `✓ Token OK (${me.login}), scopes: ${scopes}\n⚠️ Dar Gist ID-ul salvat nu mai există!\nApasă 'Resetează Gist ID' de mai jos.`;
+          errEl.classList.remove("hidden");
+          document.getElementById("reset-gist-btn").classList.remove("hidden");
+          return;
+        }
+      }
+
+      errEl.style.color = "#7ec89a";
+      errEl.textContent = `✓ Token valid! User: ${me.login}\n✓ Scopes: ${scopes}\n${gistId ? "✓ Gist ID valid" : "ℹ️ Niciun Gist ID salvat încă"}`;
+      errEl.classList.remove("hidden");
+    } catch(e) {
+      showTokenError("✗ Eroare de rețea: " + e.message);
+    }
   }
 
   // ── GIST SYNC ────────────────────────────────────────────────────
