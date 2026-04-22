@@ -6,63 +6,41 @@
   <title>EMX Finance Tracker</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     html { background: #0b0b10; min-height: 100%; }
-
     body {
-      min-height: 100vh;
-      background: #0b0b10;
+      min-height: 100vh; background: #0b0b10;
       font-family: 'Georgia', 'Times New Roman', serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      color: #e0ddf0;
+      display: flex; flex-direction: column; align-items: center; color: #e0ddf0;
     }
 
-    /* BANNER */
     #banner {
       width: 100%;
       background: linear-gradient(135deg, #0f0f1a 0%, #18122a 50%, #0f0f1a 100%);
       border-bottom: 2px solid #e8b84b33;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 14px 20px;
+      display: flex; justify-content: space-between; align-items: center; padding: 14px 20px;
     }
     .banner-left { display: flex; align-items: baseline; gap: 10px; }
-    .banner-emx {
-      font-size: 28px; font-weight: bold; letter-spacing: 7px;
-      color: #e8b84b; font-family: monospace;
-      text-shadow: 0 0 24px #e8b84b66;
-    }
+    .banner-emx { font-size: 28px; font-weight: bold; letter-spacing: 7px; color: #e8b84b; font-family: monospace; text-shadow: 0 0 24px #e8b84b66; }
     .banner-sub { font-size: 10px; letter-spacing: 3px; color: #6a6a80; font-family: monospace; text-transform: uppercase; }
     .token-btn {
       display: flex; align-items: center; gap: 5px;
       background: #1a1a28; border: 1px solid #3a3a55; color: #9996b0;
-      border-radius: 8px; padding: 7px 13px; cursor: pointer;
-      font-size: 12px; font-family: monospace;
+      border-radius: 8px; padding: 7px 13px; cursor: pointer; font-size: 12px; font-family: monospace;
     }
     .token-btn:hover { border-color: #e8b84b66; color: #e8b84b; }
 
-    /* CONTAINER */
     #container { width: 100%; max-width: 520px; padding: 20px 16px 60px; }
 
-    /* SUB HEADER */
     .sub-header {
       display: flex; justify-content: space-between; align-items: flex-end;
-      margin-bottom: 12px; padding-bottom: 16px;
-      border-bottom: 1px solid #1e1e2a;
+      margin-bottom: 12px; padding-bottom: 16px; border-bottom: 1px solid #1e1e2a;
     }
     .header-label { font-size: 9px; letter-spacing: 4px; color: #4a4a62; font-family: monospace; margin-bottom: 4px; }
     .header-title { font-size: 24px; font-weight: bold; color: #e8e4d9; }
-    .total-badge {
-      background: #16161f; border: 1px solid #e8b84b33;
-      border-radius: 10px; padding: 8px 14px; text-align: right;
-    }
+    .total-badge { background: #16161f; border: 1px solid #e8b84b33; border-radius: 10px; padding: 8px 14px; text-align: right; }
     .total-label { font-size: 8px; letter-spacing: 3px; color: #e8b84b88; font-family: monospace; margin-bottom: 2px; }
     .total-amount { font-size: 18px; font-weight: bold; color: #e8b84b; font-family: monospace; }
 
-    /* SYNC BAR */
     .sync-bar {
       display: flex; justify-content: space-between; align-items: center;
       background: #13131a; border: 1px solid #1e1e2a;
@@ -72,24 +50,20 @@
     .sync-btns { display: flex; gap: 6px; flex-shrink: 0; }
     .load-btn {
       background: #1e1e2a; border: 1px solid #303045; color: #7ec0e8;
-      border-radius: 7px; padding: 5px 10px; cursor: pointer;
-      font-size: 11px; font-family: monospace;
+      border-radius: 7px; padding: 5px 10px; cursor: pointer; font-size: 11px; font-family: monospace;
     }
-    .save-gist-btn {
+    .save-btn {
       background: #2a3d28; border: 1px solid #3d7a3a; color: #7ec89a;
-      border-radius: 7px; padding: 5px 12px; cursor: pointer;
-      font-size: 11px; font-family: monospace; font-weight: bold;
+      border-radius: 7px; padding: 5px 12px; cursor: pointer; font-size: 11px; font-family: monospace; font-weight: bold;
     }
     .load-btn:hover { background: #252535; }
-    .save-gist-btn:hover { background: #334d30; }
+    .save-btn:hover { background: #334d30; }
 
-    /* CARDS */
     #card-list { display: flex; flex-direction: column; gap: 16px; }
     .card { background: #16161f; border: 1px solid #252530; border-radius: 14px; overflow: hidden; }
     .card-header {
       display: flex; align-items: center; gap: 12px;
-      padding: 13px 16px; background: #1c1c28;
-      border-bottom: 1px solid #252530;
+      padding: 13px 16px; background: #1c1c28; border-bottom: 1px solid #252530;
     }
     .avatar {
       width: 34px; height: 34px; border-radius: 50%;
@@ -108,46 +82,33 @@
     .delete-btn { background: none; border: none; color: #5a3a3a; font-size: 18px; cursor: pointer; padding: 0 2px; line-height: 1; }
     .delete-btn:hover { color: #e07a7a; }
 
-    .add-row {
-      display: flex; flex-direction: column; gap: 8px;
-      padding: 12px 16px; background: #13131a;
-      border-top: 1px dashed #303045;
-    }
+    .add-row { display: flex; flex-direction: column; gap: 8px; padding: 12px 16px; background: #13131a; border-top: 1px dashed #303045; }
     .add-row-inputs { display: flex; gap: 8px; }
     .add-entry-btn {
-      width: 100%; background: none; border: none;
-      border-top: 1px dashed #252530; color: #4a4a65;
-      padding: 10px 16px; text-align: left; cursor: pointer;
-      font-size: 12px; font-family: monospace; letter-spacing: 1px;
+      width: 100%; background: none; border: none; border-top: 1px dashed #252530; color: #4a4a65;
+      padding: 10px 16px; text-align: left; cursor: pointer; font-size: 12px; font-family: monospace; letter-spacing: 1px;
     }
     .add-entry-btn:hover { color: #7ec89a; }
 
     .total-row {
       display: flex; justify-content: space-between; align-items: center;
-      padding: 10px 16px; background: #1a1f1a;
-      border-top: 1px solid #252530;
+      padding: 10px 16px; background: #1a1f1a; border-top: 1px solid #252530;
     }
     .total-row-label { font-size: 11px; color: #5a7a65; font-family: monospace; letter-spacing: 1px; text-transform: uppercase; }
     .total-row-amt { font-size: 15px; font-weight: bold; color: #7ec89a; font-family: monospace; }
 
-    .new-person-card {
-      margin-top: 16px; background: #16161f;
-      border: 1px dashed #303045; border-radius: 14px; padding: 20px;
-    }
+    .new-person-card { margin-top: 16px; background: #16161f; border: 1px dashed #303045; border-radius: 14px; padding: 20px; }
     .new-person-title { font-size: 10px; letter-spacing: 3px; color: #5a5a72; font-family: monospace; margin-bottom: 14px; text-transform: uppercase; }
     #add-person-btn {
-      margin-top: 16px; width: 100%; background: #16161f;
-      border: 1px dashed #303045; border-radius: 14px; color: #4a4a65;
-      padding: 14px; cursor: pointer; font-family: monospace;
-      font-size: 12px; letter-spacing: 2px;
+      margin-top: 16px; width: 100%; background: #16161f; border: 1px dashed #303045;
+      border-radius: 14px; color: #4a4a65; padding: 14px; cursor: pointer;
+      font-family: monospace; font-size: 12px; letter-spacing: 2px;
     }
     #add-person-btn:hover { border-color: #4a4a65; color: #7ec89a; }
 
     input[type=text], input[type=number], input[type=password] {
-      background: #1e1e2a; border: 1px solid #3a3a55;
-      border-radius: 7px; padding: 9px 10px;
-      color: #e0ddf0; font-size: 14px; font-family: monospace; outline: none;
-      width: 100%;
+      background: #1e1e2a; border: 1px solid #3a3a55; border-radius: 7px; padding: 9px 10px;
+      color: #e0ddf0; font-size: 14px; font-family: monospace; outline: none; width: 100%;
     }
     input::placeholder { color: #4a4a62; }
     input:focus { border-color: #e8b84b55; }
@@ -159,66 +120,49 @@
     .btn-row { display: flex; gap: 8px; }
     .confirm-btn {
       flex: 1; background: #2a4a35; border: 1px solid #3d7a52; color: #7ec89a;
-      border-radius: 7px; padding: 9px; cursor: pointer;
-      font-size: 14px; font-weight: bold; font-family: monospace;
+      border-radius: 7px; padding: 9px; cursor: pointer; font-size: 14px; font-weight: bold; font-family: monospace;
     }
     .confirm-btn:hover { background: #334d3a; }
     .cancel-btn {
       flex: 1; background: #2a1a1a; border: 1px solid #5a3030; color: #c87e7e;
-      border-radius: 7px; padding: 9px; cursor: pointer;
-      font-size: 14px; font-family: monospace;
+      border-radius: 7px; padding: 9px; cursor: pointer; font-size: 14px; font-family: monospace;
     }
     .cancel-btn:hover { background: #331a1a; }
 
-    .overlay {
-      position: fixed; inset: 0; background: #000c;
-      display: flex; align-items: center; justify-content: center;
-      z-index: 100; padding: 16px;
-    }
+    .overlay { position: fixed; inset: 0; background: #000c; display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
     .hidden { display: none !important; }
-    .modal {
-      background: #1c1c28; border: 1px solid #303045;
-      border-radius: 16px; padding: 24px;
-      width: 100%; max-width: 400px;
-    }
-    .modal-header { display: flex; align-items: center; margin-bottom: 12px; gap: 8px; }
-    .modal-title { color: #e0ddf0; font-size: 15px; font-family: monospace; font-weight: bold; }
-    .modal-hint { font-size: 12px; color: #7a7a90; font-family: monospace; line-height: 1.7; margin-bottom: 14px; }
+    .modal { background: #1c1c28; border: 1px solid #303045; border-radius: 16px; padding: 24px; width: 100%; max-width: 400px; }
+    .modal-title { color: #e0ddf0; font-size: 15px; font-family: monospace; font-weight: bold; margin-bottom: 14px; }
+    .modal-hint { font-size: 12px; color: #7a7a90; font-family: monospace; line-height: 1.8; margin-bottom: 14px; }
     .modal-hint a { color: #e8b84b; }
-    .token-input { margin-bottom: 14px; }
-    .clear-token-btn {
-      margin-top: 10px; width: 100%; background: #2a1a1a;
-      border: 1px solid #5a3030; color: #c87e7e;
-      border-radius: 8px; padding: 8px; cursor: pointer;
-      font-family: monospace; font-size: 12px;
-    }
-    .delete-confirm-btn {
-      flex: 1; background: #3a1a1a; border: 1px solid #7a3030; color: #e07a7a;
-      border-radius: 7px; padding: 9px; cursor: pointer;
-      font-size: 14px; font-family: monospace;
-    }
+    .modal-hint strong { color: #e8b84b; }
+    .modal-field { margin-bottom: 10px; }
+    .modal-label { font-size: 10px; letter-spacing: 2px; color: #5a5a72; font-family: monospace; margin-bottom: 5px; }
 
-    /* Error box in modal */
+    .info-box {
+      background: #1a1a10; border: 1px solid #e8b84b33; border-radius: 8px;
+      padding: 10px 12px; margin-bottom: 12px;
+      font-size: 11px; font-family: monospace; color: #a09060; line-height: 1.7;
+    }
     .error-box {
       background: #2a1a1a; border: 1px solid #7a3030; border-radius: 8px;
       padding: 10px 12px; margin-bottom: 12px;
       font-size: 12px; font-family: monospace; color: #e07a7a; line-height: 1.6;
+      white-space: pre-line;
     }
-    .error-box.hidden { display: none !important; }
 
-    /* Reset gist btn */
-    .reset-gist-btn {
-      margin-top: 8px; width: 100%; background: #1a1a2a;
-      border: 1px solid #3a3a6a; color: #7a7ab0;
-      border-radius: 8px; padding: 8px; cursor: pointer;
-      font-family: monospace; font-size: 12px;
+    .clear-token-btn {
+      margin-top: 8px; width: 100%; background: #2a1a1a; border: 1px solid #5a3030; color: #c87e7e;
+      border-radius: 8px; padding: 8px; cursor: pointer; font-family: monospace; font-size: 12px;
     }
-    .reset-gist-btn:hover { color: #e8b84b; border-color: #e8b84b44; }
+    .delete-confirm-btn {
+      flex: 1; background: #3a1a1a; border: 1px solid #7a3030; color: #e07a7a;
+      border-radius: 7px; padding: 9px; cursor: pointer; font-size: 14px; font-family: monospace;
+    }
   </style>
 </head>
 <body>
 
-<!-- BANNER -->
 <div id="banner">
   <div class="banner-left">
     <span class="banner-emx">EMX</span>
@@ -233,7 +177,6 @@
 </div>
 
 <div id="container">
-
   <div class="sub-header">
     <div>
       <div class="header-label">REGISTRU</div>
@@ -248,8 +191,8 @@
   <div class="sync-bar">
     <span id="sync-msg">Fără token — datele nu se sincronizează</span>
     <div class="sync-btns">
-      <button class="load-btn hidden" id="sync-load-btn" onclick="loadFromGist()">↓ Sync</button>
-      <button class="save-gist-btn" onclick="saveToGist()">💾 Salvează</button>
+      <button class="load-btn" id="sync-load-btn" onclick="loadFromRepo()">↓ Încarcă</button>
+      <button class="save-btn" onclick="saveToRepo()">💾 Salvează</button>
     </div>
   </div>
 
@@ -274,27 +217,25 @@
 <!-- TOKEN MODAL -->
 <div class="overlay hidden" id="token-modal">
   <div class="modal">
-    <div class="modal-header">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e8b84b" stroke-width="2">
-        <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
-      </svg>
-      <span class="modal-title">Token GitHub</span>
+    <div class="modal-title">⚙️ Configurare GitHub</div>
+    <div class="info-box">
+      Datele se salvează în fișierul <strong style="color:#e8b84b">bani.json</strong>
+      din repo-ul <strong style="color:#e8b84b">vladynitu1/Vlad</strong> pe GitHub.
     </div>
-    <p class="modal-hint">
-      Mergi la
-      <a href="https://github.com/settings/tokens/new" target="_blank">github.com/settings/tokens</a>
-      → generează un token <strong style="color:#e0ddf0">Classic PAT</strong> cu permisiunea <strong style="color:#e8b84b">gist</strong> bifată.
-      Datele se vor salva ca un Gist privat.
-    </p>
+    <div class="modal-hint">
+      Mergi la <a href="https://github.com/settings/tokens/new" target="_blank">github.com/settings/tokens</a>
+      → <strong>Generate new token (classic)</strong> → bifează <strong>repo</strong> → copiază tokenul.
+    </div>
     <div class="error-box hidden" id="token-error"></div>
-    <input type="password" id="token-input" class="token-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" />
-    <div class="btn-row">
-      <button class="confirm-btn" onclick="saveToken()">Salvează token</button>
+    <div class="modal-field">
+      <div class="modal-label">TOKEN GITHUB (ghp_...)</div>
+      <input type="password" id="token-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" />
+    </div>
+    <div class="btn-row" style="margin-top:4px">
+      <button class="confirm-btn" onclick="saveToken()">Salvează</button>
       <button class="cancel-btn" onclick="closeTokenModal()">Închide</button>
     </div>
-    <button class="test-token-btn" id="test-token-btn" onclick="testToken()" style="margin-top:10px;width:100%;background:#1a1a2a;border:1px solid #3a3a6a;color:#9996b0;border-radius:8px;padding:8px;cursor:pointer;font-family:monospace;font-size:12px;">🔍 Testează token-ul curent</button>
     <button class="clear-token-btn hidden" id="clear-token-btn" onclick="clearToken()">🗑 Șterge token salvat</button>
-    <button class="reset-gist-btn hidden" id="reset-gist-btn" onclick="resetGistId()">🔄 Resetează Gist ID (creează unul nou la salvare)</button>
   </div>
 </div>
 
@@ -310,10 +251,16 @@
 </div>
 
 <script>
-  const GIST_FILENAME = "emx-debts.json";
+  // ── CONFIG ───────────────────────────────────────────────────────
+  const REPO  = "vladynitu1/Vlad";
+  const FILE  = "bani.json";
+  const API   = `https://api.github.com/repos/${REPO}/contents/${FILE}`;
+
+  // ── STATE ────────────────────────────────────────────────────────
   let nextPersonId = 100;
   let nextEntryId  = 200;
   let pendingDelete = null;
+  let fileSha = null; // needed for GitHub PUT (update existing file)
 
   let people = [
     { id: 1, name: "Vlad",  entries: [{ id: 1, amount: 50, reason: "Împrumut" }] },
@@ -321,16 +268,31 @@
   ];
 
   let ghToken = localStorage.getItem("emx_gh_token") || "";
-  let gistId  = localStorage.getItem("emx_gist_id")  || "";
 
-  // ── HELPERS ─────────────────────────────────────────────────────
+  // ── HELPERS ──────────────────────────────────────────────────────
   function formatLei(n) {
     return n.toLocaleString("ro-RO", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " lei";
   }
   function esc(str) {
-    return String(str)
-      .replace(/&/g,"&amp;").replace(/</g,"&lt;")
-      .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+  function setSyncMsg(msg, color) {
+    const el = document.getElementById("sync-msg");
+    el.textContent = msg;
+    el.style.color = color || "#5a5a72";
+  }
+  function showError(msg) {
+    const el = document.getElementById("token-error");
+    el.textContent = msg;
+    el.classList.remove("hidden");
+    document.getElementById("token-modal").classList.remove("hidden");
+  }
+  function ghHeaders() {
+    return {
+      Authorization: `token ${ghToken}`,
+      Accept: "application/vnd.github+json",
+      "Content-Type": "application/json",
+    };
   }
 
   // ── RENDER ───────────────────────────────────────────────────────
@@ -376,7 +338,7 @@
     });
 
     document.getElementById("grand-total").textContent = formatLei(grandTotal);
-    updateSyncUI();
+    document.getElementById("token-btn-label").textContent = ghToken ? "Token ✓" : "Token GitHub";
   }
 
   // ── ADD ENTRY ────────────────────────────────────────────────────
@@ -396,7 +358,6 @@
     `;
     document.getElementById(`ae-amount-${personId}`).focus();
   }
-
   function addEntry(personId) {
     const amt    = parseFloat(document.getElementById(`ae-amount-${personId}`).value);
     const reason = document.getElementById(`ae-reason-${personId}`).value.trim();
@@ -452,7 +413,6 @@
     document.getElementById("token-input").value = "";
     document.getElementById("token-error").classList.add("hidden");
     document.getElementById("clear-token-btn").classList.toggle("hidden", !ghToken);
-    document.getElementById("reset-gist-btn").classList.toggle("hidden", !gistId);
     document.getElementById("token-modal").classList.remove("hidden");
   }
   function closeTokenModal() {
@@ -464,220 +424,116 @@
     ghToken = t;
     localStorage.setItem("emx_gh_token", t);
     closeTokenModal();
-    setSyncMsg("Token salvat! Apasă Salvează pentru a sincroniza.", "#7ec89a");
-    updateSyncUI();
+    setSyncMsg("Token salvat! Se încarcă datele...", "#7ec89a");
+    render();
+    loadFromRepo();
   }
   function clearToken() {
-    ghToken = ""; gistId = "";
+    ghToken = "";
     localStorage.removeItem("emx_gh_token");
-    localStorage.removeItem("emx_gist_id");
+    fileSha = null;
     closeTokenModal();
-    setSyncMsg("Token șters.", "#c87e7e");
-    updateSyncUI();
-  }
-  function resetGistId() {
-    gistId = "";
-    localStorage.removeItem("emx_gist_id");
-    document.getElementById("reset-gist-btn").classList.add("hidden");
-    document.getElementById("token-error").classList.add("hidden");
-    setSyncMsg("Gist ID resetat — la salvare se va crea un Gist nou.", "#e8b84b");
-    closeTokenModal();
-    updateSyncUI();
+    setSyncMsg("Fără token — datele nu se sincronizează", "#5a5a72");
+    render();
   }
 
-  function updateSyncUI() {
-    document.getElementById("token-btn-label").textContent = ghToken ? "Token ✓" : "Token GitHub";
-    const loadBtn = document.getElementById("sync-load-btn");
-    (ghToken && gistId) ? loadBtn.classList.remove("hidden") : loadBtn.classList.add("hidden");
-  }
-
-  async function testToken() {
-    const tokenToTest = document.getElementById("token-input").value.trim() || ghToken;
-    if (!tokenToTest) {
-      showTokenError("⚠️ Nu ai niciun token. Introdu un token mai întâi.");
-      return;
-    }
-    const errEl = document.getElementById("token-error");
-    errEl.style.color = "#e8b84b";
-    errEl.textContent = "⏳ Se testează tokenul...";
-    errEl.classList.remove("hidden");
-
-    try {
-      // Step 1: check token identity
-      const meRes = await fetch("https://api.github.com/user", {
-        headers: { Authorization: `token ${tokenToTest}`, Accept: "application/vnd.github+json" }
-      });
-      if (meRes.status === 401) {
-        showTokenError("❌ Token invalid sau expirat (401).\nGenerează un token nou pe GitHub.");
-        return;
-      }
-      const me = await meRes.json();
-
-      // Step 2: check scopes
-      const scopes = meRes.headers.get("x-oauth-scopes") || "";
-      if (!scopes.includes("gist")) {
-        showTokenError(`❌ Token valid pentru userul: ${me.login}\nDAR lipsește permisiunea 'gist'!\nScopes actuale: "${scopes || "niciuna"}"\n\nGenerează un token nou cu 'gist' bifat.`);
-        return;
-      }
-
-      // Step 3: check gist if we have one
-      if (gistId) {
-        const gistRes = await fetch(`https://api.github.com/gists/${gistId}`, {
-          headers: { Authorization: `token ${tokenToTest}`, Accept: "application/vnd.github+json" }
-        });
-        if (gistRes.status === 404) {
-          errEl.style.color = "#e8b84b";
-          errEl.textContent = `✓ Token OK (${me.login}), scopes: ${scopes}\n⚠️ Dar Gist ID-ul salvat nu mai există!\nApasă 'Resetează Gist ID' de mai jos.`;
-          errEl.classList.remove("hidden");
-          document.getElementById("reset-gist-btn").classList.remove("hidden");
-          return;
-        }
-      }
-
-      errEl.style.color = "#7ec89a";
-      errEl.textContent = `✓ Token valid! User: ${me.login}\n✓ Scopes: ${scopes}\n${gistId ? "✓ Gist ID valid" : "ℹ️ Niciun Gist ID salvat încă"}`;
-      errEl.classList.remove("hidden");
-    } catch(e) {
-      showTokenError("✗ Eroare de rețea: " + e.message);
-    }
-  }
-
-  // ── GIST SYNC ────────────────────────────────────────────────────
-  function showTokenError(msg) {
-    const el = document.getElementById("token-error");
-    el.textContent = msg;
-    el.classList.remove("hidden");
-    // Show reset gist button too
-    document.getElementById("reset-gist-btn").classList.remove("hidden");
-    document.getElementById("token-modal").classList.remove("hidden");
-  }
-
-  async function saveToGist() {
+  // ── GITHUB REPO SYNC ─────────────────────────────────────────────
+  async function loadFromRepo() {
     if (!ghToken) { openTokenModal(); return; }
-    setSyncMsg("Se salvează...", "#e8b84b");
-
-    const content = JSON.stringify({ people, nextPersonId, nextEntryId }, null, 2);
-    const headers = {
-      Authorization: `token ${ghToken}`,
-      "Content-Type": "application/json",
-      "Accept": "application/vnd.github+json",
-    };
-
+    setSyncMsg("Se încarcă...", "#e8b84b");
     try {
-      let res, url, method, body;
-
-      if (gistId) {
-        // Try to update existing gist
-        url    = `https://api.github.com/gists/${gistId}`;
-        method = "PATCH";
-        body   = JSON.stringify({ files: { [GIST_FILENAME]: { content } } });
-      } else {
-        // Create new gist
-        url    = "https://api.github.com/gists";
-        method = "POST";
-        body   = JSON.stringify({
-          description: "EMX Debt Tracker",
-          public: false,
-          files: { [GIST_FILENAME]: { content } }
-        });
-      }
-
-      res = await fetch(url, { method, headers, body });
-
-      // If 404 on PATCH — gist was deleted externally, reset and create new
-      if (res.status === 404 && gistId) {
-        setSyncMsg("Gist-ul vechi nu mai există. Se creează unul nou...", "#e8b84b");
-        gistId = "";
-        localStorage.removeItem("emx_gist_id");
-
-        res = await fetch("https://api.github.com/gists", {
-          method: "POST",
-          headers,
-          body: JSON.stringify({
-            description: "EMX Debt Tracker",
-            public: false,
-            files: { [GIST_FILENAME]: { content } }
-          })
-        });
-      }
+      const res = await fetch(API, { headers: ghHeaders() });
 
       if (res.status === 401) {
-        setSyncMsg("✗ Token invalid sau expirat.", "#e07a7a");
-        showTokenError("❌ Token invalid sau expirat (401).\nGenerează un token nou pe GitHub cu permisiunea 'gist' bifată, apoi introdu-l din nou.");
+        setSyncMsg("✗ Token invalid.", "#e07a7a");
+        showError("❌ Token invalid sau expirat (401).\nGenerează un token nou cu permisiunea 'repo'.");
         return;
       }
       if (res.status === 403) {
-        setSyncMsg("✗ Token fără permisiunea 'gist'.", "#e07a7a");
-        showTokenError("❌ Tokenul nu are permisiunea 'gist' (403).\nMergi pe GitHub → Settings → Developer settings → Personal access tokens → generează un token nou cu 'gist' bifat.");
+        setSyncMsg("✗ Acces refuzat.", "#e07a7a");
+        showError("❌ Acces refuzat (403).\nTokenul nu are permisiunea 'repo'. Generează un token nou cu 'repo' bifat.");
         return;
       }
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(`GitHub ${res.status}: ${errData.message || "eroare necunoscută"}`);
-      }
-
-      const data = await res.json();
-      gistId = data.id;
-      localStorage.setItem("emx_gist_id", gistId);
-      setSyncMsg("✓ Salvat pe GitHub Gist", "#7ec89a");
-      updateSyncUI();
-      setTimeout(() => setSyncMsg(ghToken ? "Conectat la GitHub Gist" : "Fără token — datele nu se sincronizează", "#5a5a72"), 3000);
-
-    } catch (e) {
-      setSyncMsg("✗ Eroare: " + e.message, "#e07a7a");
-    }
-  }
-
-  async function loadFromGist() {
-    if (!ghToken || !gistId) return;
-    setSyncMsg("Se încarcă...", "#e8b84b");
-
-    try {
-      const res = await fetch(`https://api.github.com/gists/${gistId}`, {
-        headers: {
-          Authorization: `token ${ghToken}`,
-          "Accept": "application/vnd.github+json",
-        }
-      });
-
       if (res.status === 404) {
-        setSyncMsg("✗ Gist-ul nu mai există. Resetează Gist ID.", "#e07a7a");
-        showTokenError("❌ Gist-ul nu a fost găsit (404).\nProbabil a fost șters de pe GitHub.\nApasă 'Resetează Gist ID' de mai jos, apoi Salvează din nou pentru a crea unul nou.");
-        return;
-      }
-      if (res.status === 401) {
-        setSyncMsg("✗ Token invalid.", "#e07a7a");
-        showTokenError("❌ Token invalid sau expirat (401). Introdu un token nou.");
+        // Fișierul nu există încă — e ok, îl creăm la prima salvare
+        fileSha = null;
+        setSyncMsg("bani.json nu există încă — apasă Salvează pentru a-l crea.", "#e8b84b");
         return;
       }
       if (!res.ok) throw new Error(`GitHub ${res.status}`);
 
-      const data = await res.json();
-      const raw  = data.files[GIST_FILENAME]?.content;
-      if (!raw) throw new Error("Fișierul emx-debts.json nu există în Gist");
+      const data    = await res.json();
+      fileSha       = data.sha; // necesar pentru update
+      const content = JSON.parse(atob(data.content.replace(/\n/g, "")));
 
-      const parsed = JSON.parse(raw);
-      people        = parsed.people        || [];
-      nextPersonId  = parsed.nextPersonId  || 100;
-      nextEntryId   = parsed.nextEntryId   || 200;
+      people       = content.people       || [];
+      nextPersonId = content.nextPersonId || 100;
+      nextEntryId  = content.nextEntryId  || 200;
+
       render();
-      setSyncMsg("✓ Sincronizat", "#7ec89a");
-      setTimeout(() => setSyncMsg("Conectat la GitHub Gist", "#5a5a72"), 3000);
-
+      setSyncMsg("✓ Date încărcate din GitHub", "#7ec89a");
+      setTimeout(() => setSyncMsg("Sincronizat cu vladynitu1/Vlad", "#5a5a72"), 3000);
     } catch (e) {
       setSyncMsg("✗ " + e.message, "#e07a7a");
     }
   }
 
-  function setSyncMsg(msg, color) {
-    const el = document.getElementById("sync-msg");
-    el.textContent  = msg;
-    el.style.color  = color || "#5a5a72";
+  async function saveToRepo() {
+    if (!ghToken) { openTokenModal(); return; }
+    setSyncMsg("Se salvează...", "#e8b84b");
+
+    const content = btoa(unescape(encodeURIComponent(
+      JSON.stringify({ people, nextPersonId, nextEntryId }, null, 2)
+    )));
+
+    const body = {
+      message: `update bani.json`,
+      content,
+      ...(fileSha ? { sha: fileSha } : {}), // sha doar la update, nu la creare
+    };
+
+    try {
+      const res = await fetch(API, {
+        method: "PUT",
+        headers: ghHeaders(),
+        body: JSON.stringify(body),
+      });
+
+      if (res.status === 401) {
+        setSyncMsg("✗ Token invalid.", "#e07a7a");
+        showError("❌ Token invalid sau expirat (401).\nGenerează un token nou cu permisiunea 'repo'.");
+        return;
+      }
+      if (res.status === 403) {
+        setSyncMsg("✗ Acces refuzat.", "#e07a7a");
+        showError("❌ Tokenul nu are permisiunea 'repo' (403).\nGenerează un token classic cu 'repo' bifat complet.");
+        return;
+      }
+      if (res.status === 409) {
+        // Conflict SHA — reîncarcă sha și reîncearcă
+        setSyncMsg("Conflict — se resincronizează...", "#e8b84b");
+        await loadFromRepo();
+        await saveToRepo();
+        return;
+      }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(`GitHub ${res.status}: ${err.message || "eroare"}`);
+      }
+
+      const data = await res.json();
+      fileSha = data.content.sha; // actualizăm sha pentru următorul save
+
+      setSyncMsg("✓ Salvat în vladynitu1/Vlad/bani.json", "#7ec89a");
+      setTimeout(() => setSyncMsg("Sincronizat cu vladynitu1/Vlad", "#5a5a72"), 3000);
+    } catch (e) {
+      setSyncMsg("✗ " + e.message, "#e07a7a");
+    }
   }
 
   // ── INIT ─────────────────────────────────────────────────────────
   render();
-  if (ghToken && gistId) loadFromGist();
+  if (ghToken) loadFromRepo();
 </script>
 </body>
 </html>
