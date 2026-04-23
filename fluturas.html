@@ -36,10 +36,11 @@
   input[type="number"]{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Mono',monospace;font-size:15px;padding:9px 44px 9px 12px;width:100%;outline:none;-moz-appearance:textfield;transition:border-color .2s,box-shadow .2s;}
   input::-webkit-inner-spin-button,input::-webkit-outer-spin-button{-webkit-appearance:none;}
   input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(240,192,64,0.08);}
+  input[readonly]{background:rgba(61,232,176,0.06);border-color:rgba(61,232,176,0.25);color:var(--accent2);cursor:default;}
+  input[readonly]:focus{border-color:rgba(61,232,176,0.35);box-shadow:none;}
   .info-box{font-size:11px;color:var(--muted);margin-top:8px;padding:8px 10px;background:var(--surface2);border-radius:6px;border:1px solid var(--border);line-height:1.7;}
   .info-box .y{color:var(--accent);font-weight:500;}
   .info-box .g{color:var(--accent2);font-weight:500;}
-  .info-box .r{color:var(--accent3);font-weight:500;}
   .breakdown{display:flex;flex-direction:column;}
   .brow{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;gap:8px;}
   .brow:last-child{border-bottom:none;}
@@ -66,7 +67,13 @@
   .formula-note{font-size:10px;color:var(--muted);padding:10px 12px;background:rgba(61,232,176,0.05);border:1px solid rgba(61,232,176,0.15);border-radius:8px;line-height:1.8;}
   .formula-note .g{color:var(--accent2);}
   .formula-note .y{color:var(--accent);}
-  .formula-note .r{color:var(--accent3);}
+  /* Save indicator */
+  .save-row{display:flex;justify-content:center;align-items:center;gap:10px;margin-top:8px;}
+  .save-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;color:var(--muted);padding:4px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;transition:color .3s,border-color .3s;}
+  .save-badge.saved{color:var(--accent2);border-color:rgba(61,232,176,0.3);}
+  .save-dot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0;}
+  .btn-reset{padding:4px 14px;background:transparent;border:1px solid rgba(255,107,107,0.3);border-radius:20px;color:var(--accent3);font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;letter-spacing:0.5px;transition:background .2s,border-color .2s;}
+  .btn-reset:hover{background:rgba(255,107,107,0.08);border-color:rgba(255,107,107,0.6);}
 </style>
 </head>
 <body>
@@ -74,6 +81,10 @@
 <div class="header">
   <h1>EMX FLUTURAS</h1>
   <p>Transferoviar Călători · Formula verificată WinMENTOR</p>
+  <div class="save-row">
+    <span class="save-badge" id="saveBadge"><span class="save-dot"></span><span id="saveText">Se încarcă...</span></span>
+    <button class="btn-reset" onclick="resetDate()">↺ Reset</button>
+  </div>
 </div>
 
 <div class="container">
@@ -85,14 +96,14 @@
       <div class="field">
         <label>Salariu de încadrare</label>
         <div class="input-wrap">
-          <input type="number" id="salariuBaza" value="6710" min="0" oninput="calculeaza()">
+          <input type="number" id="salariuBaza" value="6710" min="0" oninput="onChange()">
           <span class="input-unit">RON</span>
         </div>
       </div>
       <div class="field">
         <label>Normă ore / lună</label>
         <div class="input-wrap">
-          <input type="number" id="normaOre" value="176" min="1" oninput="calculeaza()">
+          <input type="number" id="normaOre" value="176" min="1" oninput="onChange()">
           <span class="input-unit">ore</span>
         </div>
       </div>
@@ -107,56 +118,49 @@
       <div class="field">
         <label>Ore normale (realizate)</label>
         <div class="input-wrap">
-          <input type="number" id="oreNormale" value="176" min="0" oninput="calculeaza()">
+          <input type="number" id="oreNormale" value="160" min="0" oninput="onChange()">
           <span class="input-unit">ore</span>
         </div>
       </div>
       <div class="field">
         <label>Ore supl. I <span class="badge by">×1.75</span></label>
         <div class="input-wrap">
-          <input type="number" id="oreSuplI" value="20" min="0" oninput="calculeaza()">
-          <span class="input-unit">ore</span>
-        </div>
-      </div>
-      <div class="field">
-        <label>Ore supl. II <span class="badge by">×2.00</span></label>
-        <div class="input-wrap">
-          <input type="number" id="oreSuplII" value="13" min="0" oninput="calculeaza()">
+          <input type="number" id="oreSuplI" value="20" min="0" oninput="onChange()">
           <span class="input-unit">ore</span>
         </div>
       </div>
       <div class="field">
         <label>Festive <span class="badge bg">×1.00</span></label>
         <div class="input-wrap">
-          <input type="number" id="oreFestive" value="53" min="0" oninput="calculeaza()">
+          <input type="number" id="oreFestive" value="44" min="0" oninput="onChange()">
           <span class="input-unit">ore</span>
         </div>
       </div>
       <div class="field">
         <label>Noapte 25% <span class="badge by">×0.25</span></label>
         <div class="input-wrap">
-          <input type="number" id="oreNoapte" value="37" min="0" oninput="calculeaza()">
+          <input type="number" id="oreNoapte" value="23" min="0" oninput="onChange()">
           <span class="input-unit">ore</span>
         </div>
       </div>
       <div class="field">
         <label>Cap Secție <span class="badge by">×0.50</span></label>
         <div class="input-wrap">
-          <input type="number" id="oreCapSectie" value="80" min="0" oninput="calculeaza()">
+          <input type="number" id="oreCapSectie" value="61" min="0" oninput="onChange()">
           <span class="input-unit">ore</span>
         </div>
       </div>
       <div class="field">
         <label>Ore Școală <span class="badge bg">×1.00</span></label>
         <div class="input-wrap">
-          <input type="number" id="oreScoala" value="2" min="0" oninput="calculeaza()">
+          <input type="number" id="oreScoala" value="6" min="0" oninput="onChange()">
           <span class="input-unit">ore</span>
         </div>
       </div>
       <div class="field">
         <label>Formator <span class="badge bg">×1.00</span></label>
         <div class="input-wrap">
-          <input type="number" id="oreFormator" value="0" min="0" oninput="calculeaza()">
+          <input type="number" id="oreFormator" value="0" min="0" oninput="onChange()">
           <span class="input-unit">ore</span>
         </div>
       </div>
@@ -168,16 +172,16 @@
     <div class="card-title"><span class="dot dot-green"></span> Bonuri de masă</div>
     <div class="grid">
       <div class="field">
-        <label>Nr. bonuri</label>
+        <label>Nr. bonuri <span class="badge bg">auto ÷ 8</span></label>
         <div class="input-wrap">
-          <input type="number" id="nrBonuri" value="22" min="0" oninput="calculeaza()">
+          <input type="number" id="nrBonuri" readonly>
           <span class="input-unit">buc</span>
         </div>
       </div>
       <div class="field">
         <label>Valoare / bon</label>
         <div class="input-wrap">
-          <input type="number" id="valoareBon" value="43" min="0" oninput="calculeaza()">
+          <input type="number" id="valoareBon" value="43" min="0" oninput="onChange()">
           <span class="input-unit">RON</span>
         </div>
       </div>
@@ -192,14 +196,14 @@
       <div class="field">
         <label>Deducere de bază</label>
         <div class="input-wrap">
-          <input type="number" id="deducereBaza" value="0" min="0" oninput="calculeaza()">
+          <input type="number" id="deducereBaza" value="0" min="0" oninput="onChange()">
           <span class="input-unit">RON</span>
         </div>
       </div>
       <div class="field">
         <label>Deducere suplimentară</label>
         <div class="input-wrap">
-          <input type="number" id="deducereSuplim" value="100" min="0" oninput="calculeaza()">
+          <input type="number" id="deducereSuplim" value="100" min="0" oninput="onChange()">
           <span class="input-unit">RON</span>
         </div>
       </div>
@@ -213,14 +217,14 @@
       <div class="field">
         <label>Avans (RON)</label>
         <div class="input-wrap">
-          <input type="number" id="avansRon" value="2500" min="0" oninput="calculeaza()">
+          <input type="number" id="avansRon" value="2500" min="0" oninput="onChange()">
           <span class="input-unit">RON</span>
         </div>
       </div>
       <div class="field">
         <label>Alte avansuri</label>
         <div class="input-wrap">
-          <input type="number" id="alteAvansuri" value="0" min="0" oninput="calculeaza()">
+          <input type="number" id="alteAvansuri" value="0" min="0" oninput="onChange()">
           <span class="input-unit">RON</span>
         </div>
       </div>
@@ -266,117 +270,146 @@
 </div>
 
 <script>
+const FIELDS = [
+  'salariuBaza','normaOre','oreNormale','oreSuplI',
+  'oreFestive','oreNoapte','oreCapSectie','oreScoala','oreFormator',
+  'valoareBon','deducereBaza','deducereSuplim','avansRon','alteAvansuri'
+];
+const STORAGE_KEY = 'emx_fluturas_v2';
+const DEFAULTS = {
+  salariuBaza:6710, normaOre:176, oreNormale:160, oreSuplI:20,
+  oreFestive:44, oreNoapte:23, oreCapSectie:61, oreScoala:6,
+  oreFormator:0, valoareBon:43, deducereBaza:0, deducereSuplim:100,
+  avansRon:2500, alteAvansuri:0
+};
+
+function salveaza() {
+  const data = {};
+  FIELDS.forEach(id => { data[id] = document.getElementById(id).value; });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  const badge = document.getElementById('saveBadge');
+  badge.classList.add('saved');
+  document.getElementById('saveText').textContent = '✓ Salvat';
+  clearTimeout(window._st);
+  window._st = setTimeout(() => {
+    document.getElementById('saveText').textContent = 'Salvat local';
+  }, 1500);
+}
+
+function incarca() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (raw) {
+    try {
+      const data = JSON.parse(raw);
+      FIELDS.forEach(id => {
+        if (data[id] !== undefined) document.getElementById(id).value = data[id];
+      });
+      document.getElementById('saveBadge').classList.add('saved');
+      document.getElementById('saveText').textContent = 'Salvat local';
+      return;
+    } catch(e) {}
+  }
+  document.getElementById('saveText').textContent = 'Date implicite';
+}
+
+function resetDate() {
+  if (!confirm('Resetezi toate câmpurile la valorile implicite?')) return;
+  FIELDS.forEach(id => { document.getElementById(id).value = DEFAULTS[id]; });
+  localStorage.removeItem(STORAGE_KEY);
+  document.getElementById('saveBadge').classList.remove('saved');
+  document.getElementById('saveText').textContent = 'Resetat';
+  calculeaza();
+}
+
+function onChange() { calculeaza(); salveaza(); }
+
 function fmt(n){return n.toLocaleString('ro-RO',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function fmtInt(n){return Math.round(n).toLocaleString('ro-RO');}
 function v(id){return parseFloat(document.getElementById(id).value)||0;}
 
-function calculeaza(){
+function calculeaza() {
   const salBaza        = v('salariuBaza');
   const normaOre       = v('normaOre')||1;
   const oreNormale     = v('oreNormale');
   const oreSuplI       = v('oreSuplI');
-  const oreSuplII      = v('oreSuplII');
   const oreFestive     = v('oreFestive');
   const oreNoapte      = v('oreNoapte');
   const oreCapSectie   = v('oreCapSectie');
   const oreScoala      = v('oreScoala');
   const oreFormator    = v('oreFormator');
-  const nrBonuri       = v('nrBonuri');
   const valoareBon     = v('valoareBon');
   const deducereBaza   = v('deducereBaza');
   const deducereSuplim = v('deducereSuplim');
   const avansRon       = v('avansRon');
   const alteAvansuri   = v('alteAvansuri');
 
-  // Tarif orar rotunjit la 2 zecimale (exact ca WinMENTOR)
-  const t = Math.round(salBaza / normaOre * 100) / 100;
+  // Bonuri automat: 1 bon / 8 ore normale
+  const nrBonuri = Math.floor(oreNormale / 8);
+  document.getElementById('nrBonuri').value = nrBonuri;
 
+  const t = Math.round(salBaza / normaOre * 100) / 100;
   document.getElementById('tarifInfo').innerHTML =
     `Tarif orar: <span class="y">${fmt(t)} RON/oră</span> &nbsp;(${fmt(salBaza)} RON ÷ ${normaOre} ore)`;
 
-  // ── CALCULE BRUT (fără bonuri) ──────────────────────────────
-  const salReal    = Math.round(salBaza * (oreNormale / normaOre));
-  const plataSuplI = Math.round(oreSuplI    * t * 1.75);
-  const plataSuplII= Math.round(oreSuplII   * t * 2.00);
-  const plataFest  = Math.round(oreFestive  * t * 1.00);
-  const plataNoapte= Math.round(oreNoapte   * t * 0.25);
-  const plataCapS  = Math.round(oreCapSectie* t * 0.50);
-  const plataScoala= Math.round(oreScoala   * t * 1.00);
-  const plataForm  = Math.round(oreFormator * t * 1.00);
+  const salReal     = Math.round(salBaza * (oreNormale / normaOre));
+  const plataSuplI  = Math.round(oreSuplI     * t * 1.75);
+  const plataFest   = Math.round(oreFestive   * t * 1.00);
+  const plataNoapte = Math.round(oreNoapte    * t * 0.25);
+  const plataCapS   = Math.round(oreCapSectie * t * 0.50);
+  const plataScoala = Math.round(oreScoala    * t * 1.00);
+  const plataForm   = Math.round(oreFormator  * t * 1.00);
 
-  const totalBrut = salReal + plataSuplI + plataSuplII + plataFest +
-                    plataNoapte + plataCapS + plataScoala + plataForm;
-
-  // ── BONURI ──────────────────────────────────────────────────
+  const totalBrut = salReal + plataSuplI + plataFest + plataNoapte + plataCapS + plataScoala + plataForm;
   const totalBonuri = nrBonuri * valoareBon;
-  document.getElementById('bonuriInfo').innerHTML =
-    `<span class="g">${nrBonuri} bonuri</span> × ${fmt(valoareBon)} RON = <span class="y">${fmt(totalBonuri)} RON</span>`;
 
-  // ── CONTRIBUȚII (formula verificată din ambele fluturașe) ───
-  // Baza CASS = Brut + Bonuri
-  // Baza CAS  = Brut (fără bonuri)
+  document.getElementById('bonuriInfo').innerHTML =
+    `<span class="g">${oreNormale} ore ÷ 8 = ${nrBonuri} bonuri</span> × ${fmt(valoareBon)} RON = <span class="y">${fmt(totalBonuri)} RON</span>`;
+
   const bazaCASS = totalBrut + totalBonuri;
   const bazaCAS  = totalBrut;
-
   const CASS = Math.round(bazaCASS * 0.10);
   const CAS  = Math.round(bazaCAS  * 0.25);
-
-  // Net = Brut - CAS - CASS
-  const net = totalBrut - CASS - CAS;
-
-  // Baza impozit = Net + Bonuri - Deduceri
+  const net  = totalBrut - CASS - CAS;
   const bazaImpozit = Math.max(0, net + totalBonuri - deducereBaza - deducereSuplim);
-  const impozit     = Math.round(bazaImpozit * 0.10);
-
-  // Salar net = Net - Impozit
-  const salarNet  = net - impozit;
+  const impozit  = Math.round(bazaImpozit * 0.10);
+  const salarNet = net - impozit;
   const lichidare = salarNet - avansRon - alteAvansuri;
 
-  // ── BREAKDOWN ────────────────────────────────────────────────
   let html = '';
-
   const rows = [
-    {show:true,            col:'var(--text)',   lbl:`Salar realizat — ${oreNormale} ore / ${normaOre} normă`,            val:salReal},
-    {show:oreSuplI>0,      col:'var(--accent)', lbl:`Ore supl. I — ${oreSuplI} ore × ${fmt(t)} × 1.75`,                  val:plataSuplI},
-    {show:oreSuplII>0,     col:'var(--accent)', lbl:`Ore supl. II — ${oreSuplII} ore × ${fmt(t)} × 2.00`,                val:plataSuplII},
-    {show:oreFestive>0,    col:'var(--text)',   lbl:`Festive — ${oreFestive} ore × ${fmt(t)}`,                           val:plataFest},
-    {show:oreNoapte>0,     col:'var(--accent)', lbl:`Noapte 25% — ${oreNoapte} ore × ${fmt(t*0.25)}`,                    val:plataNoapte},
-    {show:oreCapSectie>0,  col:'var(--accent)', lbl:`Cap Secție 50% — ${oreCapSectie} ore × ${fmt(t*0.50)}`,             val:plataCapS},
-    {show:oreScoala>0,     col:'var(--text)',   lbl:`Ore Școală — ${oreScoala} ore × ${fmt(t)}`,                         val:plataScoala},
-    {show:oreFormator>0,   col:'var(--text)',   lbl:`Formator — ${oreFormator} ore × ${fmt(t)}`,                         val:plataForm},
+    {show:true,           col:'var(--text)',   lbl:`Salar realizat — ${oreNormale} ore / ${normaOre} normă`,  val:salReal},
+    {show:oreSuplI>0,     col:'var(--accent)', lbl:`Ore supl. I — ${oreSuplI} ore × ${fmt(t)} × 1.75`,        val:plataSuplI},
+    {show:oreFestive>0,   col:'var(--text)',   lbl:`Festive — ${oreFestive} ore × ${fmt(t)}`,                 val:plataFest},
+    {show:oreNoapte>0,    col:'var(--accent)', lbl:`Noapte 25% — ${oreNoapte} ore × ${fmt(t*0.25)}`,          val:plataNoapte},
+    {show:oreCapSectie>0, col:'var(--accent)', lbl:`Cap Secție 50% — ${oreCapSectie} ore × ${fmt(t*0.50)}`,   val:plataCapS},
+    {show:oreScoala>0,    col:'var(--text)',   lbl:`Ore Școală — ${oreScoala} ore × ${fmt(t)}`,               val:plataScoala},
+    {show:oreFormator>0,  col:'var(--text)',   lbl:`Formator — ${oreFormator} ore × ${fmt(t)}`,               val:plataForm},
   ];
 
   rows.filter(r=>r.show).forEach(r=>{
     html+=`<div class="brow"><span class="lbl">${r.lbl}</span><span class="val" style="color:${r.col}">${fmtInt(r.val)} RON</span></div>`;
   });
-
   html+=`<div class="brow sep"><span class="lbl">Venit BRUT (fără bonuri)</span><span class="val" style="color:var(--accent);font-size:15px;">${fmtInt(totalBrut)} RON</span></div>`;
-
   if(totalBonuri>0){
     html+=`<div class="brow"><span class="lbl" style="color:var(--accent2)">+ Bonuri masă — ${nrBonuri} × ${fmt(valoareBon)} RON</span><span class="val" style="color:var(--accent2)">+ ${fmtInt(totalBonuri)} RON</span></div>`;
   }
-
   html+=`<div class="brow sep2"><span class="lbl">Rețineri</span><span class="val"></span></div>`;
   html+=`<div class="brow"><span class="lbl" style="color:var(--accent3)">CASS 10% din ${fmtInt(bazaCASS)} (brut+bonuri)</span><span class="val" style="color:var(--accent3)">− ${fmtInt(CASS)} RON</span></div>`;
   html+=`<div class="brow"><span class="lbl" style="color:var(--accent3)">CAS 25% din ${fmtInt(bazaCAS)} (brut)</span><span class="val" style="color:var(--accent3)">− ${fmtInt(CAS)} RON</span></div>`;
-
   html+=`<div class="brow sep"><span class="lbl">Venit net (Brut − CASS − CAS)</span><span class="val" style="color:#6b9fff;font-size:14px;">${fmtInt(net)} RON</span></div>`;
-
-  if(deducereBaza>0||deducereSuplim>0||totalBonuri>0){
-    html+=`<div class="brow"><span class="lbl" style="color:#c47fff">Baza impozit = net + bonuri − deduceri = ${fmtInt(bazaImpozit)} RON</span><span class="val"></span></div>`;
-  }
+  html+=`<div class="brow"><span class="lbl" style="color:#c47fff">Baza impozit = net + bonuri − deduceri = ${fmtInt(bazaImpozit)} RON</span><span class="val"></span></div>`;
   html+=`<div class="brow"><span class="lbl" style="color:var(--accent3)">Impozit 10% din ${fmtInt(bazaImpozit)}</span><span class="val" style="color:var(--accent3)">− ${fmtInt(impozit)} RON</span></div>`;
-
   html+=`<div class="brow grand"><span class="lbl">Salar net</span><span class="val" style="color:var(--accent2);font-size:16px;">${fmtInt(salarNet)} RON</span></div>`;
 
-  document.getElementById('breakdown').innerHTML=html;
-
-  document.getElementById('rezAvans').textContent     = fmtInt(avansRon)+' RON';
-  document.getElementById('rezLichidare').textContent = fmtInt(lichidare)+' RON';
-  document.getElementById('rezAvansInfo').textContent = `Avans: ${fmtInt(avansRon)} RON`;
+  document.getElementById('breakdown').innerHTML = html;
+  document.getElementById('rezAvans').textContent         = fmtInt(avansRon)+' RON';
+  document.getElementById('rezLichidare').textContent     = fmtInt(lichidare)+' RON';
+  document.getElementById('rezAvansInfo').textContent     = `Avans: ${fmtInt(avansRon)} RON`;
   document.getElementById('rezLichidareInfo').textContent = `Din salar net ${fmtInt(salarNet)} RON`;
 }
 
+// Pornire
+incarca();
 calculeaza();
 </script>
 </body>
