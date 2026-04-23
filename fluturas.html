@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="ro">
 <head>
 <meta charset="UTF-8">
@@ -7,173 +8,59 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0d0f14;
-    --surface: #161922;
-    --surface2: #1e2330;
-    --border: #2a3044;
-    --accent: #f0c040;
-    --accent2: #3de8b0;
-    --accent3: #ff6b6b;
-    --text: #e8ecf5;
-    --muted: #6b7594;
+    --bg: #0d0f14; --surface: #161922; --surface2: #1e2330;
+    --border: #2a3044; --accent: #f0c040; --accent2: #3de8b0;
+    --accent3: #ff6b6b; --text: #e8ecf5; --muted: #6b7594;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    min-height: 100vh;
-    padding: 24px 16px 60px;
-  }
-  .header {
-    text-align: center;
-    margin-bottom: 32px;
-    padding-top: 8px;
-  }
-  .header h1 {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: clamp(26px, 6vw, 42px);
-    color: var(--accent);
-    letter-spacing: -1px;
-  }
-  .container {
-    max-width: 720px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 18px 20px;
-  }
-  .card-title {
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 2.5px;
-    color: var(--muted);
-    margin-bottom: 14px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; min-height: 100vh; padding: 24px 16px 60px; }
+  .header { text-align: center; margin-bottom: 32px; padding-top: 8px; }
+  .header h1 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(26px,6vw,42px); color: var(--accent); letter-spacing: -1px; }
+  .container { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; }
+  .card-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 2.5px; color: var(--muted); margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
   .card-title .dot { width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0; }
   .dot-green { background: var(--accent2) !important; }
   .dot-red   { background: var(--accent3) !important; }
   .dot-blue  { background: #6b9fff !important; }
-
+  .dot-purple{ background: #c47fff !important; }
   .grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   @media(max-width:480px){ .grid{ grid-template-columns:1fr; } }
   .field { display:flex; flex-direction:column; gap:5px; }
-
-  label {
-    font-size: 10px; color: var(--muted);
-    letter-spacing: 0.8px; text-transform: uppercase;
-    display: flex; align-items: center; flex-wrap: wrap; gap: 4px;
-  }
-  .badge {
-    font-size: 9px; padding: 1px 5px; border-radius: 4px;
-    letter-spacing: 0.2px; font-family: 'DM Mono', monospace;
-  }
+  label { font-size:10px; color:var(--muted); letter-spacing:0.8px; text-transform:uppercase; display:flex; align-items:center; flex-wrap:wrap; gap:4px; }
+  .badge { font-size:9px; padding:1px 5px; border-radius:4px; letter-spacing:0.2px; font-family:'DM Mono',monospace; }
   .by { background:rgba(240,192,64,0.15); color:var(--accent); border:1px solid rgba(240,192,64,0.25); }
-  .bg { background:rgba(61,232,176,0.1);  color:var(--accent2);border:1px solid rgba(61,232,176,0.2); }
-  .br { background:rgba(255,107,107,0.1); color:var(--accent3);border:1px solid rgba(255,107,107,0.2); }
-
+  .bg { background:rgba(61,232,176,0.1); color:var(--accent2); border:1px solid rgba(61,232,176,0.2); }
   .input-wrap { position:relative; }
-  .input-unit {
-    position:absolute; right:12px; top:50%; transform:translateY(-50%);
-    font-size:11px; color:var(--muted); pointer-events:none;
-  }
-  input[type="number"] {
-    background:var(--surface2); border:1px solid var(--border); border-radius:8px;
-    color:var(--text); font-family:'DM Mono',monospace; font-size:15px;
-    padding:9px 44px 9px 12px; width:100%; outline:none;
-    -moz-appearance:textfield; transition:border-color .2s,box-shadow .2s;
-  }
+  .input-unit { position:absolute; right:12px; top:50%; transform:translateY(-50%); font-size:11px; color:var(--muted); pointer-events:none; }
+  input[type="number"] { background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-family:'DM Mono',monospace; font-size:15px; padding:9px 44px 9px 12px; width:100%; outline:none; -moz-appearance:textfield; transition:border-color .2s,box-shadow .2s; }
   input::-webkit-inner-spin-button,input::-webkit-outer-spin-button{-webkit-appearance:none;}
   input:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(240,192,64,0.08); }
-
-  .info-box {
-    font-size:11px; color:var(--muted); margin-top:8px;
-    padding:8px 10px; background:var(--surface2);
-    border-radius:6px; border:1px solid var(--border); line-height:1.7;
-  }
+  .info-box { font-size:11px; color:var(--muted); margin-top:8px; padding:8px 10px; background:var(--surface2); border-radius:6px; border:1px solid var(--border); line-height:1.7; }
   .info-box .y { color:var(--accent); font-weight:500; }
   .info-box .g { color:var(--accent2); font-weight:500; }
   .info-box .r { color:var(--accent3); font-weight:500; }
-
-  /* Breakdown */
   .breakdown { display:flex; flex-direction:column; }
-  .brow {
-    display:flex; justify-content:space-between; align-items:center;
-    padding:8px 0; border-bottom:1px solid var(--border);
-    font-size:12px; gap:8px;
-  }
+  .brow { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border); font-size:12px; gap:8px; }
   .brow:last-child { border-bottom:none; }
   .brow .lbl { color:var(--muted); flex:1; line-height:1.5; }
   .brow .val { font-weight:500; white-space:nowrap; }
-  .brow.sep {
-    border-top:1px solid var(--border); margin-top:4px;
-    padding-top:10px; border-bottom:none;
-  }
-  .brow.sep .lbl {
-    font-family:'Syne',sans-serif; font-size:11px; font-weight:700;
-    color:var(--text); text-transform:uppercase; letter-spacing:1px;
-  }
-  .brow.sep2 {
-    border-top:1px solid rgba(255,107,107,0.3); margin-top:4px;
-    padding-top:10px; border-bottom:none;
-  }
-  .brow.sep2 .lbl {
-    font-family:'Syne',sans-serif; font-size:11px; font-weight:700;
-    color:var(--accent3); text-transform:uppercase; letter-spacing:1px;
-  }
-  .brow.grand {
-    border-top:2px solid rgba(61,232,176,0.4); margin-top:4px;
-    padding-top:12px; border-bottom:none;
-  }
-  .brow.grand .lbl {
-    font-family:'Syne',sans-serif; font-size:12px; font-weight:800;
-    color:var(--accent2); text-transform:uppercase; letter-spacing:1px;
-  }
-
-  /* Result boxes */
+  .brow.sep { border-top:1px solid var(--border); margin-top:4px; padding-top:10px; border-bottom:none; }
+  .brow.sep .lbl { font-family:'Syne',sans-serif; font-size:11px; font-weight:700; color:var(--text); text-transform:uppercase; letter-spacing:1px; }
+  .brow.sep2 { border-top:1px solid rgba(255,107,107,0.3); margin-top:4px; padding-top:10px; border-bottom:none; }
+  .brow.sep2 .lbl { font-family:'Syne',sans-serif; font-size:11px; font-weight:700; color:var(--accent3); text-transform:uppercase; letter-spacing:1px; }
+  .brow.grand { border-top:2px solid rgba(61,232,176,0.4); margin-top:4px; padding-top:12px; border-bottom:none; }
+  .brow.grand .lbl { font-family:'Syne',sans-serif; font-size:12px; font-weight:800; color:var(--accent2); text-transform:uppercase; letter-spacing:1px; }
   .result-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
   @media(max-width:480px){ .result-grid{ grid-template-columns:1fr; } }
-
-  .result-box {
-    border-radius:12px; padding:22px 18px;
-    display:flex; flex-direction:column; align-items:center;
-    gap:6px; text-align:center;
-  }
-  .result-box.avans {
-    background:linear-gradient(135deg,#1e2330,#1a1f2c);
-    border:2px solid var(--accent);
-    box-shadow:0 0 28px rgba(240,192,64,0.12);
-  }
-  .result-box.lichidare {
-    background:linear-gradient(135deg,#161f1e,#131c1b);
-    border:2px solid var(--accent2);
-    box-shadow:0 0 28px rgba(61,232,176,0.10);
-  }
-  .rb-label {
-    font-family:'Syne',sans-serif; font-size:10px;
-    font-weight:700; text-transform:uppercase; letter-spacing:2px;
-  }
-  .result-box.avans .rb-label     { color:var(--accent); }
+  .result-box { border-radius:12px; padding:22px 18px; display:flex; flex-direction:column; align-items:center; gap:6px; text-align:center; }
+  .result-box.avans { background:linear-gradient(135deg,#1e2330,#1a1f2c); border:2px solid var(--accent); box-shadow:0 0 28px rgba(240,192,64,0.12); }
+  .result-box.lichidare { background:linear-gradient(135deg,#161f1e,#131c1b); border:2px solid var(--accent2); box-shadow:0 0 28px rgba(61,232,176,0.10); }
+  .rb-label { font-family:'Syne',sans-serif; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:2px; }
+  .result-box.avans .rb-label { color:var(--accent); }
   .result-box.lichidare .rb-label { color:var(--accent2); }
-  .rb-amount {
-    font-family:'Syne',sans-serif; font-weight:800;
-    font-size:clamp(26px,6vw,40px); line-height:1; letter-spacing:-1px;
-  }
-  .result-box.avans .rb-amount     { color:var(--accent); }
+  .rb-amount { font-family:'Syne',sans-serif; font-weight:800; font-size:clamp(26px,6vw,40px); line-height:1; letter-spacing:-1px; }
+  .result-box.avans .rb-amount { color:var(--accent); }
   .result-box.lichidare .rb-amount { color:var(--accent2); }
   .rb-sub { font-size:10px; color:var(--muted); margin-top:2px; line-height:1.6; }
 </style>
@@ -185,20 +72,21 @@
 <div class="container">
 
   <!-- SALARIU & NORMA -->
+
   <div class="card">
     <div class="card-title"><span class="dot"></span> Salariu & Normă</div>
     <div class="grid">
       <div class="field">
         <label>Salariu de încadrare</label>
         <div class="input-wrap">
-          <input type="number" id="salariuBaza" value="8500" min="0" oninput="calculeaza()">
+          <input type="number" id="salariuBaza" value="6710" min="0" oninput="calculeaza()">
           <span class="input-unit">RON</span>
         </div>
       </div>
       <div class="field">
         <label>Normă ore / lună</label>
         <div class="input-wrap">
-          <input type="number" id="normaOre" value="168" min="1" oninput="calculeaza()">
+          <input type="number" id="normaOre" value="160" min="1" oninput="calculeaza()">
           <span class="input-unit">ore</span>
         </div>
       </div>
@@ -207,106 +95,147 @@
   </div>
 
   <!-- ORE LUCRATE -->
+
   <div class="card">
     <div class="card-title"><span class="dot dot-green"></span> Ore lucrate</div>
     <div class="grid">
-
       <div class="field">
-        <label>Ore normale</label>
+        <label>Ore normale (realizate)</label>
         <div class="input-wrap">
-          <input type="number" id="oreNormale" value="0" min="0" oninput="calculeaza()">
+          <input type="number" id="oreNormale" value="160" min="0" oninput="calculeaza()">
           <span class="input-unit">ore</span>
         </div>
       </div>
-
       <div class="field">
-        <label>Ore suplimentare <span class="badge by">×1.75</span></label>
+        <label>Ore supl. I <span class="badge by">×1.75</span></label>
         <div class="input-wrap">
-          <input type="number" id="oreSuplim" value="0" min="0" oninput="calculeaza()">
+          <input type="number" id="oreSuplim" value="20" min="0" oninput="calculeaza()">
           <span class="input-unit">ore</span>
         </div>
       </div>
-
       <div class="field">
-        <label>Ore festive <span class="badge bg">tarif normal</span></label>
+        <label>Ore supl. II <span class="badge by">×2.00</span></label>
         <div class="input-wrap">
-          <input type="number" id="oreFestive" value="0" min="0" oninput="calculeaza()">
+          <input type="number" id="oreSuplim2" value="0" min="0" oninput="calculeaza()">
           <span class="input-unit">ore</span>
         </div>
       </div>
-
       <div class="field">
-        <label>Ore noapte <span class="badge by">25% din normală</span></label>
+        <label>Festive <span class="badge bg">tarif normal</span></label>
         <div class="input-wrap">
-          <input type="number" id="oreNoapte" value="0" min="0" oninput="calculeaza()">
+          <input type="number" id="oreFestive" value="44" min="0" oninput="calculeaza()">
           <span class="input-unit">ore</span>
         </div>
       </div>
-
       <div class="field">
-        <label>Ore odihnă <span class="badge by">50% din normală</span></label>
+        <label>Noapte 25% <span class="badge by">×0.25</span></label>
         <div class="input-wrap">
-          <input type="number" id="oreOdihna" value="0" min="0" oninput="calculeaza()">
+          <input type="number" id="oreNoapte" value="23" min="0" oninput="calculeaza()">
           <span class="input-unit">ore</span>
         </div>
       </div>
-
       <div class="field">
-        <label>Ore școală <span class="badge bg">tarif normal</span></label>
+        <label>Cap Secție <span class="badge by">×0.50</span></label>
         <div class="input-wrap">
-          <input type="number" id="oreScoala" value="0" min="0" oninput="calculeaza()">
+          <input type="number" id="oreCapSectie" value="61" min="0" oninput="calculeaza()">
           <span class="input-unit">ore</span>
         </div>
       </div>
-
+      <div class="field">
+        <label>Ore Școală <span class="badge bg">tarif normal</span></label>
+        <div class="input-wrap">
+          <input type="number" id="oreScoala" value="6" min="0" oninput="calculeaza()">
+          <span class="input-unit">ore</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Formator <span class="badge bg">tarif normal</span></label>
+        <div class="input-wrap">
+          <input type="number" id="oreFormator" value="0" min="0" oninput="calculeaza()">
+          <span class="input-unit">ore</span>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- CO + BONURI -->
+  <!-- BONURI -->
+
   <div class="card">
-    <div class="card-title"><span class="dot dot-green"></span> Concediu & Bonuri</div>
+    <div class="card-title"><span class="dot dot-green"></span> Bonuri de masă</div>
     <div class="grid">
       <div class="field">
-        <label>Zile CO (concediu odihnă)</label>
+        <label>Nr. bonuri</label>
         <div class="input-wrap">
-          <input type="number" id="zileCO" value="0" min="0" oninput="calculeaza()">
-          <span class="input-unit">zile</span>
+          <input type="number" id="nrBonuri" value="20" min="0" oninput="calculeaza()">
+          <span class="input-unit">buc</span>
         </div>
       </div>
       <div class="field">
-        <label>Valoare bon de masă</label>
+        <label>Valoare / bon</label>
         <div class="input-wrap">
-          <input type="number" id="valoareBon" value="45" min="0" oninput="calculeaza()">
+          <input type="number" id="valoareBon" value="40" min="0" oninput="calculeaza()">
           <span class="input-unit">RON</span>
         </div>
       </div>
     </div>
-    <div class="info-box" id="bonuriInfo">— Bonuri calculate din ore normale (1 bon / 8 ore)</div>
+    <div class="info-box" id="bonuriInfo">—</div>
+  </div>
+
+  <!-- DEDUCERI -->
+
+  <div class="card">
+    <div class="card-title"><span class="dot dot-purple"></span> Deduceri</div>
+    <div class="grid">
+      <div class="field">
+        <label>Deducere de bază</label>
+        <div class="input-wrap">
+          <input type="number" id="deducereBaza" value="0" min="0" oninput="calculeaza()">
+          <span class="input-unit">RON</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Deducere suplimentară</label>
+        <div class="input-wrap">
+          <input type="number" id="deducereSuplim" value="100" min="0" oninput="calculeaza()">
+          <span class="input-unit">RON</span>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- AVANS -->
+
   <div class="card">
-    <div class="card-title"><span class="dot dot-red"></span> Procent avans</div>
+    <div class="card-title"><span class="dot dot-red"></span> Avans</div>
     <div class="grid">
       <div class="field">
-        <label>Procent avans din salariul de încadrare</label>
+        <label>Avans (RON fix)</label>
         <div class="input-wrap">
-          <input type="number" id="procentAvans" value="37" min="0" max="100" oninput="calculeaza()">
-          <span class="input-unit">%</span>
+          <input type="number" id="avansRon" value="2500" min="0" oninput="calculeaza()">
+          <span class="input-unit">RON</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Alte avansuri</label>
+        <div class="input-wrap">
+          <input type="number" id="alteAvansuri" value="0" min="0" oninput="calculeaza()">
+          <span class="input-unit">RON</span>
         </div>
       </div>
     </div>
   </div>
 
   <!-- DETALII CALCUL -->
+
   <div class="card">
     <div class="card-title"><span class="dot dot-blue"></span> Detalii calcul complet</div>
     <div class="breakdown" id="breakdown">
-      <div class="brow"><span class="lbl">Introdu ore pentru a vedea detaliile</span><span class="val">—</span></div>
+      <div class="brow"><span class="lbl">Introdu date pentru a vedea detaliile</span><span class="val">—</span></div>
     </div>
   </div>
 
   <!-- REZULTATE -->
+
   <div class="result-grid">
     <div class="result-box avans">
       <div class="rb-label">💰 Avans</div>
@@ -323,168 +252,126 @@
 </div>
 
 <script>
-function fmt(n) {
-  return n.toLocaleString('ro-RO', {minimumFractionDigits:2, maximumFractionDigits:2});
-}
-function fmtInt(n) {
-  return Math.round(n).toLocaleString('ro-RO');
-}
+function fmt(n) { return n.toLocaleString('ro-RO', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function fmtInt(n) { return Math.round(n).toLocaleString('ro-RO'); }
+function v(id) { return parseFloat(document.getElementById(id).value) || 0; }
 
 function calculeaza() {
-  const salBaza      = parseFloat(document.getElementById('salariuBaza').value)  || 0;
-  const normaOre     = parseFloat(document.getElementById('normaOre').value)     || 1;
-  const oreNormale   = parseFloat(document.getElementById('oreNormale').value)   || 0;
-  const oreSuplim    = parseFloat(document.getElementById('oreSuplim').value)    || 0;
-  const oreFestive   = parseFloat(document.getElementById('oreFestive').value)   || 0;
-  const oreNoapte    = parseFloat(document.getElementById('oreNoapte').value)    || 0;
-  const oreOdihna    = parseFloat(document.getElementById('oreOdihna').value)    || 0;
-  const oreScoala    = parseFloat(document.getElementById('oreScoala').value)    || 0;
-  const zileCO       = parseFloat(document.getElementById('zileCO').value)       || 0;
-  const valoareBon   = parseFloat(document.getElementById('valoareBon').value)   || 0;
-  const procentAvans = parseFloat(document.getElementById('procentAvans').value) || 0;
+  const salBaza        = v('salariuBaza');
+  const normaOre       = v('normaOre') || 1;
+  const oreNormale     = v('oreNormale');
+  const oreSuplim      = v('oreSuplim');
+  const oreSuplim2     = v('oreSuplim2');
+  const oreFestive     = v('oreFestive');
+  const oreNoapte      = v('oreNoapte');
+  const oreCapSectie   = v('oreCapSectie');
+  const oreScoala      = v('oreScoala');
+  const oreFormator    = v('oreFormator');
+  const nrBonuri       = v('nrBonuri');
+  const valoareBon     = v('valoareBon');
+  const deducereBaza   = v('deducereBaza');
+  const deducereSuplim = v('deducereSuplim');
+  const avansRon       = v('avansRon');
+  const alteAvansuri   = v('alteAvansuri');
 
-  const t = salBaza / normaOre; // tarif orar
+  const t = salBaza / normaOre;
 
   document.getElementById('tarifInfo').innerHTML =
     `Tarif orar: <span class="y">${fmt(t)} RON/oră</span> &nbsp;(${fmt(salBaza)} RON ÷ ${normaOre} ore)`;
 
-  // ── CALCULE BRUT ────────────────────────────────────────────
-  // Ore normale: t × ore
-  const plataNormala  = oreNormale  * t;
+  // ── BRUT (fără bonuri) ───────────────────────────────────────
+  // Salar realizat proporțional cu norma
+  const salReal      = salBaza * (oreNormale / normaOre);
+  const plataSuplim  = oreSuplim    * t * 1.75;
+  const plataSuplim2 = oreSuplim2   * t * 2.00;
+  const plataFestive = oreFestive   * t * 1.00;
+  const plataNoapte  = oreNoapte    * t * 0.25;
+  const plataCapSect = oreCapSectie * t * 0.50;
+  const plataScoala  = oreScoala    * t * 1.00;
+  const plataFormator= oreFormator  * t * 1.00;
 
-  // Ore suplimentare: ora normală + 75% = t × 1.75
-  const plataSuplim   = oreSuplim   * t * 1.75;
+  const totalBrut = salReal + plataSuplim + plataSuplim2 + plataFestive +
+                    plataNoapte + plataCapSect + plataScoala + plataFormator;
 
-  // Ore festive: DOAR ora normală (fără spor)
-  const plataFestive  = oreFestive  * t;
-
-  // Ore noapte: DOAR 25% din ora normală (sporul, nu ora întreagă)
-  const plataNoapte   = oreNoapte   * t * 0.25;
-
-  // Ore odihnă: DOAR 50% din ora normală (sporul, nu ora întreagă)
-  const plataOdihna   = oreOdihna   * t * 0.50;
-
-  // Ore școală: tarif normal
-  const plataScoala   = oreScoala   * t;
-
-  // CO: salariu ÷ 21.75 zile lucrătoare/lună
-  const tarifZiCO     = salBaza / 21.75;
-  const plataCO       = zileCO * tarifZiCO;
-
-  const totalBrut = plataNormala + plataSuplim + plataFestive +
-                    plataNoapte  + plataOdihna + plataScoala  + plataCO;
-
-  // ── IMPOZITE ROMÂNIA ────────────────────────────────────────
-  // CAS  = 25% din brut
-  // CASS = 10% din brut
-  // Impozit venit = 10% din (brut - CAS - CASS)
-  const CAS        = totalBrut * 0.25;
-  const CASS       = totalBrut * 0.10;
-  const bazaImpoz  = totalBrut - CAS - CASS;
-  const impozit    = bazaImpoz * 0.10;
-  const totalRetin = CAS + CASS + impozit;
-  const totalNet   = totalBrut - totalRetin;
-
-  // ── BONURI ──────────────────────────────────────────────────
-  // Din ore NORMALE: 1 bon / 8 ore (bonurile nu se impozitează separat în calcul fluturuș)
-  const nrBonuri    = Math.floor(oreNormale / 8);
+  // ── BONURI ───────────────────────────────────────────────────
   const totalBonuri = nrBonuri * valoareBon;
 
-  // ── AVANS & LICHIDARE (din NET) ─────────────────────────────
-  const avans     = salBaza * (procentAvans / 100);
-  const lichidare = totalNet - avans;
-
-  // ── BONURI INFO ─────────────────────────────────────────────
   document.getElementById('bonuriInfo').innerHTML =
-    `Ore normale: <span class="g">${oreNormale}</span> → <span class="g">${nrBonuri} bonuri</span> × ${valoareBon} RON = <span class="g">${fmt(totalBonuri)} RON</span>`;
+    `<span class="g">${nrBonuri} bonuri</span> × ${fmt(valoareBon)} RON = <span class="y">${fmt(totalBonuri)} RON</span>`;
 
-  // ── BREAKDOWN HTML ───────────────────────────────────────────
-  const rows = [
-    { show: oreNormale > 0, color:'var(--text)',
-      lbl: `Ore normale — ${oreNormale} ore × ${fmt(t)} RON/h`,
-      val: plataNormala },
-    { show: oreSuplim > 0,  color:'var(--accent)',
-      lbl: `Ore suplim. — ${oreSuplim} ore × ${fmt(t)} RON/h × 1.75`,
-      val: plataSuplim },
-    { show: oreFestive > 0, color:'var(--text)',
-      lbl: `Ore festive — ${oreFestive} ore × ${fmt(t)} RON/h (tarif normal)`,
-      val: plataFestive },
-    { show: oreNoapte > 0,  color:'var(--accent)',
-      lbl: `Spor noapte — ${oreNoapte} ore × ${fmt(t*0.25)} RON (25% din t)`,
-      val: plataNoapte },
-    { show: oreOdihna > 0,  color:'var(--accent)',
-      lbl: `Spor odihnă — ${oreOdihna} ore × ${fmt(t*0.50)} RON (50% din t)`,
-      val: plataOdihna },
-    { show: oreScoala > 0,  color:'var(--text)',
-      lbl: `Ore școală — ${oreScoala} ore × ${fmt(t)} RON/h`,
-      val: plataScoala },
-    { show: zileCO > 0,     color:'var(--accent2)',
-      lbl: `CO — ${zileCO} zile × ${fmt(tarifZiCO)} RON/zi`,
-      val: plataCO },
-  ];
+  // ── CONTRIBUȚII ──────────────────────────────────────────────
+  // CONFIRMAT din fluturașele WinMENTOR:
+  // Baza CASS = Brut + Bonuri  →  CASS = 10%
+  // Baza CAS  = Brut            →  CAS  = 25%
+  const bazaCASS = totalBrut + totalBonuri;
+  const bazaCAS  = totalBrut;
 
-  const visible = rows.filter(r => r.show);
+  const CASS = Math.round(bazaCASS * 0.10);
+  const CAS  = Math.round(bazaCAS  * 0.25);
+
+  // Venit net = Brut - CAS - CASS
+  const veniturNet = Math.round(totalBrut) - CAS - CASS;
+
+  // Baza impozit = Net + Bonuri - Deduceri
+  const bazaImpozit = Math.max(0, veniturNet + totalBonuri - deducereBaza - deducereSuplim);
+  const impozit     = Math.round(bazaImpozit * 0.10);
+
+  // Salar net = Net - Impozit
+  const salarNet = veniturNet - impozit;
+
+  // Lichidare = Salar net - Avans - Alte avansuri
+  const lichidare = salarNet - avansRon - alteAvansuri;
+
+  // ── BREAKDOWN ────────────────────────────────────────────────
   let html = '';
 
-  if (visible.length === 0) {
-    html = '<div class="brow"><span class="lbl">Introdu ore pentru a vedea detaliile</span><span class="val">—</span></div>';
-  } else {
-    // Componente brut
-    visible.forEach(r => {
-      html += `<div class="brow">
-        <span class="lbl">${r.lbl}</span>
-        <span class="val" style="color:${r.color}">${fmt(r.val)} RON</span>
-      </div>`;
-    });
+  const rows = [
+    { show: true,             col:'var(--text)',    lbl:`Salar realizat — ${oreNormale} ore / ${normaOre} normă × ${fmt(salBaza)}`,  val: salReal },
+    { show: oreSuplim > 0,    col:'var(--accent)',  lbl:`Ore supl. I — ${oreSuplim} ore × ${fmt(t)} × 1.75`,                         val: plataSuplim },
+    { show: oreSuplim2 > 0,   col:'var(--accent)',  lbl:`Ore supl. II — ${oreSuplim2} ore × ${fmt(t)} × 2.00`,                       val: plataSuplim2 },
+    { show: oreFestive > 0,   col:'var(--text)',    lbl:`Festive — ${oreFestive} ore × ${fmt(t)}`,                                   val: plataFestive },
+    { show: oreNoapte > 0,    col:'var(--accent)',  lbl:`Noapte 25% — ${oreNoapte} ore × ${fmt(t*0.25)}`,                            val: plataNoapte },
+    { show: oreCapSectie > 0, col:'var(--accent)',  lbl:`Cap Secție 50% — ${oreCapSectie} ore × ${fmt(t*0.50)}`,                     val: plataCapSect },
+    { show: oreScoala > 0,    col:'var(--text)',    lbl:`Ore Școală — ${oreScoala} ore × ${fmt(t)}`,                                 val: plataScoala },
+    { show: oreFormator > 0,  col:'var(--text)',    lbl:`Formator — ${oreFormator} ore × ${fmt(t)}`,                                 val: plataFormator },
+  ];
 
-    // Total brut
-    html += `<div class="brow sep">
-      <span class="lbl">Total BRUT</span>
-      <span class="val" style="color:var(--accent);font-size:15px;">${fmt(totalBrut)} RON</span>
-    </div>`;
+  rows.filter(r => r.show).forEach(r => {
+    html += `<div class="brow"><span class="lbl">${r.lbl}</span><span class="val" style="color:${r.col}">${fmt(r.val)} RON</span></div>`;
+  });
 
-    // Rețineri
-    html += `<div class="brow sep2">
-      <span class="lbl">Rețineri salariat</span>
-      <span class="val" style="color:var(--accent3)">− ${fmt(totalRetin)} RON</span>
-    </div>`;
-    html += `<div class="brow">
-      <span class="lbl" style="color:var(--accent3)">CAS — 25% din brut</span>
-      <span class="val" style="color:var(--accent3)">− ${fmt(CAS)} RON</span>
-    </div>`;
-    html += `<div class="brow">
-      <span class="lbl" style="color:var(--accent3)">CASS — 10% din brut</span>
-      <span class="val" style="color:var(--accent3)">− ${fmt(CASS)} RON</span>
-    </div>`;
-    html += `<div class="brow">
-      <span class="lbl" style="color:var(--accent3)">Impozit venit — 10% din (brut−CAS−CASS)</span>
-      <span class="val" style="color:var(--accent3)">− ${fmt(impozit)} RON</span>
-    </div>`;
+  html += `<div class="brow sep"><span class="lbl">Venit BRUT</span><span class="val" style="color:var(--accent);font-size:15px;">${fmt(totalBrut)} RON</span></div>`;
 
-    // Net
-    html += `<div class="brow grand">
-      <span class="lbl">Salariu NET</span>
-      <span class="val" style="color:var(--accent2);font-size:16px;">${fmt(totalNet)} RON</span>
-    </div>`;
-
-    if (totalBonuri > 0) {
-      html += `<div class="brow">
-        <span class="lbl" style="color:var(--accent2)">+ Bonuri de masă — ${nrBonuri} × ${valoareBon} RON</span>
-        <span class="val" style="color:var(--accent2)">+ ${fmt(totalBonuri)} RON</span>
-      </div>`;
-    }
+  if (totalBonuri > 0) {
+    html += `<div class="brow"><span class="lbl" style="color:var(--accent2)">+ Bonuri masă (${nrBonuri} × ${fmt(valoareBon)} RON)</span><span class="val" style="color:var(--accent2)">+ ${fmt(totalBonuri)} RON</span></div>`;
+    html += `<div class="brow"><span class="lbl" style="color:var(--muted);font-size:11px;">Baza CASS = Brut + Bonuri = ${fmt(bazaCASS)} RON</span><span class="val" style="color:var(--muted);font-size:11px;"></span></div>`;
   }
+
+  html += `<div class="brow sep2"><span class="lbl">Rețineri</span><span class="val" style="color:var(--accent3)"></span></div>`;
+  html += `<div class="brow"><span class="lbl" style="color:var(--accent3)">CASS — 10% din ${fmt(bazaCASS)}</span><span class="val" style="color:var(--accent3)">− ${fmt(CASS)} RON</span></div>`;
+  html += `<div class="brow"><span class="lbl" style="color:var(--accent3)">CAS — 25% din ${fmt(bazaCAS)}</span><span class="val" style="color:var(--accent3)">− ${fmt(CAS)} RON</span></div>`;
+
+  html += `<div class="brow sep"><span class="lbl">Venit net (Brut − CAS − CASS)</span><span class="val" style="color:#6b9fff;font-size:14px;">${fmt(veniturNet)} RON</span></div>`;
+
+  if (totalBonuri > 0 || deducereBaza > 0 || deducereSuplim > 0) {
+    html += `<div class="brow"><span class="lbl" style="color:var(--muted);font-size:11px;">Baza impozit = net ${deducereBaza > 0 ? `+ bonuri − ded.bază` : totalBonuri > 0 ? `+ bonuri` : ''} ${deducereSuplim > 0 ? `− ded.suplim.` : ''} = ${fmt(bazaImpozit)} RON</span><span class="val"></span></div>`;
+  }
+
+  html += `<div class="brow"><span class="lbl" style="color:var(--accent3)">Impozit venit — 10% din ${fmt(bazaImpozit)}</span><span class="val" style="color:var(--accent3)">− ${fmt(impozit)} RON</span></div>`;
+
+  html += `<div class="brow grand"><span class="lbl">Salar net</span><span class="val" style="color:var(--accent2);font-size:16px;">${fmt(salarNet)} RON</span></div>`;
 
   document.getElementById('breakdown').innerHTML = html;
 
-  // Rezultate mari
-  document.getElementById('rezAvans').textContent         = fmtInt(avans) + ' RON';
+  // Rezultate
+  document.getElementById('rezAvans').textContent         = fmtInt(avansRon) + ' RON';
   document.getElementById('rezLichidare').textContent     = fmtInt(lichidare) + ' RON';
-  document.getElementById('rezAvansInfo').textContent     = `${procentAvans}% din încadrare ${fmt(salBaza)} RON`;
-  document.getElementById('rezLichidareInfo').textContent = `Rest ${100-procentAvans}% din net ${fmt(totalNet)} RON`;
+  document.getElementById('rezAvansInfo').textContent     = `Avans + alte: ${fmtInt(avansRon + alteAvansuri)} RON`;
+  document.getElementById('rezLichidareInfo').textContent = `Din salar net ${fmtInt(salarNet)} RON`;
 }
 
 calculeaza();
 </script>
+
 </body>
 </html>
