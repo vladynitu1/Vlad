@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>EMX — Document Browser</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+–red: #E8212B;
+–bg: #080808;
+–s1: #111;
+–s2: #161616;
+–s3: #1c1c1c;
+–border: rgba(255,255,255,0.07);
+–border2: rgba(255,255,255,0.13);
+–text: #efefef;
+–text2: #888;
+–text3: #444;
+}
+
+- { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+body {
+background: var(–bg);
+color: var(–text);
+font-family: ‘Inter’, sans-serif;
+min-height: 100vh;
+overscroll-behavior: none;
+}
+
+/* BANNER */
+.banner {
+background: #0c0c0c;
+border-bottom: 1px solid var(–border);
+padding: 0 20px;
+height: 76px;
+display: flex;
+align-items: center;
+gap: 16px;
+position: sticky;
+top: 0;
+z-index: 200;
+}
+.banner-bar {
+width: 3px; height: 42px;
+background: var(–red);
+border-radius: 2px;
+flex-shrink: 0;
+}
+.banner-logo {
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: 48px;
+color: #fff;
+letter-spacing: 7px;
+line-height: 1;
+}
+.banner-sep { width:1px; height:32px; background:var(–border); flex-shrink:0; }
+.banner-meta { display:flex; flex-direction:column; gap:2px; }
+.banner-label {
+font-size: 10px; font-weight: 600;
+color: var(–text2); letter-spacing: 2.5px; text-transform: uppercase;
+}
+.banner-sub {
+font-size: 10px; color: var(–text3);
+font-family: ‘JetBrains Mono’, monospace; letter-spacing: 0.5px;
+}
+
+/* SEARCH */
+.search-wrap {
+padding: 12px 16px;
+background: var(–bg);
+border-bottom: 1px solid var(–border);
+position: sticky;
+top: 76px;
+z-index: 199;
+}
+.search-box {
+display: flex; align-items: center; gap: 10px;
+background: var(–s1);
+border: 1px solid var(–border2);
+border-radius: 12px;
+padding: 0 14px;
+transition: border-color 0.2s;
+}
+.search-box:focus-within { border-color: var(–red); }
+.search-box svg { flex-shrink:0; opacity:0.4; }
+.search-input {
+flex:1; background:none; border:none; outline:none;
+color: var(–text); font-family:‘Inter’,sans-serif; font-size:15px;
+padding: 13px 0;
+}
+.search-input::placeholder { color: var(–text3); }
+.search-clear {
+background:none; border:none; color:var(–text3);
+cursor:pointer; font-size:20px; line-height:1;
+padding:4px; display:none;
+}
+.search-clear.on { display:block; }
+
+/* STATUS */
+.status {
+padding: 9px 16px;
+display: flex; align-items: center; gap: 8px;
+font-family: ‘JetBrains Mono’, monospace; font-size: 11px;
+color: var(–text3); border-bottom: 1px solid var(–border);
+}
+.dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.dot.loading { background:#f59e0b; animation: blink 1s infinite; }
+.dot.ok { background:#22c55e; }
+.dot.err { background:var(–red); }
+@keyframes blink { 0%,100%{opacity:1}50%{opacity:0.15} }
+
+/* CONTENT */
+.content { padding: 16px; }
+
+/* CATEGORY */
+.cat-block { margin-bottom: 8px; }
+
+.cat-header {
+display: flex; align-items: center; gap: 10px;
+padding: 13px 14px;
+background: var(–s1);
+border: 1px solid var(–border);
+border-radius: 11px;
+cursor: pointer;
+user-select: none;
+transition: border-color 0.18s, background 0.18s;
+}
+.cat-header:hover { border-color: var(–border2); background: var(–s2); }
+.cat-header.open { border-color: rgba(232,33,43,0.35); border-bottom-left-radius:0; border-bottom-right-radius:0; }
+
+.cat-dot {
+width:8px; height:8px; border-radius:50%;
+background: var(–red); flex-shrink:0;
+}
+.cat-name { flex:1; font-size:14px; font-weight:600; color:var(–text); }
+.cat-count {
+font-family:‘JetBrains Mono’,monospace; font-size:10px;
+color:var(–text3); background:var(–bg);
+border:1px solid var(–border); padding:3px 8px; border-radius:20px;
+}
+.cat-chevron {
+color:var(–text3); font-size:11px;
+transition:transform 0.2s; flex-shrink:0;
+}
+.cat-chevron.open { transform:rotate(90deg); }
+
+/* SUBCATEGORY */
+.sub-block {
+border-left: 1px solid var(–border);
+border-right: 1px solid var(–border);
+background: var(–s2);
+}
+.sub-block:last-child {
+border-bottom: 1px solid var(–border);
+border-bottom-left-radius: 11px;
+border-bottom-right-radius: 11px;
+}
+
+.sub-header {
+display: flex; align-items: center; gap: 10px;
+padding: 11px 14px 11px 20px;
+cursor: pointer; user-select: none;
+border-bottom: 1px solid var(–border);
+transition: background 0.15s;
+}
+.sub-header:hover { background: var(–s3); }
+.sub-dot {
+width:5px; height:5px; border-radius:50%;
+background:var(–red); opacity:0.6; flex-shrink:0;
+}
+.sub-name { flex:1; font-size:13px; font-weight:500; color:var(–text2); }
+.sub-count {
+font-family:‘JetBrains Mono’,monospace; font-size:10px;
+color:var(–text3);
+}
+.sub-chevron { color:var(–text3); font-size:10px; transition:transform 0.2s; flex-shrink:0; }
+.sub-chevron.open { transform:rotate(90deg); }
+
+/* FILE LIST */
+.file-list {
+display:flex; flex-direction:column;
+}
+.file-list.hidden { display:none; }
+
+/* FILE ROW */
+.file-row {
+display: flex; align-items: center; gap: 12px;
+padding: 12px 14px 12px 28px;
+border-bottom: 1px solid var(–border);
+cursor: pointer;
+transition: background 0.15s;
+text-decoration: none;
+}
+.file-row:last-child { border-bottom: none; }
+.file-row:hover, .file-row:active { background: var(–s3); }
+
+/* Root-level files (no subfolder indent) */
+.file-row.root-file { padding-left: 14px; }
+
+.file-icon {
+width: 36px; height: 36px;
+border-radius: 8px;
+display: flex; align-items:center; justify-content:center;
+font-size: 17px; flex-shrink:0;
+}
+.file-icon.pdf { background: rgba(232,33,43,0.12); }
+.file-icon.image { background: rgba(59,130,246,0.12); }
+.file-icon.other { background: rgba(255,255,255,0.05); }
+
+.file-info { flex:1; min-width:0; }
+.file-name {
+font-size: 13px; font-weight: 500; color: var(–text);
+white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+margin-bottom: 3px;
+}
+.file-type {
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 10px; color: var(–text3); text-transform: uppercase;
+letter-spacing: 0.5px;
+}
+.file-arrow { color: var(–text3); font-size: 13px; flex-shrink:0; }
+
+/* NO RESULTS */
+.no-results {
+text-align:center; padding:60px 20px; color:var(–text3); font-size:14px;
+}
+
+/* MODAL */
+.modal {
+display:none; position:fixed; inset:0;
+background:rgba(0,0,0,0.95); z-index:1000; flex-direction:column;
+}
+.modal.open { display:flex; }
+.modal-top {
+background:#0e0e0e; border-bottom:1px solid var(–border);
+padding:14px 16px; display:flex; align-items:center; gap:12px; flex-shrink:0;
+}
+.modal-back {
+background:var(–s2); border:1px solid var(–border);
+color:var(–text); width:36px; height:36px; border-radius:9px;
+font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+transition:background 0.15s; flex-shrink:0;
+}
+.modal-back:hover { background:var(–red); border-color:var(–red); }
+.modal-title {
+flex:1; font-size:13px; font-weight:500; color:var(–text);
+white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.modal-open {
+background:var(–red); border:none; color:#fff;
+padding:9px 16px; border-radius:9px; cursor:pointer;
+font-family:‘Bebas Neue’,sans-serif; font-size:17px; letter-spacing:1px;
+text-decoration:none; flex-shrink:0;
+}
+.modal-body {
+flex:1; overflow:auto; display:flex;
+align-items:center; justify-content:center;
+}
+.modal-body iframe { width:100%; height:100%; border:none; }
+.modal-body img {
+max-width:100%; max-height:100%;
+object-fit:contain; padding:16px;
+}
+
+::-webkit-scrollbar { width:4px; }
+::-webkit-scrollbar-track { background:var(–bg); }
+::-webkit-scrollbar-thumb { background:#222; border-radius:2px; }
+</style>
+
+</head>
+<body>
+
+<div class="banner">
+  <div class="banner-bar"></div>
+  <div class="banner-logo">EMX</div>
+  <div class="banner-sep"></div>
+  <div class="banner-meta">
+    <div class="banner-label">Document Browser</div>
+    <div class="banner-sub">Transferoviar Călători</div>
+  </div>
+</div>
+
+<div class="search-wrap">
+  <div class="search-box">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input class="search-input" id="searchInput" type="search" placeholder="Caută fișiere...">
+    <button class="search-clear" id="searchClear" onclick="clearSearch()">×</button>
+  </div>
+</div>
+
+<div class="status">
+  <div class="dot loading" id="dot"></div>
+  <span id="statusText">Se încarcă...</span>
+</div>
+
+<div class="content" id="content"></div>
+
+<div class="modal" id="modal">
+  <div class="modal-top">
+    <button class="modal-back" onclick="closeModal()">←</button>
+    <span class="modal-title" id="modalTitle"></span>
+    <a class="modal-open" id="modalLink" href="#" target="_blank">DESCHIDE</a>
+  </div>
+  <div class="modal-body" id="modalBody"></div>
+</div>
+
+<script>
+const API_KEY = 'AIzaSyAkrWRtDdBb0s6eqRnTbJbuAfqxe0H5Kok';
+const ROOT_ID = '1mqSeG9xrvCKZhgI4ztNVqKCj2ciUq4Wr';
+const FOLDER  = 'application/vnd.google-apps.folder';
+
+// All files flat list for search
+let allFiles = [];
+
+function setStatus(state, msg) {
+  document.getElementById('dot').className = 'dot ' + state;
+  document.getElementById('statusText').textContent = msg;
+}
+
+async function listFolder(id) {
+  const q = encodeURIComponent(`'${id}' in parents and trashed=false`);
+  const url = `https://www.googleapis.com/drive/v3/files?q=${q}&key=${API_KEY}&fields=files(id,name,mimeType)&pageSize=200&orderBy=name`;
+  const r = await fetch(url);
+  const d = await r.json();
+  if (!r.ok) throw new Error(d.error?.message || 'API error ' + r.status);
+  return d.files || [];
+}
+
+function fileType(mime, name) {
+  if (mime === 'application/pdf') return 'pdf';
+  if (mime && mime.startsWith('image/')) return 'image';
+  const ext = (name||'').split('.').pop().toLowerCase();
+  if (ext === 'pdf') return 'pdf';
+  if (['jpg','jpeg','png','gif','webp','bmp','svg'].includes(ext)) return 'image';
+  return null;
+}
+
+// Build tree: { name, id, files[], subfolders[] }
+async function buildTree(id, name, depth) {
+  setStatus('loading', `Se încarcă: ${name}…`);
+  const items = await listFolder(id);
+  const folders = items.filter(f => f.mimeType === FOLDER);
+  const files   = items.filter(f => fileType(f.mimeType, f.name));
+
+  const subfolders = [];
+  for (const f of folders) {
+    const child = await buildTree(f.id, f.name, depth + 1);
+    subfolders.push(child);
+  }
+
+  // Collect for search
+  files.forEach(f => allFiles.push({ ...f, ftype: fileType(f.mimeType, f.name) }));
+
+  return { name, id, files, subfolders };
+}
+
+async function load() {
+  try {
+    const rootItems = await listFolder(ROOT_ID);
+    const rootFolders = rootItems.filter(f => f.mimeType === FOLDER);
+    const rootFiles   = rootItems.filter(f => fileType(f.mimeType, f.name));
+
+    rootFiles.forEach(f => allFiles.push({ ...f, ftype: fileType(f.mimeType, f.name) }));
+
+    const categories = [];
+    for (const folder of rootFolders) {
+      const tree = await buildTree(folder.id, folder.name, 0);
+      categories.push(tree);
+    }
+
+    const total = allFiles.length;
+    setStatus('ok', `${total} fișiere în ${categories.length} categorii`);
+
+    renderAll(categories, rootFiles);
+  } catch(e) {
+    setStatus('err', 'Eroare: ' + e.message);
+    console.error(e);
+  }
+}
+
+function renderAll(categories, rootFiles) {
+  const content = document.getElementById('content');
+  content.innerHTML = '';
+
+  // Root files without category
+  if (rootFiles.length) {
+    const block = document.createElement('div');
+    block.className = 'cat-block';
+    block.innerHTML = renderCatHeader('General', rootFiles.length, true);
+    const fileList = document.createElement('div');
+    fileList.className = 'file-list sub-block';
+    fileList.style.borderRadius = '0 0 11px 11px';
+    rootFiles.forEach(f => {
+      const ft = fileType(f.mimeType, f.name);
+      if (ft) fileList.appendChild(makeFileRow(f, ft, true));
+    });
+    block.appendChild(fileList);
+    content.appendChild(block);
+    block.querySelector('.cat-header').addEventListener('click', () => toggleCat(block));
+  }
+
+  // Categories with subfolders
+  for (const cat of categories) {
+    const block = renderCatBlock(cat);
+    content.appendChild(block);
+  }
+}
+
+function renderCatHeader(name, count, startOpen) {
+  return `
+    <div class="cat-header ${startOpen ? 'open' : ''}">
+      <div class="cat-dot"></div>
+      <div class="cat-name">${esc(name)}</div>
+      <div class="cat-count">${count}</div>
+      <span class="cat-chevron ${startOpen ? 'open' : ''}">▶</span>
+    </div>`;
+}
+
+function renderCatBlock(cat) {
+  const totalFiles = countFiles(cat);
+  const block = document.createElement('div');
+  block.className = 'cat-block';
+  block.innerHTML = renderCatHeader(cat.name, totalFiles, false);
+
+  const body = document.createElement('div');
+  body.className = 'hidden'; // collapsed by default
+
+  // Direct files in this folder
+  if (cat.files.length) {
+    const fl = document.createElement('div');
+    fl.className = 'file-list sub-block';
+    cat.files.forEach(f => {
+      const ft = fileType(f.mimeType, f.name);
+      if (ft) fl.appendChild(makeFileRow(f, ft, false));
+    });
+    body.appendChild(fl);
+  }
+
+  // Subfolders
+  for (const sub of cat.subfolders) {
+    body.appendChild(renderSubBlock(sub, 1));
+  }
+
+  // Round last child bottom
+  const children = body.children;
+  if (children.length > 0) {
+    const last = children[children.length - 1];
+    last.style.borderBottomLeftRadius = '11px';
+    last.style.borderBottomRightRadius = '11px';
+  }
+
+  block.appendChild(body);
+  block.querySelector('.cat-header').addEventListener('click', () => toggleCat(block, body));
+  return block;
+}
+
+function renderSubBlock(sub, depth) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'sub-block';
+  wrapper.style.borderLeft = '1px solid var(--border)';
+  wrapper.style.borderRight = '1px solid var(--border)';
+  wrapper.style.borderTop = '1px solid var(--border)';
+
+  const header = document.createElement('div');
+  header.className = 'sub-header';
+  header.innerHTML = `
+    <div class="sub-dot"></div>
+    <div class="sub-name">${esc(sub.name)}</div>
+    <div class="sub-count">${countFiles(sub)}</div>
+    <span class="sub-chevron">▶</span>`;
+
+  const body = document.createElement('div');
+  body.className = 'file-list hidden';
+
+  // Files in this subfolder
+  sub.files.forEach(f => {
+    const ft = fileType(f.mimeType, f.name);
+    if (ft) body.appendChild(makeFileRow(f, ft, false));
+  });
+
+  // Nested subfolders
+  for (const child of sub.subfolders) {
+    body.appendChild(renderSubBlock(child, depth + 1));
+  }
+
+  header.addEventListener('click', () => {
+    const open = !body.classList.contains('hidden');
+    body.classList.toggle('hidden', open);
+    header.querySelector('.sub-chevron').classList.toggle('open', !open);
+  });
+
+  wrapper.appendChild(header);
+  wrapper.appendChild(body);
+  return wrapper;
+}
+
+function toggleCat(block, body) {
+  const header = block.querySelector('.cat-header');
+  const chevron = header.querySelector('.cat-chevron');
+  if (body) {
+    const open = !body.classList.contains('hidden');
+    body.classList.toggle('hidden', open);
+    header.classList.toggle('open', !open);
+    chevron.classList.toggle('open', !open);
+  }
+}
+
+function countFiles(node) {
+  let n = node.files.length;
+  for (const sub of node.subfolders) n += countFiles(sub);
+  return n;
+}
+
+function makeFileRow(file, type, isRoot) {
+  const row = document.createElement('div');
+  row.className = 'file-row' + (isRoot ? ' root-file' : '');
+
+  const iconMap = { pdf: '📄', image: '🖼️', other: '📎' };
+  const icon = iconMap[type] || '📎';
+
+  row.innerHTML = `
+    <div class="file-icon ${type}"><span>${icon}</span></div>
+    <div class="file-info">
+      <div class="file-name">${esc(file.name)}</div>
+      <div class="file-type">${type}</div>
+    </div>
+    <span class="file-arrow">›</span>`;
+
+  row.addEventListener('click', () => openFile(file, type));
+  return row;
+}
+
+// ── SEARCH ──
+document.getElementById('searchInput').addEventListener('input', function() {
+  const q = this.value.trim().toLowerCase();
+  document.getElementById('searchClear').classList.toggle('on', q.length > 0);
+
+  if (!q) {
+    renderSearchResults(null);
+    return;
+  }
+  const results = allFiles.filter(f => f.name.toLowerCase().includes(q));
+  renderSearchResults(results);
+});
+
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchClear').classList.remove('on');
+  renderSearchResults(null);
+}
+
+let _savedContent = null;
+function renderSearchResults(results) {
+  const content = document.getElementById('content');
+
+  if (results === null) {
+    // Restore original
+    if (_savedContent) {
+      content.innerHTML = '';
+      _savedContent.forEach(c => content.appendChild(c));
+      _savedContent = null;
+    }
+    return;
+  }
+
+  // Save original
+  if (!_savedContent) {
+    _savedContent = Array.from(content.children);
+  }
+
+  content.innerHTML = '';
+
+  if (!results.length) {
+    content.innerHTML = '<div class="no-results"><div style="font-size:36px;margin-bottom:12px">🔍</div>Niciun fișier găsit</div>';
+    return;
+  }
+
+  const list = document.createElement('div');
+  list.className = 'cat-block';
+  list.innerHTML = `<div class="cat-header open"><div class="cat-dot"></div><div class="cat-name">Rezultate căutare</div><div class="cat-count">${results.length}</div></div>`;
+  const fl = document.createElement('div');
+  fl.className = 'file-list sub-block';
+  fl.style.cssText = 'border-radius:0 0 11px 11px; border:1px solid var(--border); border-top:none;';
+  results.forEach(f => fl.appendChild(makeFileRow(f, f.ftype, true)));
+  list.appendChild(fl);
+  content.appendChild(list);
+}
+
+// ── MODAL ──
+function openFile(file, type) {
+  document.getElementById('modalTitle').textContent = file.name;
+  document.getElementById('modalLink').href = `https://drive.google.com/file/d/${file.id}/view`;
+  const body = document.getElementById('modalBody');
+  body.innerHTML = '';
+
+  if (type === 'pdf') {
+    const iframe = document.createElement('iframe');
+    iframe.src = `https://drive.google.com/file/d/${file.id}/preview`;
+    iframe.style.cssText = 'width:100%;height:100%;border:none;';
+    body.appendChild(iframe);
+  } else {
+    const img = document.createElement('img');
+    img.src = `https://drive.google.com/thumbnail?id=${file.id}&sz=w1600`;
+    img.alt = file.name;
+    body.appendChild(img);
+  }
+
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  document.getElementById('modalBody').innerHTML = '';
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+function esc(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+load();
+</script>
+
+</body>
+</html>
