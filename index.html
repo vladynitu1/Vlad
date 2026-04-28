@@ -498,107 +498,140 @@ function applyTurnus(num,m,d){
     dd1.on=calc.on;
     dd1.of=isFest(m,d)?calc.ol:'';
   } else {
-    // Turnus pe 2 zile cu N segmente
-    // Impartim segmentele in zi1 si zi2 dupa miezul noptii
-    // Un segment apartine zi2 daca prezentarea lui e mai mica decat iesirea segmentului anterior
-    // (adica a trecut de 00:00)
+    // Turnus pe 2 zile - impartim TOTUL la ora 00:00
+    // Fiecare segment si fiecare dormitor e splituit exact la miezul noptii
 
-    const segs=t.segmente;
-
-    // Convertim prez/iesire la minute absolute pentru comparare
-    function toAbsMin(hhmm, baseDay){
-      if(!hhmm||!hhmm.includes(':'))return -1;
-      const [h,mn]=hhmm.split(':').map(Number);
-      return baseDay*1440 + h*60 + mn;
+    // Converteste HH:MM la minute de la 00:00
+    function hm(s){
+      if(!s||!s.includes(':'))return -1;
+      const [h,m]=s.split(':').map(Number);
+      return h*60+m;
     }
 
-    // Impartim segmentele: zi1 = segmente inainte de miezul noptii, zi2 = dupa
-    let segsZi1=[], segsZi2=[];
-    let prevIesireAbs = toAbsMin(segs[0].prez, 0);
-    
+    // Minute de noapte dintr-un interval [a,b] unde a si b sunt minute absolute (pot depasi 1440)
+    function nightMinsAbs(aAbs, bAbs){
+      // Noapte = 22:00-06:00 = 1320-1560 (sau 0-360 din ziua urmatoare)
+      // Calculam minutele in intervalul [a,b] care sunt in 22:00-24:00 sau 00:00-06:00
+      let n=0;
+      for(let t=aAbs;t<bAbs;t++){
+        const minInDay=t%1440;
+        if(minInDay>=1320||minInDay<360)n++;
+      }
+      return n;
+    }
+
+    // Construim timeline-ul complet al turnusului cu minute absolute
+    // Ziua 1 incepe la ora de prezentare a primului segment
+    const segs=t.segmente;
+    let timeline=[]; // [{tip:'lucru'|'dormitor', start, end}] in minute absolute
+
+    let cursor=hm(segs[0].prez);
+    if(cursor<0)cursor=0;
+
     for(let i=0;i<segs.length;i++){
       const sg=segs[i];
-      const prezAbs=toAbsMin(sg.prez, segsZi2.length>0?1:0);
-      const iesireAbs=toAbsMin(sg.iesire, segsZi2.length>0?1:0);
-      
+      let sgPrez=hm(sg.prez);
+      let sgIes=hm(sg.iesire);
+
+      // Daca e primul segment, start = prez
       if(i===0){
-        segsZi1.push(sg);
-        prevIesireAbs=toAbsMin(sg.iesire,0);
+        cursor=sgPrez;
+        // Daca iesirea e mai mica decat prezentarea = trece de miezul noptii
+        const iesAbs=sgIes<sgPrez?sgIes+1440:sgIes;
+        timeline.push({tip:'lucru', start:cursor, end:iesAbs});
+        cursor=iesAbs;
       } else {
-        const prezCurent=toAbsMin(sg.prez, 0);
-        // Daca prezentarea e mai mica decat iesirea anterioara = a trecut miezul noptii
-        if(prezCurent < (prevIesireAbs % 1440) && segsZi2.length===0){
-          segsZi2.push(sg);
-        } else if(segsZi2.length>0){
-          segsZi2.push(sg);
+        // Dormitor: de la cursor pana la prez segment curent
+        let prezAbs=sgPrez;
+        // Daca prez e mai mic decat cursor%1440 = e in ziua urmatoare
+        if(sgPrez<(cursor%1440)){
+          prezAbs=sgPrez+1440;
+        } else if(sgPrez<cursor){
+          prezAbs=sgPrez+1440;
         } else {
-          segsZi1.push(sg);
-          prevIesireAbs=toAbsMin(sg.iesire,0);
+          // Prez poate fi in aceeasi zi dar mai tarziu
+          prezAbs=Math.floor(cursor/1440)*1440+sgPrez;
+          if(prezAbs<cursor)prezAbs+=1440;
+        }
+        if(prezAbs>cursor){
+          timeline.push({tip:'dormitor', start:cursor, end:prezAbs});
+        }
+        cursor=prezAbs;
+
+        // Segment lucru
+        let iesAbs=Math.floor(cursor/1440)*1440+sgIes;
+        if(iesAbs<=cursor)iesAbs+=1440;
+        timeline.push({tip:'lucru', start:cursor, end:iesAbs});
+        cursor=iesAbs;
+      }
+    }
+
+    // Acum impartim timeline-ul la 1440 (miezul noptii)
+    const midnight=1440;
+    let olZ1=0,ooZ1=0,onZ1=0;
+    let olZ2=0,ooZ2=0,onZ2=0;
+
+    for(const ev of timeline){
+      const s=ev.start, e=ev.end;
+      if(e<=midnight){
+        // Totul pe zi 1
+        const dur=e-s;
+        if(ev.tip==='lucru'){olZ1+=dur;onZ1+=nightMinsAbs(s,e);}
+        else{ooZ1+=dur;}
+      } else if(s>=midnight){
+        // Totul pe zi 2
+        const dur=e-s;
+        if(ev.tip==='lucru'){olZ2+=dur;onZ2+=nightMinsAbs(s,e);}
+        else{ooZ2+=dur;}
+      } else {
+        // Split la midnight
+        const durZ1=midnight-s;
+        const durZ2=e-midnight;
+        if(ev.tip==='lucru'){
+          olZ1+=durZ1;onZ1+=nightMinsAbs(s,midnight);
+          olZ2+=durZ2;onZ2+=nightMinsAbs(midnight,e);
+        } else {
+          ooZ1+=durZ1;
+          ooZ2+=durZ2;
         }
       }
     }
-    // Daca nu s-a detectat zi2, ultimul segment e zi2
-    if(segsZi2.length===0 && segsZi1.length>1){
-      segsZi2=[segsZi1.pop()];
+
+    // Prez/iesire zi1 = primul si ultimul segment din zi1
+    const firstSeg=segs[0];
+    // Ultimul segment care se termina inainte sau la miezul noptii
+    let lastSegZi1=firstSeg;
+    let firstSegZi2=null;
+    let cursor2=hm(segs[0].prez);
+    for(let i=0;i<segs.length;i++){
+      const sg=segs[i];
+      const sgPrezAbs=timeline.filter(e=>e.tip==='lucru')[i]?.start||0;
+      const sgIesAbs=timeline.filter(e=>e.tip==='lucru')[i]?.end||0;
+      if(sgIesAbs<=midnight){lastSegZi1=sg;}
+      else if(firstSegZi2===null){firstSegZi2=sg;}
     }
 
-    // ── ZI 1: suma segmentelor zi1 ──
-    let olZi1=0, onZi1=0, ooZi1=0;
-    for(let i=0;i<segsZi1.length;i++){
-      const sg=segsZi1[i];
-      const mins=diffm(sg.prez,sg.iesire);
-      olZi1+=mins>0?mins:0;
-      onZi1+=nightMins(sg.prez,sg.iesire);
-      // Odihna dintre segmente din zi1
-      if(i>0){
-        const dormMins=diffm(segsZi1[i-1].iesire, sg.prez);
-        if(dormMins>0)ooZi1+=dormMins;
-      }
-    }
-    // Odihna dintre ultimul seg zi1 si primul seg zi2 (dormitorul de noapte)
-    let ooNoapte=0;
-    if(segsZi1.length>0 && segsZi2.length>0){
-      const ultZi1=segsZi1[segsZi1.length-1].iesire;
-      const primZi2=segsZi2[0].prez;
-      // Dormitorul trece de miezul noptii: ex 21:46->03:26
-      // Calculam: (24:00-21:46) + 03:26 = 2:14 + 3:26 = 5:40
-      const p1=ultZi1.split(':').map(Number);
-      const p2=primZi2.split(':').map(Number);
-      const minsPanaLaMiez=(24*60)-(p1[0]*60+p1[1]);
-      const minsDupaMiez=p2[0]*60+p2[1];
-      ooNoapte=minsPanaLaMiez+minsDupaMiez;
-    }
+    // Aplica zi 1
+    dd1.prez=firstSeg.prez||'';
+    dd1.iesire=lastSegZi1.iesire||'';
+    dd1.ol=fmtm(olZ1);
+    dd1.oo=fmtm(ooZ1);
+    dd1.on=fmtm(onZ1);
+    dd1.of=isFest(m,d)&&olZ1>0?fmtm(olZ1):'';
 
-    dd1.ol=fmtm(olZi1);
-    dd1.oo=fmtm(ooZi1+ooNoapte); // toata odihna din zi1 + dormitorul de noapte
-    dd1.on=fmtm(onZi1);
-    dd1.of=isFest(m,d)?fmtm(olZi1):'';
-    dd1.prez=segsZi1[0].prez||'';
-    dd1.iesire=segsZi1[segsZi1.length-1].iesire||'';
-
-    // ── ZI 2: suma segmentelor zi2 ──
+    // Aplica zi 2
     let m2=m,d2=d+1;
     if(d2>daysInM){m2=m+1;d2=1;}
-    if(m2<=11&&segsZi2.length>0){
-      let olZi2=0, onZi2=0, ooZi2=0;
-      for(let i=0;i<segsZi2.length;i++){
-        const sg=segsZi2[i];
-        const mins=diffm(sg.prez,sg.iesire);
-        olZi2+=mins>0?mins:0;
-        onZi2+=nightMins(sg.prez,sg.iesire);
-        if(i>0){
-          const dormMins=diffm(segsZi2[i-1].iesire, sg.prez);
-          if(dormMins>0)ooZi2+=dormMins;
-        }
-      }
+    if(m2<=11){
+      const lastSeg=segs[segs.length-1];
       const dd2=gd(m2,d2);
       dd2.tn=`T${num}`;
-      dd2.prez=segsZi2[0].prez||'';
-      dd2.iesire=segsZi2[segsZi2.length-1].iesire||'';
-      dd2.ol=fmtm(olZi2);
-      dd2.oo=fmtm(ooZi2);
-      dd2.on=fmtm(onZi2);
-      dd2.of=isFest(m2,d2)?fmtm(olZi2):'';
+      dd2.prez=firstSegZi2?firstSegZi2.prez:lastSeg.prez||'';
+      dd2.iesire=lastSeg.iesire||'';
+      dd2.ol=fmtm(olZ2);
+      dd2.oo=fmtm(ooZ2);
+      dd2.on=fmtm(onZ2);
+      dd2.of=isFest(m2,d2)&&olZ2>0?fmtm(olZ2):'';
       dd2.note=(t.note||'')+' (zi 2)';
       dd2.overflow=true;
     }
