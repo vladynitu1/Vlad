@@ -21,17 +21,22 @@ body{background:var(--bg);color:var(--txt);font-family:'Exo 2',sans-serif;min-he
 body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,200,232,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(0,200,232,0.018) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
 .app{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:14px}
 
-.hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;background:linear-gradient(135deg,var(--surf),var(--surf2));border:1px solid var(--bord2);border-radius:12px;margin-bottom:12px;position:relative;overflow:hidden;flex-wrap:wrap;gap:10px}
-.hdr::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--acc),var(--grn),transparent)}
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;background:linear-gradient(135deg,#0a0a1a,#0d1530,#0a1a0a);border:1px solid transparent;border-radius:16px;margin-bottom:12px;position:relative;overflow:hidden;flex-wrap:wrap;gap:10px;box-shadow:0 0 40px rgba(0,200,255,0.08),0 0 80px rgba(0,255,100,0.04)}
+.hdr::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;border-radius:16px;padding:1px;background:linear-gradient(135deg,var(--acc),transparent,var(--grn),transparent,var(--acc));-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+.hdr::after{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(0,200,255,0.03),transparent);animation:hdrShine 4s infinite;pointer-events:none}
+@keyframes hdrShine{0%{left:-100%}100%{left:200%}}
 .hdr h1{font-family:'Rajdhani',sans-serif;font-size:1.4rem;font-weight:700;letter-spacing:3px;color:var(--acc);text-transform:uppercase}
 .hdr p{font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--txtd);letter-spacing:2px;margin-top:2px}
 .emx-brand{display:flex;flex-direction:column;justify-content:center;gap:4px}
 .emx-logo{display:flex;align-items:center;gap:0px;line-height:1}
-.emx-e{font-family:'Rajdhani',sans-serif;font-size:2.4rem;font-weight:900;color:var(--acc);letter-spacing:-1px;text-shadow:0 0 20px var(--acc),0 0 40px var(--acc)}
-.emx-m{font-family:'Rajdhani',sans-serif;font-size:2.4rem;font-weight:900;color:#fff;letter-spacing:-1px;text-shadow:0 0 10px rgba(255,255,255,0.3)}
-.emx-x{font-family:'Rajdhani',sans-serif;font-size:2.4rem;font-weight:900;color:var(--grn);letter-spacing:-1px;text-shadow:0 0 20px var(--grn),0 0 40px var(--grn)}
-.emx-sub{font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--txtd);letter-spacing:3px;text-transform:uppercase;margin-top:2px}
-.gh-status-inline{font-size:.65rem;font-family:'Share Tech Mono',monospace;color:var(--grn);letter-spacing:1px}
+.emx-e{font-family:'Rajdhani',sans-serif;font-size:2.8rem;font-weight:900;color:var(--acc);letter-spacing:-2px;text-shadow:0 0 30px var(--acc),0 0 60px rgba(0,200,255,0.5)}
+.emx-m{font-family:'Rajdhani',sans-serif;font-size:2.8rem;font-weight:900;color:#fff;letter-spacing:-2px;text-shadow:0 0 20px rgba(255,255,255,0.4)}
+.emx-x{font-family:'Rajdhani',sans-serif;font-size:2.8rem;font-weight:900;color:var(--grn);letter-spacing:-2px;text-shadow:0 0 30px var(--grn),0 0 60px rgba(0,255,100,0.5)}
+.emx-dot{font-size:.6rem;color:var(--acc);margin-left:6px;animation:blink 1.5s infinite;align-self:center}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+.emx-sub{display:flex;flex-direction:column;gap:2px;margin-top:3px}
+.emx-tag{font-family:'Share Tech Mono',monospace;font-size:0.55rem;color:var(--txtd);letter-spacing:3px;text-transform:uppercase}
+.gh-status-inline{font-size:.62rem;font-family:'Share Tech Mono',monospace;color:var(--grn);letter-spacing:1px}
 .btn-b{background:linear-gradient(135deg,#1a3a5c,#0d2035);color:#4db8ff;border:1px solid #4db8ff;border-radius:7px;padding:6px 12px;font-size:.72rem;cursor:pointer;font-family:'Share Tech Mono',monospace;letter-spacing:1px;transition:all .2s}
 .btn-b:hover{background:#4db8ff;color:#000}
 .hdr-right{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
@@ -188,8 +193,10 @@ tr.totrow td:first-child{color:var(--acc);text-transform:uppercase;padding-left:
   <div class="emx-brand">
     <div class="emx-logo">
       <span class="emx-e">E</span><span class="emx-m">M</span><span class="emx-x">X</span>
+      <span class="emx-dot">●</span>
     </div>
     <div class="emx-sub">
+      <span class="emx-tag">EVIDENȚĂ ORE CFR</span>
       <span id="ghStatus" class="gh-status-inline"></span>
     </div>
   </div>
@@ -830,7 +837,7 @@ function renderTags(){
   Object.keys(TN).sort((a,b)=>+a-+b).forEach(k=>{
     const sp=document.createElement('span');
     sp.className='tag'+(+k===12?' t12':'');
-    sp.textContent=`T${k}`;
+    sp.textContent=TN[k].label?`T${k} · ${TN[k].label}`:`T${k}`;
     sp.title=(TN[k].note||'')+' | segs:'+TN[k].segmente.length;
     w.appendChild(sp);
   });
@@ -925,7 +932,6 @@ function renderTable(){
       const tnNum=parseInt(dd.tn.replace(/[Tt]/g,''))||0;
       const bdg=document.createElement('span');
       bdg.className='tbadge'+(tnNum===12?' t12':'');
-      bdg.textContent=dd.tn;bdg.style.marginLeft='3px';
       wrap.appendChild(bdg);
     }
     if(dd.overflow){
@@ -1262,6 +1268,7 @@ function buildAddTnBox(){
     <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
       <div class="tn-field" style="min-width:80px"><label>Cod turnus</label><input id="nCode" placeholder="T13" style="background:var(--surf2);border:1px solid var(--bord2);border-radius:5px;color:var(--acc);font-family:Rajdhani,sans-serif;font-weight:700;font-size:.9rem;padding:4px 7px;width:80px;text-transform:uppercase"></div>
       <div class="tn-field" style="flex:1;min-width:200px"><label>Notă / Trenuri</label><input id="nNote" placeholder="10245→10251 etc." style="background:var(--surf2);border:1px solid var(--bord2);border-radius:5px;color:var(--txt);font-family:Exo 2,sans-serif;font-size:.75rem;padding:4px 7px;width:100%"></div>
+      <div class="tn-field" style="flex:1;min-width:200px"><label>Etichetă (vizibil în tabel)</label><input id="nLabel" placeholder="ex: 10223→10232" style="background:var(--surf2);border:1px solid var(--bord2);border-radius:5px;color:var(--grn);font-size:.75rem;padding:4px 7px;width:100%"></div>
     </div>
     <div id="nSegsWrap"></div>
     <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
@@ -1313,11 +1320,14 @@ function saveNewTN(){
   if(!num||num<1){alert('Cod invalid! Ex: T13');return;}
   const validSegs=newSegs.filter(s=>s.prez&&s.iesire);
   if(validSegs.length===0){alert('Adaugă cel puțin un segment cu prezentare și ieșire!');return;}
-  TN[num]={segmente:validSegs,note:document.getElementById('nNote').value};
+  TN[num]={segmente:validSegs,note:document.getElementById('nNote').value,label:document.getElementById('nLabel').value||''};
   save();renderEditorList();renderTags();
-  document.getElementById('nCode').value='';document.getElementById('nNote').value='';
+  document.getElementById('nCode').value='';
+  document.getElementById('nNote').value='';
+  document.getElementById('nLabel').value='';
+  document.getElementById('nLabel').value='';
   newSegs=[{prez:'',iesire:''},{prez:'',iesire:''}];renderNewSegs();
-  downloadApp();
+  ghSave();
 }
 
 function renderEditorList(){
@@ -1390,10 +1400,15 @@ function renderEditorList(){
     html+=`<div class="seg-actions">
       <button class="btn btn-s btn-sm" onclick="addSegToTN(${k})">+ Segment</button>
       <button class="btn btn-r btn-sm" onclick="removeLastSeg(${k})">- Segment</button>
-    </div>
-    <div class="tn-field wide" style="margin-top:6px"><label>Notă / Trenuri</label><input value="${t.note||''}" onchange="TN[${k}].note=this.value;save()"></div>
-    <div class="calc-note" id="calc_${k}">${calc.ol} lucrate | ${calc.oo} odihnă | ${calc.on} noapte | ${calc.zile} ${calc.zile===1?'zi':'zile'}</div>
-    <button class="btn btn-g btn-sm" style="margin-top:6px;width:100%" onclick="save();ghSave()">💾 Salvează Modificări T${k}</button>`;
+    </div>`;
+    html+=`    <div class="tn-field wide" style="margin-top:6px"><label>Notă / Trenuri</label><input value="${t.note||''}" onchange="TN[${k}].note=this.value;save()"></div>`;
+    html+=`    <div class="calc-note" id="calc_${k}">${calc.ol} lucrate | ${calc.oo} odihnă | ${calc.on} noapte | ${calc.zile} ${calc.zile===1?'zi':'zile'}</div>`;
+    html+=`<div class="tn-field wide" style="margin-top:6px">
+      <label>Etichetă (nume scurt, ex: 10223→10232)</label>
+      <input value="${t.label||''}" placeholder="ex: 10223→10232 Pl.Vest"
+        onchange="TN[${k}].label=this.value;save();renderTags()">
+    </div>`;
+    html+=`<button class="btn btn-g btn-sm" style="margin-top:6px;width:100%" onclick="save();ghSave()">☁️ Salvează T${k} pe GitHub</button>`;
 
     div.innerHTML=html;
     w.appendChild(div);
