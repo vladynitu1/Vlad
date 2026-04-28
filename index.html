@@ -25,6 +25,15 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .hdr::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--acc),var(--grn),transparent)}
 .hdr h1{font-family:'Rajdhani',sans-serif;font-size:1.4rem;font-weight:700;letter-spacing:3px;color:var(--acc);text-transform:uppercase}
 .hdr p{font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--txtd);letter-spacing:2px;margin-top:2px}
+.emx-brand{display:flex;flex-direction:column;justify-content:center;gap:4px}
+.emx-logo{display:flex;align-items:center;gap:0px;line-height:1}
+.emx-e{font-family:'Rajdhani',sans-serif;font-size:2.4rem;font-weight:900;color:var(--acc);letter-spacing:-1px;text-shadow:0 0 20px var(--acc),0 0 40px var(--acc)}
+.emx-m{font-family:'Rajdhani',sans-serif;font-size:2.4rem;font-weight:900;color:#fff;letter-spacing:-1px;text-shadow:0 0 10px rgba(255,255,255,0.3)}
+.emx-x{font-family:'Rajdhani',sans-serif;font-size:2.4rem;font-weight:900;color:var(--grn);letter-spacing:-1px;text-shadow:0 0 20px var(--grn),0 0 40px var(--grn)}
+.emx-sub{font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--txtd);letter-spacing:3px;text-transform:uppercase;margin-top:2px}
+.gh-status-inline{font-size:.65rem;font-family:'Share Tech Mono',monospace;color:var(--grn);letter-spacing:1px}
+.btn-b{background:linear-gradient(135deg,#1a3a5c,#0d2035);color:#4db8ff;border:1px solid #4db8ff;border-radius:7px;padding:6px 12px;font-size:.72rem;cursor:pointer;font-family:'Share Tech Mono',monospace;letter-spacing:1px;transition:all .2s}
+.btn-b:hover{background:#4db8ff;color:#000}
 .hdr-right{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
 
 .btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:7px;font-family:'Rajdhani',sans-serif;font-size:0.82rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;border:none;cursor:pointer;transition:all 0.18s;white-space:nowrap}
@@ -176,18 +185,20 @@ tr.totrow td:first-child{color:var(--acc);text-transform:uppercase;padding-left:
 <div class="app">
 
 <div class="hdr">
-  <div>
-    <h1>EMX</h1>
-    <p>EVIDENȚĂ ORE • TURNUS 1–12+ • TOATE LUNILE</p>
+  <div class="emx-brand">
+    <div class="emx-logo">
+      <span class="emx-e">E</span><span class="emx-m">M</span><span class="emx-x">X</span>
+    </div>
+    <div class="emx-sub">
+      <span id="ghStatus" class="gh-status-inline"></span>
+    </div>
   </div>
   <div class="hdr-right">
     <button class="yr-badge" id="yrBadge" onclick="openYearModal()">📅 2026</button>
     <button class="btn btn-o" onclick="openEditor()">⚙ Turnus-uri</button>
     <button class="btn btn-g" onclick="ghSave()">☁ Salvează</button>
     <button class="btn btn-s" onclick="openGhModal()">🔑 Token</button>
-    <span id="ghStatus" style="font-size:.7rem;font-family:'Share Tech Mono',monospace;color:var(--grn)"></span>
-    <button class="btn btn-y" onclick="exportLuna()">💾 CSV Lună</button>
-    <button class="btn btn-p" onclick="window.print()">🖨 Print</button>
+    <button class="btn btn-b" onclick="downloadBackup()">💾 Backup</button>
   </div>
 </div>
 
@@ -678,7 +689,7 @@ function ghHeaders(){
 async function ghLoad(){
   if(!ghToken)return false;
   try{
-    const r=await fetch(`https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_FILE}`,{headers:ghHeaders()});
+    const r=await fetch(`https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_FILE}?t=${Date.now()}`,{headers:ghHeaders(),cache:'no-store'});
     if(!r.ok)return false;
     const j=await r.json();
     const data=JSON.parse(atob(j.content));
@@ -690,29 +701,64 @@ async function ghLoad(){
 }
 async function ghSave(){
   if(!ghToken){alert('Introdu mai întâi tokenul GitHub!');openGhModal();return;}
+  showGhStatus('⏳ Se salvează...','var(--yel)');
+  save(); // salveaza si in localStorage
   const payload=JSON.stringify({db,TN});
   const encoded=btoa(unescape(encodeURIComponent(payload)));
   try{
-    // Obtine SHA-ul fisierului existent (daca exista)
+    // Intotdeauna citeste SHA-ul CURENT de pe GitHub inainte de salvare
     let sha='';
-    const check=await fetch(`https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_FILE}`,{headers:ghHeaders()});
-    if(check.ok){const j=await check.json();sha=j.sha||'';}
-    const body={message:'Actualizare pontaj '+new Date().toLocaleDateString('ro'),content:encoded};
+    const check=await fetch(
+      `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_FILE}?t=${Date.now()}`,
+      {headers:ghHeaders(),cache:'no-store'}
+    );
+    if(check.ok){
+      const j=await check.json();
+      sha=j.sha||'';
+    } else if(check.status!==404){
+      const err=await check.json();
+      showGhStatus('❌ Eroare citire: '+(err.message||check.status),'var(--red)');
+      return;
+    }
+    const body={
+      message:'Pontaj '+new Date().toLocaleDateString('ro')+' '+new Date().toLocaleTimeString('ro'),
+      content:encoded
+    };
     if(sha)body.sha=sha;
-    const r=await fetch(`https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_FILE}`,{
-      method:'PUT',headers:ghHeaders(),body:JSON.stringify(body)
-    });
+    const r=await fetch(
+      `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_FILE}`,
+      {method:'PUT',headers:ghHeaders(),body:JSON.stringify(body)}
+    );
     if(r.ok){
       showGhStatus('✅ Salvat pe GitHub!','var(--grn)');
-    }else{
+    } else {
       const err=await r.json();
-      showGhStatus('❌ Eroare: '+(err.message||r.status),'var(--red)');
+      // Daca e conflict de SHA, reincercam o data
+      if(r.status===409||r.status===422){
+        showGhStatus('⚠️ Conflict, reîncerc...','var(--yel)');
+        setTimeout(ghSave, 1000);
+      } else {
+        showGhStatus('❌ '+(err.message||r.status),'var(--red)');
+      }
     }
-  }catch(e){showGhStatus('❌ Eroare conexiune: '+e.message,'var(--red)');}
+  }catch(e){showGhStatus('❌ Conexiune: '+e.message,'var(--red)');}
 }
 function showGhStatus(msg,color){
   const el=document.getElementById('ghStatus');
   if(el){el.textContent=msg;el.style.color=color;setTimeout(()=>{el.textContent='';},4000);}
+}
+function downloadBackup(){
+  save();
+  const tnJson=JSON.stringify(TN);
+  const dbJson=JSON.stringify(db);
+  let html='<!DOCTYPE html>\n'+document.documentElement.outerHTML;
+  html=html.replace(/const TURNUS_DEFAULT=\{[^;]*?\};/s,'const TURNUS_DEFAULT='+tnJson+';');
+  html=html.replace('let db={},TN={};','let db={},TN={};\nconst _PRE={db:'+dbJson+',TN:'+tnJson+'};');
+  const blob=new Blob([html],{type:'text/html'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='EMX-backup-'+new Date().toISOString().slice(0,10)+'.html';
+  a.click();
 }
 function openGhModal(){document.getElementById('ghOverlay').classList.add('open');}
 function closeGhModal(){document.getElementById('ghOverlay').classList.remove('open');}
@@ -738,6 +784,12 @@ function init(){
   buildAddTnBox();
   // Auto-sync din GitHub la deschidere
   if(ghToken){ghLoadAndRefresh();}
+  // Re-sync cand utilizatorul revine pe tab (telefon sau alt dispozitiv)
+  document.addEventListener('visibilitychange',function(){
+    if(document.visibilityState==='visible'&&ghToken){
+      ghLoadAndRefresh();
+    }
+  });
 }
 
 function renderTags(){
