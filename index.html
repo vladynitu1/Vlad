@@ -218,6 +218,7 @@ tr.totrow td:first-child{color:var(--acc);text-transform:uppercase;padding-left:
   <input id="ghTokenInput" type="password" placeholder="ghp_xxxxxxxxxxxx" 
     style="width:100%;background:var(--surf2);border:1px solid var(--bord2);border-radius:7px;color:var(--txt);font-family:monospace;font-size:.85rem;padding:8px 10px;margin-bottom:10px;box-sizing:border-box">
   <button class="btn btn-g" style="width:100%" onclick="saveToken()">✓ Salvează Token</button>
+  <button class="btn btn-s" style="width:100%;margin-top:8px" onclick="testConnection()">🔌 Testează Conexiunea</button>
 </div>
 </div>
 
@@ -692,7 +693,11 @@ async function ghLoad(){
     const r=await fetch(`https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_FILE}?t=${Date.now()}`,{headers:ghHeaders(),cache:'no-store'});
     if(!r.ok)return false;
     const j=await r.json();
-    const data=JSON.parse(atob(j.content));
+    // Decodare compatibila Safari
+    const raw=atob(j.content.replace(/\s/g,''));
+    const bytes2=new Uint8Array(raw.length);
+    for(let i=0;i<raw.length;i++)bytes2[i]=raw.charCodeAt(i);
+    const data=JSON.parse(new TextDecoder().decode(bytes2));
     if(data.db)db=data.db;
     if(data.TN)TN=data.TN;
     save();
@@ -702,46 +707,55 @@ async function ghLoad(){
 async function ghSave(){
   if(!ghToken){alert('Introdu mai întâi tokenul GitHub!');openGhModal();return;}
   showGhStatus('⏳ Se salvează...','var(--yel)');
-  save(); // salveaza si in localStorage
-  const payload=JSON.stringify({db,TN});
-  const encoded=btoa(unescape(encodeURIComponent(payload)));
+  save();
   try{
-    // Intotdeauna citeste SHA-ul CURENT de pe GitHub inainte de salvare
+    // Codifica UTF-8 compatibil cu Safari
+    const payload=JSON.stringify({db,TN});
+    const bytes=new TextEncoder().encode(payload);
+    let binary='';
+    bytes.forEach(b=>binary+=String.fromCharCode(b));
+    const encoded=btoa(binary);
+
+    // Citeste SHA-ul curent - obligatoriu inainte de orice salvare
     let sha='';
     const check=await fetch(
-      `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_FILE}?t=${Date.now()}`,
-      {headers:ghHeaders(),cache:'no-store'}
+      `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_FILE}?_=${Date.now()}`,
+      {headers:ghHeaders()}
     );
     if(check.ok){
       const j=await check.json();
       sha=j.sha||'';
     } else if(check.status!==404){
-      const err=await check.json();
-      showGhStatus('❌ Eroare citire: '+(err.message||check.status),'var(--red)');
+      showGhStatus('❌ Nu pot citi SHA: '+check.status,'var(--red)');
       return;
     }
+
     const body={
-      message:'Pontaj '+new Date().toLocaleDateString('ro')+' '+new Date().toLocaleTimeString('ro'),
+      message:'EMX '+new Date().toISOString().slice(0,16).replace('T',' '),
       content:encoded
     };
     if(sha)body.sha=sha;
+
     const r=await fetch(
       `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_FILE}`,
       {method:'PUT',headers:ghHeaders(),body:JSON.stringify(body)}
     );
     if(r.ok){
-      showGhStatus('✅ Salvat pe GitHub!','var(--grn)');
+      showGhStatus('✅ Salvat!','var(--grn)');
     } else {
-      const err=await r.json();
-      // Daca e conflict de SHA, reincercam o data
+      const err=await r.json().catch(()=>({}));
       if(r.status===409||r.status===422){
-        showGhStatus('⚠️ Conflict, reîncerc...','var(--yel)');
-        setTimeout(ghSave, 1000);
+        // Conflict SHA - reincercam dupa 1 secunda
+        showGhStatus('⚠️ Reîncerc...','var(--yel)');
+        setTimeout(ghSave,1500);
       } else {
         showGhStatus('❌ '+(err.message||r.status),'var(--red)');
       }
     }
-  }catch(e){showGhStatus('❌ Conexiune: '+e.message,'var(--red)');}
+  }catch(e){
+    showGhStatus('❌ '+e.name+': '+e.message,'var(--red)');
+    console.error('ghSave:',e);
+  }
 }
 function showGhStatus(msg,color){
   const el=document.getElementById('ghStatus');
@@ -761,6 +775,25 @@ function downloadBackup(){
   a.click();
 }
 function openGhModal(){document.getElementById('ghOverlay').classList.add('open');}
+async function testConnection(){
+  if(!ghToken){showGhStatus('❌ Token lipsă','var(--red)');return;}
+  showGhStatus('⏳ Test conexiune...','var(--yel)');
+  try{
+    const r=await fetch(
+      'https://api.github.com/user',
+      {headers:ghHeaders(),cache:'no-store',mode:'cors'}
+    );
+    if(r.ok){
+      const u=await r.json();
+      showGhStatus('✅ Conectat ca: '+u.login,'var(--grn)');
+    } else {
+      showGhStatus('❌ Status: '+r.status,'var(--red)');
+    }
+  }catch(e){
+    showGhStatus('❌ '+e.name+': '+e.message,'var(--red)');
+    console.error('Test connection error:',e);
+  }
+}
 function closeGhModal(){document.getElementById('ghOverlay').classList.remove('open');}
 function saveToken(){
   const t=document.getElementById('ghTokenInput').value.trim();
