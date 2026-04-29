@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EMX Turnusuri</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+:root{
+  --bg:#07090f;--s1:#0d1117;--s2:#141b27;--s3:#1a2236;
+  --b1:#1e3356;--b2:#2a4070;
+  --ac:#00c8e8;--ac2:#4dd6f0;--acd:rgba(0,200,232,0.14);--acg:rgba(0,200,232,0.28);
+  --gr:#00e5a0;--grd:rgba(0,229,160,0.10);
+  --am:#ffc940;
+  --rd:#ff4d6d;--rdd:rgba(255,77,109,0.12);
+  --pu:#a855f7;--pud:rgba(168,85,247,0.13);
+  --tx:#d8e8f5;--tx2:#8aafcc;--tx3:#5a7a9a;
+  --fn:'JetBrains Mono',monospace;--fd:'Rajdhani',sans-serif;--fm:'Share Tech Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--tx);font-family:var(--fn);min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,200,232,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(0,200,232,0.018) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+
+/* BANNER */
+.banner{position:sticky;top:0;z-index:200;display:flex;align-items:center;gap:10px;padding:10px 18px;background:linear-gradient(135deg,#0a0a1a,#0d1530,#0a1a0a);overflow:hidden;box-shadow:0 0 40px rgba(0,200,255,0.08)}
+.banner::before{content:’’;position:absolute;inset:0;border-bottom:1px solid;border-image:linear-gradient(90deg,transparent,var(–ac),var(–gr),transparent) 1;pointer-events:none}
+.banner::after{content:’’;position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(0,200,255,0.03),transparent);animation:shine 4s infinite;pointer-events:none}
+@keyframes shine{0%{left:-100%}100%{left:200%}}
+.emx-brand{display:flex;flex-direction:column;gap:1px;position:relative;z-index:1}
+.emx-logo{display:flex;align-items:center;line-height:1}
+.emx-e{font-family:var(–fd);font-size:1.9rem;font-weight:900;color:var(–ac);letter-spacing:-2px;text-shadow:0 0 22px var(–ac)}
+.emx-m{font-family:var(–fd);font-size:1.9rem;font-weight:900;color:#fff;letter-spacing:-2px}
+.emx-x{font-family:var(–fd);font-size:1.9rem;font-weight:900;color:var(–gr);letter-spacing:-2px;text-shadow:0 0 22px var(–gr)}
+.emx-dot{font-size:.45rem;color:var(–ac);margin-left:4px;animation:pd 1.5s infinite;align-self:center}
+@keyframes pd{0%,100%{opacity:1}50%{opacity:.2}}
+.emx-tag{font-family:var(–fm);font-size:0.48rem;color:var(–tx3);letter-spacing:2.5px;text-transform:uppercase}
+.bacts{margin-left:auto;display:flex;gap:7px;align-items:center;position:relative;z-index:1}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:7px;border:1px solid;font-family:var(–fd);font-size:0.78rem;font-weight:600;letter-spacing:1px;cursor:pointer;transition:all .15s;white-space:nowrap;text-transform:uppercase}
+.btn svg{width:12px;height:12px;flex-shrink:0}
+.btn-g{background:transparent;border-color:var(–b2);color:var(–tx2)}
+.btn-g:hover{border-color:var(–ac);color:var(–ac2);background:var(–acd)}
+.btn-ac{background:var(–acd);border-color:var(–ac);color:var(–ac2)}
+.btn-ac:hover{background:rgba(0,200,232,.24);box-shadow:0 0 14px var(–acg)}
+.btn-gr{background:var(–grd);border-color:var(–gr);color:var(–gr)}
+.btn-gr:hover{background:rgba(0,229,160,.2)}
+.btn-rd{background:var(–rdd);border-color:var(–rd);color:var(–rd)}
+.btn-rd:hover{background:rgba(255,77,109,.22)}
+.btn-xs{padding:3px 8px;font-size:0.68rem}
+
+/* MAIN VIEW compact */
+main{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:14px 14px 60px}
+.empty-state{text-align:center;padding:80px 20px;color:var(–tx3)}
+.empty-state .eico{font-size:38px;margin-bottom:12px;opacity:.4}
+.empty-state .etit{font-family:var(–fd);font-size:17px;font-weight:700;letter-spacing:2px;color:var(–tx2);margin-bottom:6px}
+.empty-state .esub{font-size:11px}
+.turnusuri-grid{display:flex;flex-direction:column;gap:8px}
+
+/* Card compact view */
+.tv-card{background:var(–s1);border:1px solid var(–b1);border-radius:9px;overflow:hidden;position:relative}
+.tv-card::before{content:’’;position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(–ac),var(–gr))}
+.tv-head{display:flex;align-items:center;gap:8px;padding:5px 12px;background:var(–s2);border-bottom:1px solid var(–b1)}
+.tv-num{font-family:var(–fm);font-size:9px;color:var(–tx3);background:var(–s3);border:1px solid var(–b1);border-radius:3px;padding:1px 5px;flex-shrink:0}
+.tv-name{font-family:var(–fd);font-size:13px;font-weight:700;color:var(–ac2);letter-spacing:1px;flex:1}
+.tv-body{padding:6px 12px;display:flex;flex-direction:column;gap:3px}
+.tv-prez,.tv-ies{display:flex;align-items:center;gap:8px;padding:2px 0}
+.tv-prez-lbl,.tv-ies-lbl{font-family:var(–fm);font-size:8px;letter-spacing:2px;text-transform:uppercase;min-width:68px;flex-shrink:0}
+.tv-prez-lbl{color:var(–gr)}.tv-ies-lbl{color:var(–am)}
+.tv-prez-val,.tv-ies-val{font-family:var(–fd);font-size:13px;font-weight:700;color:var(–tx)}
+.tv-table{width:100%;border-collapse:collapse;margin:1px 0}
+.tv-table tr{border-bottom:1px solid rgba(30,51,86,0.35)}
+.tv-table tr:last-child{border-bottom:none}
+.tv-table td{padding:2px 3px;font-family:var(–fm);font-size:11px;vertical-align:middle;white-space:nowrap}
+.td-nr{color:var(–ac2);font-weight:700;min-width:56px}
+.td-time{color:var(–tx2);min-width:40px}
+.td-arr{color:var(–tx3);text-align:center;min-width:12px}
+.td-dur{color:var(–gr);font-size:9px;font-family:var(–fd);padding-left:3px}
+.td-desc{color:var(–tx3);font-size:9px;font-family:var(–fn);padding-left:5px;overflow:hidden;text-overflow:ellipsis;max-width:180px}
+.tv-dorm{display:flex;align-items:center;gap:7px;padding:3px 8px;background:var(–pud);border-radius:4px;border-left:2px solid var(–pu);font-family:var(–fd);font-size:10px;color:var(–pu)}
+.tv-dorm-dur{margin-left:auto;font-family:var(–fm);font-size:9px;color:rgba(168,85,247,.6)}
+.tv-sep{height:1px;background:linear-gradient(90deg,transparent,var(–b2),transparent);margin:3px 0}
+
+/* MODAL TURNUSURI */
+.overlay{display:none;position:fixed;inset:0;background:rgba(7,9,15,0.88);z-index:400;align-items:flex-start;justify-content:center;backdrop-filter:blur(4px)}
+.overlay.open{display:flex}
+.t-modal{background:var(–s1);border-right:1px solid var(–b2);width:100%;max-width:640px;height:100vh;display:flex;flex-direction:column;position:relative;box-shadow:0 0 60px rgba(0,200,232,0.1)}
+.t-modal::before{content:’’;position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(–ac),var(–gr),transparent);z-index:1}
+.t-modal-head{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(–b2);background:var(–s2);flex-shrink:0}
+.t-modal-title{font-family:var(–fd);font-size:.95rem;font-weight:700;letter-spacing:2.5px;color:var(–ac2);text-transform:uppercase;flex:1}
+.t-modal-close{background:none;border:none;color:var(–tx3);font-size:1.1rem;cursor:pointer;padding:3px 7px;border-radius:4px;transition:all .14s}
+.t-modal-close:hover{background:var(–rdd);color:var(–rd)}
+.t-modal-body{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:12px}
+.t-modal-body::-webkit-scrollbar{width:4px}
+.t-modal-body::-webkit-scrollbar-thumb{background:var(–b2);border-radius:2px}
+.t-modal-footer{padding:9px 14px;border-top:1px solid var(–b2);background:var(–s2);display:flex;gap:7px;flex-shrink:0;flex-wrap:wrap}
+
+/* EDITOR CARD */
+.ed-card{background:var(–s2);border:1px solid var(–b1);border-radius:9px;overflow:hidden;animation:ci .18s ease}
+@keyframes ci{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.ed-card::before{content:’’;display:block;height:2px;background:linear-gradient(90deg,var(–ac),var(–gr))}
+.ed-card-head{display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(–s3);border-bottom:1px solid var(–b1)}
+.ed-tnum{font-family:var(–fd);font-size:14px;font-weight:700;color:var(–ac2);letter-spacing:2px}
+.ed-title-inp{flex:1;background:transparent;border:none;font-family:var(–fd);font-size:13px;font-weight:600;color:var(–tx);outline:none;letter-spacing:1px}
+.ed-title-inp::placeholder{color:var(–tx3)}
+.ed-card-body{padding:9px 12px;display:flex;flex-direction:column;gap:6px}
+
+/* Segmente editor */
+.ed-seg{border-left:2px solid var(–b1);padding:5px 0 5px 13px;margin-left:7px;position:relative}
+.ed-seg:last-child{border-left-color:transparent}
+.ed-dot{position:absolute;left:-6px;top:9px;width:11px;height:11px;border-radius:50%;border:2px solid var(–s2)}
+.ed-dot-pr{background:var(–gr);box-shadow:0 0 6px var(–gr)}
+.ed-dot-tr{background:var(–ac);box-shadow:0 0 6px var(–ac)}
+.ed-dot-ie{background:var(–am);box-shadow:0 0 6px var(–am)}
+.ed-dot-do{background:var(–pu);box-shadow:0 0 6px var(–pu)}
+.ed-dot-add{background:var(–b2)}
+.ed-lbl{font-family:var(–fd);font-size:8px;letter-spacing:2.5px;font-weight:700;text-transform:uppercase;margin-bottom:4px}
+.ed-lbl-pr{color:var(–gr)}.ed-lbl-tr{color:var(–ac2)}.ed-lbl-ie{color:var(–am)}.ed-lbl-do{color:var(–pu)}
+.ed-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.ed-fl{font-family:var(–fd);font-size:8px;color:var(–tx3);letter-spacing:1.5px;text-transform:uppercase;flex-shrink:0}
+.ed-ti{background:var(–s3);border:1px solid var(–b2);color:var(–tx);font-family:var(–fm);font-size:12px;padding:4px 8px;border-radius:5px;outline:none;width:68px;text-align:center;transition:border-color .14s,box-shadow .14s}
+.ed-ti:focus{border-color:var(–ac);box-shadow:0 0 0 2px var(–acd)}
+
+/* Tren in editor */
+.ed-tren{display:flex;align-items:center;background:var(–s3);border:1px solid var(–b1);border-radius:5px;overflow:hidden;margin-bottom:3px}
+.ed-tren:focus-within{border-color:var(–ac);box-shadow:0 0 0 2px var(–acd)}
+.et-nr{background:rgba(0,200,232,0.07);border-right:1px solid var(–b2);font-family:var(–fm);font-size:11px;font-weight:600;color:var(–ac2);padding:4px 7px;width:68px;text-align:center;outline:none;border-top:none;border-bottom:none;border-left:none}
+.et-nr:focus{background:rgba(0,200,232,0.15)}
+.et-sep{color:var(–tx3);font-size:10px;padding:0 2px;flex-shrink:0;user-select:none}
+.et-t{font-family:var(–fm);font-size:11px;color:var(–tx);padding:4px 4px;width:50px;text-align:center;outline:none;background:transparent;border:none}
+.et-t:focus{background:rgba(0,200,232,0.07);color:var(–ac2)}
+.et-arr{color:var(–tx3);font-size:10px;padding:0 1px;flex-shrink:0;user-select:none}
+.et-dur{flex:1;font-family:var(–fd);font-size:9px;color:var(–gr);padding:0 5px;letter-spacing:.3px;white-space:nowrap}
+.et-del{background:transparent;border:none;border-left:1px solid var(–b2);color:var(–tx3);cursor:pointer;padding:4px 7px;font-size:10px;transition:all .14s;flex-shrink:0}
+.et-del:hover{background:var(–rdd);color:var(–rd)}
+.et-desc-wrap{margin-top:2px;display:flex;flex-direction:column;gap:2px}
+.et-desc-ta{background:rgba(0,200,232,0.03);border:1px solid var(–b2);border-radius:4px;color:var(–tx2);font-family:var(–fn);font-size:10px;padding:3px 7px;resize:none;outline:none;width:100%;transition:border-color .14s;line-height:1.5;min-height:24px;overflow:hidden}
+.et-desc-ta:focus{border-color:var(–ac);background:rgba(0,200,232,0.06)}
+.et-desc-ta::placeholder{color:var(–tx3);font-size:9px}
+.et-desc-btn{background:none;border:none;color:var(–tx3);font-family:var(–fd);font-size:8px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;padding:1px 3px;transition:color .14s;align-self:flex-start}
+.et-desc-btn:hover{color:var(–ac2)}
+.ed-dorm-box{background:var(–pud);border:1px solid rgba(168,85,247,.22);border-radius:5px;padding:5px 10px;font-size:10px;color:var(–pu);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+
+/* TOKEN MODAL */
+.tok-overlay{display:none;position:fixed;inset:0;background:rgba(7,9,15,0.92);z-index:500;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(5px)}
+.tok-overlay.open{display:flex}
+.tok-modal{background:var(–s2);border:1px solid var(–b2);border-radius:14px;padding:20px;width:100%;max-width:420px;position:relative}
+.tok-modal::before{content:’’;position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(–gr),var(–ac),transparent);border-radius:14px 14px 0 0}
+.tok-modal h2{font-family:var(–fd);font-size:.95rem;font-weight:700;letter-spacing:2px;color:var(–gr);text-transform:uppercase;margin-bottom:10px}
+.mclose{position:absolute;top:10px;right:12px;background:none;border:none;color:var(–tx3);font-size:1rem;cursor:pointer}
+.mclose:hover{color:var(–rd)}
+.tok-field{display:flex;flex-direction:column;gap:3px;margin-bottom:8px}
+.tok-field label{font-family:var(–fd);font-size:.58rem;letter-spacing:2px;color:var(–tx3);text-transform:uppercase}
+.tok-inp{background:var(–bg);border:1px solid var(–b2);color:var(–tx);font-family:var(–fm);font-size:.8rem;padding:7px 10px;border-radius:7px;outline:none;width:100%;transition:border-color .16s}
+.tok-inp:focus{border-color:var(–ac)}
+.tok-hint{font-size:.65rem;color:var(–tx3);line-height:1.7;margin-bottom:10px}
+.tok-hint a{color:var(–gr)}.tok-hint strong{color:var(–ac)}
+.tok-acts{display:flex;flex-direction:column;gap:5px}
+.tok-acts .btn{width:100%;justify-content:center}
+#tokStatus{font-family:var(–fm);font-size:.65rem;min-height:14px;margin-bottom:5px;color:var(–gr)}
+
+/* TOAST */
+.toast{position:fixed;bottom:16px;right:16px;z-index:999;background:var(–s2);border:1px solid var(–b2);border-radius:8px;padding:8px 13px;font-size:11px;color:var(–tx);display:flex;align-items:center;gap:8px;box-shadow:0 8px 28px rgba(0,0,0,.5);transform:translateY(60px);opacity:0;transition:all .26s cubic-bezier(.34,1.56,.64,1);pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{border-color:var(–gr)}.toast.err{border-color:var(–rd)}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(–b2);border-radius:2px}
+</style>
+
+</head>
+<body>
+
+<!-- BANNER -->
+
+<header class="banner">
+  <div class="emx-brand" style="position:relative;z-index:1">
+    <div class="emx-logo">
+      <span class="emx-e">E</span><span class="emx-m">M</span><span class="emx-x">X</span>
+      <span class="emx-dot">●</span>
+    </div>
+    <span class="emx-tag">LOCOMOTIVE ENGINEER</span>
+  </div>
+  <div class="bacts">
+    <span id="savedBadge" style="font-family:var(--fm);font-size:9px;color:var(--am);letter-spacing:1px">NESALVAT</span>
+    <button class="btn btn-g" onclick="openToken()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Token
+    </button>
+    <button class="btn btn-gr" onclick="saveGH()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v14a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Salvează
+    </button>
+    <button class="btn btn-ac" onclick="openTurnusuriModal()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Turnusuri
+    </button>
+  </div>
+</header>
+
+<!-- MAIN VIEW compact read-only -->
+
+<main>
+  <div id="viewEmpty" class="empty-state">
+    <div class="eico">🚂</div>
+    <div class="etit">NICIUN TURNUS</div>
+    <div class="esub">Apasă <strong style="color:var(--ac2)">Turnusuri</strong> pentru a adăuga</div>
+  </div>
+  <div class="turnusuri-grid" id="viewGrid"></div>
+</main>
+
+<!-- MODAL TURNUSURI (editor) -->
+
+<div class="overlay" id="turnusuriOverlay">
+  <div class="t-modal">
+    <div class="t-modal-head">
+      <span class="t-modal-title">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:5px"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+        Turnusuri
+      </span>
+      <button class="t-modal-close" onclick="closeTurnusuriModal()">✕</button>
+    </div>
+    <div class="t-modal-body" id="editorBody"></div>
+    <div class="t-modal-footer">
+      <button class="btn btn-ac" onclick="addTurnus()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>Turnus nou
+      </button>
+      <button class="btn btn-gr" onclick="saveGH()" style="margin-left:auto">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v14a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Salvează
+      </button>
+      <button class="btn btn-g" onclick="closeTurnusuriModal()">Închide</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL TOKEN -->
+
+<div class="tok-overlay" id="tokenOverlay">
+  <div class="tok-modal">
+    <button class="mclose" onclick="closeToken()">✕</button>
+    <h2>🔑 GitHub Token</h2>
+    <div class="tok-hint">
+      Repo: <strong>vladynitu1/Vlad</strong> · Fișier: <strong>turnusuri.json</strong><br><br>
+      1. <a href="https://github.com/settings/tokens/new" target="_blank">github.com/settings/tokens/new</a><br>
+      2. Bifează permisiunea <strong>repo</strong> → Generate token
+    </div>
+    <div class="tok-field">
+      <label>Personal Access Token</label>
+      <input id="ghTok" class="tok-inp" type="password" placeholder="ghp_xxxxxxxxxxxxxxxx" oninput="saveCfg()">
+    </div>
+    <div id="tokStatus"></div>
+    <div class="tok-acts">
+      <button class="btn btn-g" onclick="loadGH()">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>Încarcă din GitHub
+      </button>
+      <button class="btn btn-gr" onclick="saveGH()">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v14a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Salvează pe GitHub
+      </button>
+      <button class="btn btn-ac" onclick="closeToken()">✓ OK</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span id="tIco">✓</span><span id="tMsg"></span></div>
+
+<script>
+let D=[];
+const GH_USER='vladynitu1',GH_REPO='Vlad',GH_FILE='turnusuri.json';
+let ghToken=localStorage.getItem('gh_token')||'';
+const $=id=>document.getElementById(id);
+function uid(){return Math.random().toString(36).slice(2,9)}
+function newTren(){return{id:uid(),n:'',p:'',s:'',desc:''}}
+function newGrupa(){return{id:uid(),pt:'',trenuri:[],it:''}}
+function newTurnus(){return{id:uid(),titlu:'',grupe:[newGrupa()]}}
+function ghHeaders(){return{'Authorization':'token '+ghToken,'Accept':'application/vnd.github+json','Content-Type':'application/json'}}
+function saveCfg(){ghToken=$('ghTok').value.trim();localStorage.setItem('gh_token',ghToken)}
+function loadCfg(){$('ghTok').value=ghToken}
+function dur(a,b){if(!a||!b)return '';const[ah,am]=a.split(':').map(Number),[bh,bm]=b.split(':').map(Number);if([ah,am,bh,bm].some(isNaN))return '';let m=bh*60+bm-(ah*60+am);if(m<0)m+=1440;return `${Math.floor(m/60)}h${(m%60).toString().padStart(2,'0')}m`}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}
+function markUnsaved(){$('savedBadge').textContent='NESALVAT ●';$('savedBadge').style.color='var(--am)'}
+function markSaved(){$('savedBadge').textContent='SALVAT ✓';$('savedBadge').style.color='var(--gr)'}
+
+/* MODALS */
+function openTurnusuriModal(){renderEditor();$('turnusuriOverlay').classList.add('open')}
+function closeTurnusuriModal(){$('turnusuriOverlay').classList.remove('open');renderView()}
+function openToken(){$('tokenOverlay').classList.add('open')}
+function closeToken(){$('tokenOverlay').classList.remove('open')}
+
+/* ══ VIEW ══ */
+function renderView(){
+  $('viewEmpty').style.display=D.length?'none':'block';
+  const grid=$('viewGrid');grid.innerHTML='';
+  D.forEach((t,ti)=>grid.appendChild(buildViewCard(t,ti)));
+}
+function buildViewCard(t,ti){
+  const card=document.createElement('div');card.className='tv-card';
+  let html=`<div class="tv-head"><span class="tv-num">T${ti+1}</span><span class="tv-name">${esc(t.titlu||'Turnus '+(ti+1))}</span></div><div class="tv-body">`;
+  t.grupe.forEach((g,gi)=>{
+    if(gi>0){const prev=t.grupe[gi-1],d=dur(prev.it,g.pt);html+=`<div class="tv-dorm"><span>🌙</span><span>Ieșire <strong>${esc(prev.it)||'—'}</strong> → Prezentare <strong>${esc(g.pt)||'—'}</strong></span>${d?`<span class="tv-dorm-dur">${d}</span>`:''}</div>`}
+    html+=`<div>`;
+    if(g.pt)html+=`<div class="tv-prez"><span class="tv-prez-lbl">▶ PREZENTARE</span><span class="tv-prez-val">${esc(g.pt)}</span></div>`;
+    if(g.trenuri.length){html+=`<table class="tv-table">`;g.trenuri.forEach(tr=>{const d=dur(tr.p,tr.s);html+=`<tr><td class="td-nr">${esc(tr.n)||'—'}</td><td class="td-time">${esc(tr.p)||'—'}</td><td class="td-arr">→</td><td class="td-time">${esc(tr.s)||'—'}</td><td class="td-dur">${d}</td>${tr.desc?`<td class="td-desc">${esc(tr.desc)}</td>`:''}</tr>`});html+=`</table>`}
+    if(g.it)html+=`<div class="tv-ies"><span class="tv-ies-lbl">◀ IEȘIRE</span><span class="tv-ies-val">${esc(g.it)}</span></div>`;
+    html+=`</div>`;
+    if(gi<t.grupe.length-1)html+=`<div class="tv-sep"></div>`;
+  });
+  html+=`</div>`;card.innerHTML=html;return card;
+}
+
+/* ══ EDITOR ══ */
+function renderEditor(){
+  const body=$('editorBody');body.innerHTML='';
+  if(!D.length){body.innerHTML=`<div style="text-align:center;padding:40px;color:var(--tx3);font-family:var(--fd);font-size:12px;letter-spacing:1px">Niciun turnus. Apasă "Turnus nou".</div>`;return}
+  D.forEach((t,ti)=>body.appendChild(buildEditorCard(t,ti)));
+}
+function buildEditorCard(t,ti){
+  const card=document.createElement('div');card.className='ed-card';
+  const head=document.createElement('div');head.className='ed-card-head';
+  head.innerHTML=`<span class="ed-tnum">T${ti+1}</span>`;
+  const inp=document.createElement('input');inp.className='ed-title-inp';inp.placeholder=`Turnus ${ti+1} — denumire`;inp.value=t.titlu||'';
+  inp.oninput=()=>{D[ti].titlu=inp.value;markUnsaved()};head.appendChild(inp);
+  const delBtn=document.createElement('button');delBtn.className='btn btn-rd btn-xs';delBtn.innerHTML='✕ Șterge';
+  delBtn.onclick=()=>{if(!confirm('Ștergi turnusul?'))return;D.splice(ti,1);renderEditor();markUnsaved()};head.appendChild(delBtn);
+  card.appendChild(head);
+  const body=document.createElement('div');body.className='ed-card-body';
+  t.grupe.forEach((g,gi)=>{if(gi>0)body.appendChild(buildDormEditor(t,ti,gi));body.appendChild(buildGrupaEditor(t,ti,g,gi))});
+  const addBloc=mkEdSeg('add','');addBloc.querySelector('.ed-dot').className='ed-dot ed-dot-add';
+  addBloc.querySelector('div:last-child').innerHTML=`<button class="btn btn-g btn-xs" onclick="addGrupa(${ti})"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>Adaugă Bloc</button>`;
+  body.appendChild(addBloc);card.appendChild(body);return card;
+}
+function buildGrupaEditor(t,ti,g,gi){
+  const wrap=document.createElement('div');
+  wrap.appendChild(mkEdSeg('pr',`<div class="ed-lbl ed-lbl-pr">▶ PREZENTARE</div><div class="ed-row"><span class="ed-fl">Ora</span><input class="ed-ti" type="text" maxlength="5" placeholder="HH:MM" value="${esc(g.pt)}" oninput="D[${ti}].grupe[${gi}].pt=this.value;markUnsaved()"></div>`));
+  g.trenuri.forEach((tr,tri)=>wrap.appendChild(buildTrenEditor(ti,gi,tr,tri)));
+  const addTr=mkEdSeg('tr','');addTr.querySelector('.ed-dot').className='ed-dot ed-dot-add';
+  addTr.querySelector('div:last-child').innerHTML=`<button class="btn btn-g btn-xs" onclick="addTren(${ti},${gi})"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>Adaugă Tren</button>`;
+  wrap.appendChild(addTr);
+  const canDel=t.grupe.length>1;
+  wrap.appendChild(mkEdSeg('ie',`<div class="ed-lbl ed-lbl-ie">◀ IEȘIRE</div><div class="ed-row"><span class="ed-fl">Ora</span><input class="ed-ti" type="text" maxlength="5" placeholder="HH:MM" value="${esc(g.it)}" oninput="D[${ti}].grupe[${gi}].it=this.value;markUnsaved()">${canDel?`<button class="btn btn-rd btn-xs" onclick="delGrupa(${ti},${gi})" style="margin-left:auto">✕ Bloc</button>`:''}</div>`));
+  return wrap;
+}
+function buildTrenEditor(ti,gi,tr,tri){
+  const seg=document.createElement('div');seg.className='ed-seg';
+  const dot=document.createElement('div');dot.className='ed-dot ed-dot-tr';seg.appendChild(dot);
+  const inner=document.createElement('div');inner.innerHTML=`<div class="ed-lbl ed-lbl-tr">🚂 TREN</div>`;
+  const row=document.createElement('div');row.className='ed-tren';
+  const inpN=document.createElement('input');inpN.className='et-nr';inpN.type='text';inpN.maxLength=7;inpN.placeholder='Nr. tren';inpN.value=tr.n||'';
+  inpN.addEventListener('input',()=>{D[ti].grupe[gi].trenuri[tri].n=inpN.value;markUnsaved()});row.appendChild(inpN);
+  const s1=document.createElement('span');s1.className='et-sep';s1.textContent='·';row.appendChild(s1);
+  const inpP=document.createElement('input');inpP.className='et-t';inpP.type='text';inpP.maxLength=5;inpP.placeholder='Plec.';inpP.value=tr.p||'';
+  inpP.addEventListener('input',()=>{D[ti].grupe[gi].trenuri[tri].p=inpP.value;updateDur();markUnsaved()});row.appendChild(inpP);
+  const ar=document.createElement('span');ar.className='et-arr';ar.textContent='→';row.appendChild(ar);
+  const inpS=document.createElement('input');inpS.className='et-t';inpS.type='text';inpS.maxLength=5;inpS.placeholder='Sos.';inpS.value=tr.s||'';
+  inpS.addEventListener('input',()=>{D[ti].grupe[gi].trenuri[tri].s=inpS.value;updateDur();markUnsaved()});row.appendChild(inpS);
+  const durEl=document.createElement('span');durEl.className='et-dur';row.appendChild(durEl);
+  function updateDur(){const d=dur(inpP.value,inpS.value);durEl.textContent=d||''}updateDur();
+  const del=document.createElement('button');del.className='et-del';del.textContent='✕';
+  del.addEventListener('click',()=>delTren(ti,gi,tri));row.appendChild(del);
+  inner.appendChild(row);
+  const descWrap=document.createElement('div');descWrap.className='et-desc-wrap';
+  const hasDesc=!!(tr.desc&&tr.desc.trim());
+  const btnD=document.createElement('button');btnD.className='et-desc-btn';btnD.textContent=hasDesc?'✎ descriere':'+ descriere';
+  const ta=document.createElement('textarea');ta.className='et-desc-ta';ta.placeholder='notă opțională...';ta.rows=1;ta.value=tr.desc||'';ta.style.display=hasDesc?'block':'none';
+  const resize=()=>{ta.style.height='0';ta.style.height=ta.scrollHeight+'px'};
+  ta.addEventListener('input',()=>{D[ti].grupe[gi].trenuri[tri].desc=ta.value;btnD.textContent=ta.value.trim()?'✎ descriere':'+ descriere';resize();markUnsaved()});
+  if(hasDesc)setTimeout(resize,0);
+  btnD.addEventListener('click',()=>{const v=ta.style.display!=='none';ta.style.display=v?'none':'block';if(!v){ta.focus();resize()}});
+  descWrap.appendChild(btnD);descWrap.appendChild(ta);inner.appendChild(descWrap);seg.appendChild(inner);return seg;
+}
+function buildDormEditor(t,ti,gi){
+  const ie=t.grupe[gi-1].it||'—',pr=t.grupe[gi].pt||'—',d=dur(t.grupe[gi-1].it,t.grupe[gi].pt);
+  return mkEdSeg('do',`<div class="ed-lbl ed-lbl-do">🌙 DORMITOR</div><div class="ed-dorm-box"><span>🌙</span><span>Ieșire <strong>${ie}</strong> → Prezentare <strong>${pr}</strong></span>${d?`<span style="margin-left:auto;font-size:9px;opacity:.65">${d}</span>`:''}</div>`);
+}
+function mkEdSeg(type,html){
+  const el=document.createElement('div');el.className='ed-seg';
+  const map={pr:'ed-dot-pr',tr:'ed-dot-tr',ie:'ed-dot-ie',do:'ed-dot-do',add:'ed-dot-add'};
+  const dot=document.createElement('div');dot.className=`ed-dot ${map[type]||'ed-dot-add'}`;el.appendChild(dot);
+  const inner=document.createElement('div');inner.innerHTML=html;el.appendChild(inner);return el;
+}
+function addTurnus(){D.push(newTurnus());renderEditor();markUnsaved()}
+function addGrupa(ti){D[ti].grupe.push(newGrupa());renderEditor();markUnsaved()}
+function delGrupa(ti,gi){if(D[ti].grupe.length<=1)return;D[ti].grupe.splice(gi,1);renderEditor();markUnsaved()}
+function addTren(ti,gi){D[ti].grupe[gi].trenuri.push(newTren());renderEditor();markUnsaved()}
+function delTren(ti,gi,tri){D[ti].grupe[gi].trenuri.splice(tri,1);renderEditor();markUnsaved()}
+
+/* GITHUB */
+async function saveGH(){
+  if(!ghToken){openToken();toast('Introdu tokenul GitHub!','err');return}
+  toast('Se salvează...','ok');
+  const body=JSON.stringify(D,null,2);const bytes=new TextEncoder().encode(body);let bin='';bytes.forEach(b=>bin+=String.fromCharCode(b));const enc=btoa(bin);
+  let sha=null;
+  try{const r=await fetch(`https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_FILE}?_=${Date.now()}`,{headers:ghHeaders(),cache:'no-store'});if(r.ok){const d=await r.json();sha=d.sha}else if(r.status!==404){toast('Eroare SHA: '+r.status,'err');return}}catch(e){}
+  try{
+    const payload={message:`Turnusuri ${new Date().toLocaleString('ro')}`,content:enc};if(sha)payload.sha=sha;
+    const r=await fetch(`https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_FILE}`,{method:'PUT',headers:ghHeaders(),body:JSON.stringify(payload)});
+    if(!r.ok){const e=await r.json().catch(()=>({}));if(r.status===409||r.status===422)setTimeout(saveGH,1500);else toast('Eroare: '+(e.message||r.status),'err');return}
+    markSaved();toast('Salvat pe GitHub! ✓','ok');
+  }catch(e){toast('Eroare rețea: '+e.message,'err')}
+}
+async function loadGH(){
+  if(!ghToken){toast('Introdu tokenul GitHub!','err');return}
+  toast('Se încarcă...','ok');
+  try{
+    const r=await fetch(`https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_FILE}?_=${Date.now()}`,{headers:ghHeaders(),cache:'no-store'});
+    if(!r.ok){toast('Fișierul nu există încă.','err');return}
+    const d=await r.json();const raw=atob(d.content.replace(/\s/g,''));const bytes=new Uint8Array(raw.length);for(let i=0;i<raw.length;i++)bytes[i]=raw.charCodeAt(i);
+    const loaded=JSON.parse(new TextDecoder().decode(bytes));
+    if(Array.isArray(loaded)){D=loaded;renderView();markSaved();toast('Date încărcate! ✓','ok')}
+  }catch(e){toast('Eroare: '+e.message,'err')}
+}
+async function autoSync(){
+  if(!ghToken)return;
+  try{
+    const r=await fetch(`https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_FILE}?_=${Date.now()}`,{headers:ghHeaders(),cache:'no-store'});
+    if(!r.ok)return;const d=await r.json();const raw=atob(d.content.replace(/\s/g,''));const bytes=new Uint8Array(raw.length);for(let i=0;i<raw.length;i++)bytes[i]=raw.charCodeAt(i);
+    const loaded=JSON.parse(new TextDecoder().decode(bytes));if(Array.isArray(loaded)){D=loaded;renderView();markSaved()}
+  }catch(e){}
+}
+function toast(msg,type='ok'){const t=$('toast');$('tMsg').textContent=msg;$('tIco').textContent=type==='ok'?'✓':'✗';t.className='toast show '+type;setTimeout(()=>t.classList.remove('show'),3200)}
+
+loadCfg();renderView();
+if(ghToken)setTimeout(autoSync,600);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')autoSync()});
+</script>
+
+</body>
+</html>
