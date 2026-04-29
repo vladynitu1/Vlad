@@ -158,7 +158,23 @@ main{position:relative;z-index:1;max-width:940px;margin:0 auto;padding:24px 16px
 }
 .tc-del:hover{background:var(--rdd);color:var(--rd)}
 
-/* ── EMPTY ── */
+/* ── TREN DESCRIERE ── */
+.tc-desc-wrap{margin-top:3px;display:flex;flex-direction:column;gap:3px}
+.tc-desc-ta{
+  background:rgba(0,200,232,0.04);border:1px solid var(--b2);border-radius:5px;
+  color:var(--tx2);font-family:var(--fn);font-size:11px;
+  padding:4px 8px;resize:none;outline:none;width:100%;
+  transition:border-color .15s,height .18s;line-height:1.5;
+  min-height:28px;overflow:hidden;
+}
+.tc-desc-ta:focus{border-color:var(--ac);background:rgba(0,200,232,0.07);color:var(--tx)}
+.tc-desc-ta::placeholder{color:var(--tx3);font-size:10px}
+.btn-desc{
+  background:none;border:none;color:var(--tx3);font-family:var(--fd);
+  font-size:9px;letter-spacing:1px;text-transform:uppercase;
+  cursor:pointer;padding:1px 4px;transition:color .15s;align-self:flex-start;
+}
+.btn-desc:hover{color:var(--ac2)}
 .empty{text-align:center;padding:70px 20px;color:var(--tx3)}
 .eico{font-size:44px;margin-bottom:14px;opacity:.45}
 .etit{font-family:var(--fd);font-size:20px;font-weight:700;color:var(--tx2);margin-bottom:6px;letter-spacing:2px}
@@ -195,7 +211,7 @@ main{position:relative;z-index:1;max-width:940px;margin:0 auto;padding:24px 16px
       <span class="emx-dot">●</span>
     </div>
     <div class="emx-sub">
-      <span class="emx-tag">TURNUSURI CFR</span>
+      <span class="emx-tag">TURNUSURI</span>
       <span class="emx-status" id="stxt">NESALVAT</span>
     </div>
   </div>
@@ -307,7 +323,7 @@ function showToast(msg, type='ok'){
 
 /* ── UTILS ── */
 function uid(){ return Math.random().toString(36).slice(2,9); }
-function newTren(){ return {id:uid(), n:'', p:'', s:''}; }
+function newTren(){ return {id:uid(), n:'', p:'', s:'', desc:''}; }
 function newGrupa(){ return {id:uid(), pt:'', trenuri:[], it:''}; }
 function newTurnus(){ return {id:uid(), titlu:'', grupe:[newGrupa()]}; }
 
@@ -484,6 +500,42 @@ function buildTren(ti, gi, tr, tri){
   row.appendChild(btnDel);
 
   inner.appendChild(row);
+
+  // Descriere opțională
+  const descWrap = document.createElement('div');
+  descWrap.className = 'tc-desc-wrap';
+
+  const hasDesc = !!(tr.desc && tr.desc.trim());
+
+  const btnDesc = document.createElement('button');
+  btnDesc.className = 'btn-desc';
+  btnDesc.textContent = hasDesc ? '✎ descriere' : '+ descriere';
+
+  const ta = document.createElement('textarea');
+  ta.className = 'tc-desc-ta';
+  ta.placeholder = 'notă opțională...';
+  ta.rows = 1;
+  ta.value = tr.desc || '';
+  ta.style.display = hasDesc ? 'block' : 'none';
+
+  // Auto-resize
+  const resize = () => { ta.style.height = '0'; ta.style.height = ta.scrollHeight + 'px'; };
+  ta.addEventListener('input', function(){
+    D[ti].grupe[gi].trenuri[tri].desc = this.value;
+    btnDesc.textContent = this.value.trim() ? '✎ descriere' : '+ descriere';
+    resize(); mu();
+  });
+  if(hasDesc) setTimeout(resize, 0);
+
+  btnDesc.addEventListener('click', function(){
+    const visible = ta.style.display !== 'none';
+    ta.style.display = visible ? 'none' : 'block';
+    if(!visible){ ta.focus(); resize(); }
+  });
+
+  descWrap.appendChild(btnDesc);
+  descWrap.appendChild(ta);
+  inner.appendChild(descWrap);
   seg.appendChild(inner);
   return seg;
 }
