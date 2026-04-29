@@ -3,72 +3,107 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TFC Turnusuri</title>
+<title>EMX Turnusuri</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Rajdhani:wght@600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 :root{
-  --bg:#090c12;--s1:#111520;--s2:#161c2a;--s3:#1c2336;
-  --b1:#232d42;--b2:#2d3a55;
-  --ac:#3b82f6;--ac2:#60a5fa;--acd:rgba(59,130,246,0.13);--acg:rgba(59,130,246,0.28);
-  --gr:#22c55e;--grd:rgba(34,197,94,0.13);
-  --am:#f59e0b;--amd:rgba(245,158,11,0.13);
-  --rd:#ef4444;--rdd:rgba(239,68,68,0.13);
+  --bg:#07090f;--s1:#0d1117;--s2:#141b27;--s3:#1a2236;
+  --b1:#1e3356;--b2:#2a4070;
+  --ac:#00c8e8;--ac2:#4dd6f0;--acd:rgba(0,200,232,0.14);--acg:rgba(0,200,232,0.28);
+  --gr:#00e5a0;--grd:rgba(0,229,160,0.10);
+  --am:#ffc940;--amd:rgba(255,201,64,0.12);
+  --rd:#ff4d6d;--rdd:rgba(255,77,109,0.09);
   --pu:#a855f7;--pud:rgba(168,85,247,0.13);
-  --tx:#e2e8f0;--tx2:#94a3b8;--tx3:#64748b;
-  --fn:'JetBrains Mono',monospace;--fd:'Rajdhani',sans-serif;
+  --tx:#d8e8f5;--tx2:#8aafcc;--tx3:#5a7a9a;
+  --fn:'JetBrains Mono',monospace;--fd:'Rajdhani',sans-serif;--fm:'Share Tech Mono',monospace;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--tx);font-family:var(--fn);min-height:100vh}
-body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(59,130,246,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,0.025) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,200,232,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(0,200,232,0.018) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
 
-/* BANNER */
-.banner{position:sticky;top:0;z-index:100;background:rgba(9,12,18,0.93);backdrop-filter:blur(14px);border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:12px;padding:0 20px;height:58px}
-.logo{font-family:var(--fd);font-size:21px;font-weight:700;letter-spacing:3px;color:var(--ac2);text-shadow:0 0 18px var(--acg);flex-shrink:0}
-.logo small{color:var(--tx3);font-weight:600;font-size:12px;letter-spacing:1px;margin-left:6px}
-.bcenter{flex:1;display:flex;align-items:center;justify-content:center;gap:7px}
+/* ── BANNER EMX ── */
+.banner{
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 20px;
+  background:linear-gradient(135deg,#0a0a1a,#0d1530,#0a1a0a);
+  border-bottom:1px solid transparent;
+  position:sticky;top:0;
+  overflow:hidden;gap:10px;flex-wrap:wrap;
+  box-shadow:0 0 40px rgba(0,200,255,0.08),0 0 80px rgba(0,255,100,0.04);
+}
+.banner::before{
+  content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  border-bottom:1px solid;
+  border-image:linear-gradient(90deg,transparent,var(--ac),var(--gr),transparent) 1;
+  pointer-events:none;
+}
+.banner::after{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(0,200,255,0.03),transparent);animation:hdrShine 4s infinite;pointer-events:none}
+@keyframes hdrShine{0%{left:-100%}100%{left:200%}}
+
+.emx-brand{display:flex;flex-direction:column;justify-content:center;gap:2px;position:relative;z-index:1}
+.emx-logo{display:flex;align-items:center;gap:0px;line-height:1}
+.emx-e{font-family:var(--fd);font-size:2.2rem;font-weight:900;color:var(--ac);letter-spacing:-2px;text-shadow:0 0 25px var(--ac),0 0 50px rgba(0,200,255,0.5)}
+.emx-m{font-family:var(--fd);font-size:2.2rem;font-weight:900;color:#fff;letter-spacing:-2px;text-shadow:0 0 15px rgba(255,255,255,0.4)}
+.emx-x{font-family:var(--fd);font-size:2.2rem;font-weight:900;color:var(--gr);letter-spacing:-2px;text-shadow:0 0 25px var(--gr),0 0 50px rgba(0,255,100,0.5)}
+.emx-dot{font-size:.55rem;color:var(--ac);margin-left:5px;animation:pd 1.5s infinite;align-self:center}
+@keyframes pd{0%,100%{opacity:1}50%{opacity:.2}}
+.emx-sub{display:flex;flex-direction:column;gap:1px;margin-top:2px}
+.emx-tag{font-family:var(--fm);font-size:0.52rem;color:var(--tx3);letter-spacing:2.5px;text-transform:uppercase}
+.emx-status{font-family:var(--fm);font-size:0.58rem;color:var(--gr);letter-spacing:1px}
+
+.bcenter{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;position:relative;z-index:1}
 .sdot{width:6px;height:6px;border-radius:50%;background:var(--gr);box-shadow:0 0 7px var(--gr);animation:pd 2s infinite}
-@keyframes pd{0%,100%{opacity:1}50%{opacity:.35}}
-.stxt{font-size:10px;color:var(--tx3);letter-spacing:1.5px}
-.bacts{display:flex;gap:8px;flex-shrink:0}
+.stxt{font-family:var(--fm);font-size:10px;color:var(--tx3);letter-spacing:1.5px}
 
-/* BUTTONS */
-.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:6px;border:1px solid;font-family:var(--fn);font-size:10px;font-weight:600;letter-spacing:.5px;cursor:pointer;transition:all .16s;white-space:nowrap}
+.bacts{display:flex;gap:7px;flex-shrink:0;position:relative;z-index:1;flex-wrap:wrap}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:7px;border:1px solid;font-family:var(--fd);font-size:0.78rem;font-weight:600;letter-spacing:1px;cursor:pointer;transition:all .16s;white-space:nowrap;text-transform:uppercase}
 .btn svg{width:12px;height:12px;flex-shrink:0}
 .btn-g{background:transparent;border-color:var(--b2);color:var(--tx2)}
 .btn-g:hover{border-color:var(--ac);color:var(--ac2);background:var(--acd)}
 .btn-ac{background:var(--acd);border-color:var(--ac);color:var(--ac2)}
-.btn-ac:hover{background:rgba(59,130,246,.22);box-shadow:0 0 14px var(--acg)}
+.btn-ac:hover{background:rgba(0,200,232,.22);box-shadow:0 0 14px var(--acg)}
 .btn-gr{background:var(--grd);border-color:var(--gr);color:var(--gr)}
-.btn-gr:hover{background:rgba(34,197,94,.2);box-shadow:0 0 12px rgba(34,197,94,.3)}
+.btn-gr:hover{background:rgba(0,229,160,.2);box-shadow:0 0 12px rgba(0,229,160,.3)}
 .btn-rd{background:var(--rdd);border-color:var(--rd);color:var(--rd);padding:3px 8px;font-size:10px}
-.btn-rd:hover{background:rgba(239,68,68,.22)}
-.btn-sm{padding:4px 9px;font-size:10px}
+.btn-rd:hover{background:rgba(255,77,109,.22)}
+.btn-sm{padding:4px 9px;font-size:0.72rem}
 
-/* TOKEN PANEL */
-.tpanel{background:var(--s1);border:1px solid var(--b1);border-radius:10px;padding:14px 18px;margin-bottom:20px;display:none;gap:8px;align-items:center;flex-wrap:wrap}
-.tpanel.open{display:flex}
-.tpanel label{font-size:10px;color:var(--tx3);letter-spacing:1px;flex-shrink:0}
-.tinput{background:var(--bg);border:1px solid var(--b2);color:var(--tx);font-family:var(--fn);font-size:11px;padding:6px 10px;border-radius:5px;outline:none;transition:border-color .18s}
-.tinput:focus{border-color:var(--ac)}
-.ti-long{flex:1;min-width:150px}
-.ti-med{width:170px}
-.ti-sm{width:130px}
+/* ── TOKEN MODAL ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(7,9,15,0.92);z-index:300;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(5px)}
+.overlay.open{display:flex}
+.modal{background:var(--s2);border:1px solid var(--b2);border-radius:14px;padding:22px;width:100%;max-width:460px;position:relative}
+.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gr),var(--ac),transparent);border-radius:14px 14px 0 0}
+.modal h2{font-family:var(--fd);font-size:1.1rem;font-weight:700;letter-spacing:2px;color:var(--gr);text-transform:uppercase;margin-bottom:12px}
+.mclose{position:absolute;top:10px;right:12px;background:none;border:none;color:var(--tx3);font-size:1.1rem;cursor:pointer;font-family:var(--fd)}
+.mclose:hover{color:var(--rd)}
+.tok-field{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.tok-field label{font-family:var(--fd);font-size:0.62rem;letter-spacing:2px;color:var(--tx3);text-transform:uppercase}
+.tok-input{background:var(--bg);border:1px solid var(--b2);color:var(--tx);font-family:var(--fm);font-size:.83rem;padding:8px 10px;border-radius:7px;outline:none;width:100%;transition:border-color .18s}
+.tok-input:focus{border-color:var(--ac)}
+.tok-hint{font-size:.7rem;color:var(--tx3);line-height:1.6;margin-bottom:12px}
+.tok-hint a{color:var(--gr)}
+.tok-hint strong{color:var(--ac);font-family:var(--fd);letter-spacing:.5px}
+.tok-actions{display:flex;flex-direction:column;gap:6px}
+.tok-actions .btn{width:100%;justify-content:center}
 
-/* MAIN */
-main{position:relative;z-index:1;max-width:940px;margin:0 auto;padding:28px 18px 80px}
+/* ── MAIN ── */
+main{position:relative;z-index:1;max-width:940px;margin:0 auto;padding:24px 16px 80px}
 .tlist{display:flex;flex-direction:column;gap:18px}
 
-/* TURNUS CARD */
+/* ── TURNUS CARD ── */
 .tcard{background:var(--s1);border:1px solid var(--b1);border-radius:12px;overflow:hidden;animation:ci .22s ease;position:relative}
 @keyframes ci{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.tcard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--ac),var(--pu))}
-.thead{display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--b1);background:var(--s2)}
+.tcard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--ac),var(--gr))}
+.thead{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--b1);background:var(--s2)}
 .tnum{font-family:var(--fd);font-size:17px;font-weight:700;color:var(--ac2);letter-spacing:2px;text-shadow:0 0 10px var(--acg);flex-shrink:0}
 .ttitle{flex:1;background:transparent;border:none;font-family:var(--fd);font-size:15px;font-weight:600;color:var(--tx);outline:none;letter-spacing:1px}
 .ttitle::placeholder{color:var(--tx3)}
-.tbody{padding:14px 18px;display:flex;flex-direction:column}
+.tbody{padding:12px 16px;display:flex;flex-direction:column}
 
-/* SEGMENTS (timeline) */
+/* ── SEGMENTS ── */
 .seg{border-left:2px solid var(--b1);padding:10px 0 10px 16px;margin-left:9px;position:relative}
 .seg:last-child{border-left-color:transparent}
 .dot{position:absolute;left:-7px;top:14px;width:12px;height:12px;border-radius:50%;border:2px solid var(--s1)}
@@ -77,29 +112,59 @@ main{position:relative;z-index:1;max-width:940px;margin:0 auto;padding:28px 18px
 .dot-ie{background:var(--am);box-shadow:0 0 7px var(--am)}
 .dot-do{background:var(--pu);box-shadow:0 0 7px var(--pu)}
 .dot-add{background:var(--b2)}
-.slbl{font-size:9px;letter-spacing:2px;font-weight:600;text-transform:uppercase;margin-bottom:7px}
+.slbl{font-family:var(--fd);font-size:9px;letter-spacing:2px;font-weight:700;text-transform:uppercase;margin-bottom:7px}
 .slbl-pr{color:var(--gr)}
 .slbl-tr{color:var(--ac2)}
 .slbl-ie{color:var(--am)}
 .slbl-do{color:var(--pu)}
 .srow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px}
 .tf{display:flex;align-items:center;gap:5px}
-.tl{font-size:9px;color:var(--tx3);letter-spacing:1px;flex-shrink:0}
-.ti{background:var(--s3);border:1px solid var(--b2);color:var(--tx);font-family:var(--fn);font-size:12px;font-weight:500;padding:5px 9px;border-radius:5px;outline:none;width:66px;text-align:center;transition:border-color .16s,box-shadow .16s}
+.tl{font-family:var(--fd);font-size:9px;color:var(--tx3);letter-spacing:1px;flex-shrink:0;text-transform:uppercase}
+.ti{background:var(--s3);border:1px solid var(--b2);color:var(--tx);font-family:var(--fm);font-size:12px;font-weight:500;padding:5px 9px;border-radius:5px;outline:none;width:66px;text-align:center;transition:border-color .16s,box-shadow .16s}
 .ti:focus{border-color:var(--ac);box-shadow:0 0 0 2px var(--acd)}
-.tni{background:var(--s3);border:1px solid var(--b2);color:var(--ac2);font-family:var(--fn);font-size:12px;font-weight:600;padding:5px 9px;border-radius:5px;outline:none;width:88px;text-align:center;transition:border-color .16s}
-.tni:focus{border-color:var(--ac)}
 .arr{color:var(--tx3);font-size:13px}
 .dbox{background:var(--pud);border:1px solid rgba(168,85,247,.22);border-radius:6px;padding:7px 12px;font-size:11px;color:var(--pu);display:flex;align-items:center;gap:7px;flex-wrap:wrap}
 .arow{display:flex;align-items:center;gap:7px;padding:3px 0;flex-wrap:wrap}
 
-/* EMPTY */
+/* ── TREN ROW COMPACT ── */
+.tren-compact{
+  display:flex;align-items:center;gap:0;
+  background:var(--s3);border:1px solid var(--b2);border-radius:7px;
+  overflow:hidden;flex-wrap:nowrap;
+  margin-bottom:4px;
+}
+.tren-compact:focus-within{border-color:var(--ac);box-shadow:0 0 0 2px var(--acd)}
+.tc-nr{
+  background:rgba(0,200,232,0.08);
+  border-right:1px solid var(--b2);
+  font-family:var(--fm);font-size:12px;font-weight:600;color:var(--ac2);
+  padding:5px 8px;min-width:68px;text-align:center;
+  outline:none;border-top:none;border-bottom:none;border-left:none;
+  width:72px;
+}
+.tc-nr:focus{background:rgba(0,200,232,0.14);color:var(--ac)}
+.tc-sep{color:var(--tx3);font-size:11px;padding:0 2px;flex-shrink:0;user-select:none}
+.tc-time{
+  font-family:var(--fm);font-size:12px;color:var(--tx);
+  padding:5px 5px;width:56px;text-align:center;
+  outline:none;background:transparent;border:none;
+}
+.tc-time:focus{background:rgba(0,200,232,0.07);color:var(--ac2)}
+.tc-arr{color:var(--tx3);font-size:11px;padding:0 1px;flex-shrink:0;user-select:none}
+.tc-del{
+  background:transparent;border:none;border-left:1px solid var(--b2);
+  color:var(--tx3);cursor:pointer;padding:5px 8px;font-size:11px;
+  transition:all .15s;flex-shrink:0;
+}
+.tc-del:hover{background:var(--rdd);color:var(--rd)}
+
+/* ── EMPTY ── */
 .empty{text-align:center;padding:70px 20px;color:var(--tx3)}
 .eico{font-size:44px;margin-bottom:14px;opacity:.45}
 .etit{font-family:var(--fd);font-size:20px;font-weight:700;color:var(--tx2);margin-bottom:6px;letter-spacing:2px}
 .esub{font-size:11px;letter-spacing:.5px}
 
-/* TOAST */
+/* ── TOAST ── */
 .toast{position:fixed;bottom:22px;right:22px;z-index:999;background:var(--s2);border:1px solid var(--b2);border-radius:8px;padding:11px 16px;font-size:11px;color:var(--tx);display:flex;align-items:center;gap:9px;box-shadow:0 8px 28px rgba(0,0,0,.5);transform:translateY(70px);opacity:0;transition:all .28s cubic-bezier(.34,1.56,.64,1);pointer-events:none}
 .toast.show{transform:translateY(0);opacity:1}
 .toast.ok{border-color:var(--gr)}
@@ -108,26 +173,42 @@ main{position:relative;z-index:1;max-width:940px;margin:0 auto;padding:28px 18px
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
+
 @media(max-width:560px){
-  .banner{padding:0 10px;gap:7px}
-  .logo small,.bcenter{display:none}
-  main{padding:14px 10px 60px}
+  .banner{padding:10px 12px;gap:6px}
+  .emx-e,.emx-m,.emx-x{font-size:1.7rem}
+  .bcenter{display:none}
+  main{padding:12px 10px 60px}
   .thead,.tbody{padding:10px 12px}
+  .tc-nr{width:64px;font-size:11px}
+  .tc-time{width:50px;font-size:11px}
 }
 </style>
 </head>
 <body>
 
+<!-- BANNER EMX -->
 <header class="banner">
-  <div class="logo">TFC<small>TURNUSURI</small></div>
+  <div class="emx-brand">
+    <div class="emx-logo">
+      <span class="emx-e">E</span><span class="emx-m">M</span><span class="emx-x">X</span>
+      <span class="emx-dot">●</span>
+    </div>
+    <div class="emx-sub">
+      <span class="emx-tag">TURNUSURI CFR</span>
+      <span class="emx-status" id="stxt">NESALVAT</span>
+    </div>
+  </div>
+
   <div class="bcenter">
     <div class="sdot"></div>
-    <span class="stxt" id="stxt">NESALVAT</span>
+    <span class="stxt" id="stxtMid">NESALVAT</span>
   </div>
+
   <div class="bacts">
-    <button class="btn btn-g" onclick="toggleToken()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
-      GitHub
+    <button class="btn btn-g" onclick="openTokenModal()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      Token
     </button>
     <button class="btn btn-gr" onclick="saveGH()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v14a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
@@ -140,21 +221,45 @@ main{position:relative;z-index:1;max-width:940px;margin:0 auto;padding:28px 18px
   </div>
 </header>
 
-<main>
-  <div class="tpanel" id="tpanel">
-    <label>TOKEN</label>
-    <input class="tinput ti-long" id="ghTok" type="password" placeholder="ghp_xxxxxxxxxxxxxxxx" oninput="saveCfg()">
-    <label>REPO</label>
-    <input class="tinput ti-med" id="ghRepo" type="text" placeholder="user/repo" oninput="saveCfg()">
-    <label>FIȘIER</label>
-    <input class="tinput ti-sm" id="ghFile" type="text" placeholder="turnusuri.json" oninput="saveCfg()">
-    <button class="btn btn-gr btn-sm" onclick="loadGH()">
-      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
-      Încarcă
-    </button>
-    <button class="btn btn-ac btn-sm" onclick="toggleToken()">OK</button>
+<!-- TOKEN MODAL -->
+<div class="overlay" id="tokenOverlay">
+  <div class="modal">
+    <button class="mclose" onclick="closeTokenModal()">✕</button>
+    <h2>🔑 GitHub Token</h2>
+    <div class="tok-hint">
+      Sincronizare date pe toate dispozitivele.<br><br>
+      <strong>Cum obții tokenul:</strong><br>
+      1. Mergi pe <a href="https://github.com/settings/tokens/new" target="_blank">github.com/settings/tokens/new</a><br>
+      2. Bifează permisiunea <strong>repo</strong><br>
+      3. Click <strong>Generate token</strong> și copiază-l
+    </div>
+    <div class="tok-field">
+      <label>Token</label>
+      <input id="ghTok" class="tok-input" type="password" placeholder="ghp_xxxxxxxxxxxxxxxx" oninput="saveCfg()">
+    </div>
+    <div class="tok-field">
+      <label>Repo (user/repo)</label>
+      <input id="ghRepo" class="tok-input" type="text" placeholder="user/repo" oninput="saveCfg()">
+    </div>
+    <div class="tok-field">
+      <label>Fișier</label>
+      <input id="ghFile" class="tok-input" type="text" placeholder="turnusuri.json" oninput="saveCfg()">
+    </div>
+    <div class="tok-actions">
+      <button class="btn btn-g" onclick="loadGH()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+        Încarcă din GitHub
+      </button>
+      <button class="btn btn-gr" onclick="saveGH();closeTokenModal()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v14a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Salvează
+      </button>
+      <button class="btn btn-ac" onclick="closeTokenModal()">✓ OK</button>
+    </div>
   </div>
+</div>
 
+<main>
   <div class="tlist" id="tlist"></div>
   <div class="empty" id="empty">
     <div class="eico">🚂</div>
@@ -171,39 +276,68 @@ main{position:relative;z-index:1;max-width:940px;margin:0 auto;padding:28px 18px
 let D=[];
 const $ = id => document.getElementById(id);
 
-function saveCfg(){['ghTok','ghRepo','ghFile'].forEach(k=>localStorage.setItem(k,$(k).value))}
-function loadCfg(){['ghTok','ghRepo','ghFile'].forEach(k=>$(k).value=localStorage.getItem(k)||( k==='ghFile'?'turnusuri.json':'' ))}
-function toggleToken(){$('tpanel').classList.toggle('open')}
-
-function showToast(msg,type='ok'){
-  const t=$('toast'); $('tMsg').textContent=msg; $('tIco').textContent=type==='ok'?'✓':'✗';
-  t.className='toast show '+type; setTimeout(()=>t.classList.remove('show'),3400);
+/* ── CONFIG ── */
+function saveCfg(){
+  ['ghTok','ghRepo','ghFile'].forEach(k => localStorage.setItem(k, $(k).value));
+}
+function loadCfg(){
+  ['ghTok','ghRepo','ghFile'].forEach(k => {
+    $(k).value = localStorage.getItem(k) || (k==='ghFile' ? 'turnusuri.json' : '');
+  });
 }
 
-function uid(){return Math.random().toString(36).slice(2,9)}
-function newTren(){return{id:uid(),n:'',p:'',s:''}}
-function newGrupa(){return{id:uid(),pt:'',trenuri:[],it:''}}
-function newTurnus(){return{id:uid(),titlu:'',grupe:[newGrupa()]}}
+/* ── TOKEN MODAL ── */
+function openTokenModal(){ $('tokenOverlay').classList.add('open'); }
+function closeTokenModal(){ $('tokenOverlay').classList.remove('open'); }
 
-function dur(a,b){
-  if(!a||!b)return'';
-  const[ah,am]=a.split(':').map(Number),[bh,bm]=b.split(':').map(Number);
-  if([ah,am,bh,bm].some(isNaN))return'';
-  let m=bh*60+bm-(ah*60+am); if(m<0)m+=1440;
+/* ── TOAST ── */
+function showToast(msg, type='ok'){
+  const t=$('toast');
+  $('tMsg').textContent = msg;
+  $('tIco').textContent = type==='ok' ? '✓' : '✗';
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.classList.remove('show'), 3400);
+}
+
+/* ── UTILS ── */
+function uid(){ return Math.random().toString(36).slice(2,9); }
+function newTren(){ return {id:uid(), n:'', p:'', s:''}; }
+function newGrupa(){ return {id:uid(), pt:'', trenuri:[], it:''}; }
+function newTurnus(){ return {id:uid(), titlu:'', grupe:[newGrupa()]}; }
+
+function dur(a, b){
+  if(!a||!b) return '';
+  const [ah,am] = a.split(':').map(Number);
+  const [bh,bm] = b.split(':').map(Number);
+  if([ah,am,bh,bm].some(isNaN)) return '';
+  let m = bh*60+bm-(ah*60+am);
+  if(m<0) m+=1440;
   return `${Math.floor(m/60)}h ${(m%60).toString().padStart(2,'0')}m`;
 }
-function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}
-function mu(){$('stxt').textContent='NESALVAT ●'}
-
-function render(){
-  $('empty').style.display=D.length?'none':'block';
-  const list=$('tlist'); list.innerHTML='';
-  D.forEach((t,ti)=>list.appendChild(buildCard(t,ti)));
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+function mu(){
+  const s = 'NESALVAT ●';
+  $('stxt').textContent = s;
+  if($('stxtMid')) $('stxtMid').textContent = s;
+}
+function setSaved(){
+  const s = 'SALVAT ✓';
+  $('stxt').textContent = s;
+  if($('stxtMid')) $('stxtMid').textContent = s;
 }
 
-function buildCard(t,ti){
-  const card=document.createElement('div'); card.className='tcard';
-  card.innerHTML=`
+/* ── RENDER ── */
+function render(){
+  $('empty').style.display = D.length ? 'none' : 'block';
+  const list = $('tlist');
+  list.innerHTML = '';
+  D.forEach((t,ti) => list.appendChild(buildCard(t,ti)));
+}
+
+function buildCard(t, ti){
+  const card = document.createElement('div');
+  card.className = 'tcard';
+  card.innerHTML = `
     <div class="thead">
       <div class="tnum">T${ti+1}</div>
       <input class="ttitle" placeholder="Turnus ${ti+1} — denumire opțională" value="${esc(t.titlu)}"
@@ -211,15 +345,15 @@ function buildCard(t,ti){
       <button class="btn btn-rd" onclick="delTurnus(${ti})">✕ Șterge</button>
     </div>
     <div class="tbody" id="body-${ti}"></div>`;
-  const body=card.querySelector(`#body-${ti}`);
-  t.grupe.forEach((g,gi)=>{
-    if(gi>0) body.appendChild(buildDorm(t,ti,gi));
-    body.appendChild(buildGrupa(t,ti,g,gi));
+  const body = card.querySelector(`#body-${ti}`);
+  t.grupe.forEach((g, gi) => {
+    if(gi>0) body.appendChild(buildDorm(t, ti, gi));
+    body.appendChild(buildGrupa(t, ti, g, gi));
   });
-  // add prezentare
-  const s=mkSeg('add','');
-  s.querySelector('.dot').className='dot dot-add';
-  s.querySelector('div:last-child').innerHTML=`<div class="arow">
+  // Add prezentare button
+  const s = mkSeg('add','');
+  s.querySelector('.dot').className = 'dot dot-add';
+  s.querySelector('div:last-child').innerHTML = `<div class="arow">
     <button class="btn btn-g btn-sm" onclick="addGrupa(${ti})">
       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
       Adaugă Prezentare
@@ -228,135 +362,298 @@ function buildCard(t,ti){
   return card;
 }
 
-function buildGrupa(t,ti,g,gi){
-  const wrap=document.createElement('div');
+function buildGrupa(t, ti, g, gi){
+  const wrap = document.createElement('div');
   // Prezentare
-  wrap.appendChild(mkSeg('pr',`
+  wrap.appendChild(mkSeg('pr', `
     <div class="slbl slbl-pr">▶ PREZENTARE</div>
     <div class="srow"><div class="tf"><span class="tl">ORA</span>
       <input class="ti" type="text" maxlength="5" placeholder="HH:MM" value="${esc(g.pt)}"
         oninput="D[${ti}].grupe[${gi}].pt=this.value;updDorm(${ti});mu()">
     </div></div>`));
   // Trenuri
-  g.trenuri.forEach((tr,tri)=>wrap.appendChild(buildTren(ti,gi,tr,tri)));
-  // Add tren
-  const sa=mkSeg('tr','');
-  sa.querySelector('.dot').className='dot dot-add';
-  sa.querySelector('div:last-child').innerHTML=`<div class="arow">
+  g.trenuri.forEach((tr, tri) => wrap.appendChild(buildTren(ti, gi, tr, tri)));
+  // Add tren button
+  const sa = mkSeg('tr','');
+  sa.querySelector('.dot').className = 'dot dot-add';
+  sa.querySelector('div:last-child').innerHTML = `<div class="arow">
     <button class="btn btn-g btn-sm" onclick="addTren(${ti},${gi})">
       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
       Adaugă Tren
     </button></div>`;
   wrap.appendChild(sa);
   // Iesire
-  const canDel=t.grupe.length>1;
-  wrap.appendChild(mkSeg('ie',`
+  const canDel = t.grupe.length > 1;
+  wrap.appendChild(mkSeg('ie', `
     <div class="slbl slbl-ie">◀ IEȘIRE</div>
     <div class="srow"><div class="tf"><span class="tl">ORA</span>
       <input class="ti" type="text" maxlength="5" placeholder="HH:MM" value="${esc(g.it)}"
         oninput="D[${ti}].grupe[${gi}].it=this.value;updDorm(${ti});mu()">
     </div>
-    ${canDel?`<button class="btn btn-rd" onclick="delGrupa(${ti},${gi})" style="margin-left:auto">✕ Șterge bloc</button>`:''}
+    ${canDel ? `<button class="btn btn-rd" onclick="delGrupa(${ti},${gi})" style="margin-left:auto">✕ Șterge bloc</button>` : ''}
     </div>`));
   return wrap;
 }
 
-function buildTren(ti,gi,tr,tri){
-  return mkSeg('tr',`
-    <div class="slbl slbl-tr">🚂 TREN</div>
-    <div class="srow">
-      <div class="tf"><span class="tl">NR.</span>
-        <input class="tni" type="text" maxlength="6" placeholder="10245" value="${esc(tr.n)}"
-          oninput="D[${ti}].grupe[${gi}].trenuri[${tri}].n=this.value;mu()">
-      </div>
-      <div class="tf"><span class="tl">PLECARE</span>
-        <input class="ti" type="text" maxlength="5" placeholder="HH:MM" value="${esc(tr.p)}"
-          oninput="D[${ti}].grupe[${gi}].trenuri[${tri}].p=this.value;mu()">
-      </div>
-      <div class="arr">→</div>
-      <div class="tf"><span class="tl">SOSIRE</span>
-        <input class="ti" type="text" maxlength="5" placeholder="HH:MM" value="${esc(tr.s)}"
-          oninput="D[${ti}].grupe[${gi}].trenuri[${tri}].s=this.value;mu()">
-      </div>
-      <button class="btn btn-rd" onclick="delTren(${ti},${gi},${tri})" style="margin-left:auto">✕</button>
-    </div>`);
+/* ── TREN COMPACT ROW ── */
+function buildTren(ti, gi, tr, tri){
+  const seg = document.createElement('div');
+  seg.className = 'seg';
+  const dot = document.createElement('div');
+  dot.className = 'dot dot-tr';
+  seg.appendChild(dot);
+
+  const inner = document.createElement('div');
+  inner.innerHTML = `<div class="slbl slbl-tr">🚂 TREN</div>`;
+
+  // Compact row
+  const row = document.createElement('div');
+  row.className = 'tren-compact';
+
+  // Nr tren
+  const inpN = document.createElement('input');
+  inpN.className = 'tc-nr';
+  inpN.type = 'text';
+  inpN.maxLength = 7;
+  inpN.placeholder = '10245';
+  inpN.value = tr.n || '';
+  inpN.title = 'Număr tren';
+  inpN.addEventListener('input', function(){ D[ti].grupe[gi].trenuri[tri].n = this.value; mu(); });
+  row.appendChild(inpN);
+
+  // Separator
+  const sep1 = document.createElement('span');
+  sep1.className = 'tc-sep';
+  sep1.textContent = '·';
+  row.appendChild(sep1);
+
+  // Plecare
+  const inpP = document.createElement('input');
+  inpP.className = 'tc-time';
+  inpP.type = 'text';
+  inpP.maxLength = 5;
+  inpP.placeholder = '11:45';
+  inpP.value = tr.p || '';
+  inpP.title = 'Plecare';
+  inpP.addEventListener('input', function(){ D[ti].grupe[gi].trenuri[tri].p = this.value; mu(); });
+  row.appendChild(inpP);
+
+  // Arrow
+  const arr = document.createElement('span');
+  arr.className = 'tc-arr';
+  arr.textContent = '→';
+  row.appendChild(arr);
+
+  // Sosire
+  const inpS = document.createElement('input');
+  inpS.className = 'tc-time';
+  inpS.type = 'text';
+  inpS.maxLength = 5;
+  inpS.placeholder = '12:37';
+  inpS.value = tr.s || '';
+  inpS.title = 'Sosire';
+  inpS.addEventListener('input', function(){ D[ti].grupe[gi].trenuri[tri].s = this.value; mu(); });
+  row.appendChild(inpS);
+
+  // Durată auto
+  const durEl = document.createElement('span');
+  durEl.style.cssText = 'font-family:var(--fd);font-size:10px;color:var(--tx3);padding:0 6px;flex:1;white-space:nowrap;letter-spacing:.5px';
+  durEl.className = 'tc-dur';
+  const updateDur = () => {
+    const d = dur(inpP.value, inpS.value);
+    durEl.textContent = d || '';
+    durEl.style.color = d ? 'var(--gr)' : 'var(--tx3)';
+  };
+  inpP.addEventListener('input', updateDur);
+  inpS.addEventListener('input', updateDur);
+  updateDur();
+  row.appendChild(durEl);
+
+  // Delete
+  const btnDel = document.createElement('button');
+  btnDel.className = 'tc-del';
+  btnDel.title = 'Șterge tren';
+  btnDel.innerHTML = '✕';
+  btnDel.addEventListener('click', function(){ delTren(ti, gi, tri); });
+  row.appendChild(btnDel);
+
+  inner.appendChild(row);
+  seg.appendChild(inner);
+  return seg;
 }
 
-function buildDorm(t,ti,gi){
-  const ie=t.grupe[gi-1].it||'—';
-  const pr=t.grupe[gi].pt||'—';
-  const d=dur(t.grupe[gi-1].it,t.grupe[gi].pt);
-  const s=mkSeg('do',`
+function buildDorm(t, ti, gi){
+  const ie = t.grupe[gi-1].it || '—';
+  const pr = t.grupe[gi].pt || '—';
+  const d = dur(t.grupe[gi-1].it, t.grupe[gi].pt);
+  const s = mkSeg('do', `
     <div class="slbl slbl-do">🌙 DORMITOR</div>
     <div class="dbox" id="dorm-${ti}-${gi}">
       <span>🌙</span>
       <span>Ieșire <strong>${ie}</strong> → Prezentare <strong>${pr}</strong></span>
-      ${d?`<span style="margin-left:auto;font-size:10px;opacity:.65">${d}</span>`:''}
+      ${d ? `<span style="margin-left:auto;font-size:10px;opacity:.65">${d}</span>` : ''}
     </div>`);
-  s.dataset.dorm=`${ti}-${gi}`;
   return s;
 }
 
-function mkSeg(type,html){
-  const el=document.createElement('div'); el.className='seg';
-  const dot=document.createElement('div');
-  const map={pr:'dot-pr',tr:'dot-tr',ie:'dot-ie',do:'dot-do',add:'dot-add'};
-  dot.className=`dot ${map[type]||'dot-add'}`;
+function mkSeg(type, html){
+  const el = document.createElement('div');
+  el.className = 'seg';
+  const dot = document.createElement('div');
+  const map = {pr:'dot-pr', tr:'dot-tr', ie:'dot-ie', do:'dot-do', add:'dot-add'};
+  dot.className = `dot ${map[type]||'dot-add'}`;
   el.appendChild(dot);
-  const inner=document.createElement('div'); inner.innerHTML=html;
-  el.appendChild(inner); return el;
+  const inner = document.createElement('div');
+  inner.innerHTML = html;
+  el.appendChild(inner);
+  return el;
 }
 
 function updDorm(ti){
-  const t=D[ti];
-  t.grupe.forEach((g,gi)=>{
-    if(gi===0)return;
-    const el=document.getElementById(`dorm-${ti}-${gi}`); if(!el)return;
-    const ie=t.grupe[gi-1].it||'—', pr=g.pt||'—';
-    const d=dur(t.grupe[gi-1].it,g.pt);
-    el.innerHTML=`<span>🌙</span><span>Ieșire <strong>${ie}</strong> → Prezentare <strong>${pr}</strong></span>${d?`<span style="margin-left:auto;font-size:10px;opacity:.65">${d}</span>`:''}`;
+  const t = D[ti];
+  t.grupe.forEach((g, gi) => {
+    if(gi===0) return;
+    const el = document.getElementById(`dorm-${ti}-${gi}`);
+    if(!el) return;
+    const ie = t.grupe[gi-1].it || '—';
+    const pr = g.pt || '—';
+    const d = dur(t.grupe[gi-1].it, g.pt);
+    el.innerHTML = `<span>🌙</span><span>Ieșire <strong>${ie}</strong> → Prezentare <strong>${pr}</strong></span>${d ? `<span style="margin-left:auto;font-size:10px;opacity:.65">${d}</span>` : ''}`;
   });
 }
 
-function addTurnus(){D.push(newTurnus());render();mu()}
-function delTurnus(ti){if(!confirm('Ștergi turnusul?'))return;D.splice(ti,1);render();mu()}
-function addGrupa(ti){D[ti].grupe.push(newGrupa());render();mu()}
-function delGrupa(ti,gi){if(D[ti].grupe.length<=1)return;D[ti].grupe.splice(gi,1);render();mu()}
-function addTren(ti,gi){D[ti].grupe[gi].trenuri.push(newTren());render();mu()}
-function delTren(ti,gi,tri){D[ti].grupe[gi].trenuri.splice(tri,1);render();mu()}
+function addTurnus(){ D.push(newTurnus()); render(); mu(); }
+function delTurnus(ti){ if(!confirm('Ștergi turnusul?')) return; D.splice(ti,1); render(); mu(); }
+function addGrupa(ti){ D[ti].grupe.push(newGrupa()); render(); mu(); }
+function delGrupa(ti, gi){ if(D[ti].grupe.length<=1) return; D[ti].grupe.splice(gi,1); render(); mu(); }
+function addTren(ti, gi){ D[ti].grupe[gi].trenuri.push(newTren()); render(); mu(); }
+function delTren(ti, gi, tri){ D[ti].grupe[gi].trenuri.splice(tri,1); render(); mu(); }
 
+/* ── GITHUB SAVE (Safari-compatible) ── */
 async function saveGH(){
-  const tok=$('ghTok').value.trim(), repo=$('ghRepo').value.trim(), file=$('ghFile').value.trim()||'turnusuri.json';
-  if(!tok||!repo){toggleToken();showToast('Setează token și repo!','err');return}
-  const body=JSON.stringify(D,null,2);
-  const enc=btoa(unescape(encodeURIComponent(body)));
-  let sha=null;
-  try{const r=await fetch(`https://api.github.com/repos/${repo}/contents/${file}`,{headers:{Authorization:`Bearer ${tok}`,Accept:'application/vnd.github+json'}});if(r.ok){const d=await r.json();sha=d.sha}}catch(e){}
-  try{
-    const payload={message:`Turnusuri ${new Date().toLocaleString('ro')}`,content:enc};
-    if(sha)payload.sha=sha;
-    const r=await fetch(`https://api.github.com/repos/${repo}/contents/${file}`,{method:'PUT',headers:{Authorization:`Bearer ${tok}`,Accept:'application/vnd.github+json','Content-Type':'application/json'},body:JSON.stringify(payload)});
-    if(!r.ok){const e=await r.json();showToast('Eroare: '+(e.message||r.status),'err');return}
-    $('stxt').textContent='SALVAT ✓'; showToast('Salvat pe GitHub!');
-  }catch(e){showToast('Eroare rețea: '+e.message,'err')}
+  const tok = $('ghTok').value.trim();
+  const repo = $('ghRepo').value.trim();
+  const file = $('ghFile').value.trim() || 'turnusuri.json';
+  if(!tok || !repo){
+    openTokenModal();
+    showToast('Setează token și repo!', 'err');
+    return;
+  }
+  showToast('Se salvează...', 'ok');
+
+  // Encode UTF-8 compatibil Safari (fara TextEncoder in context vechi)
+  const body = JSON.stringify(D, null, 2);
+  const bytes = new TextEncoder().encode(body);
+  let binary = '';
+  bytes.forEach(b => binary += String.fromCharCode(b));
+  const enc = btoa(binary);
+
+  // Citeste SHA curent
+  let sha = null;
+  try {
+    const r = await fetch(`https://api.github.com/repos/${repo}/contents/${file}?_=${Date.now()}`, {
+      headers:{Authorization:`Bearer ${tok}`, Accept:'application/vnd.github+json'},
+      cache:'no-store'
+    });
+    if(r.ok){ const d = await r.json(); sha = d.sha; }
+    else if(r.status !== 404){
+      showToast('Eroare citire SHA: ' + r.status, 'err');
+      return;
+    }
+  } catch(e){}
+
+  try {
+    const payload = { message: `Turnusuri ${new Date().toLocaleString('ro')}`, content: enc };
+    if(sha) payload.sha = sha;
+    const r = await fetch(`https://api.github.com/repos/${repo}/contents/${file}`, {
+      method:'PUT',
+      headers:{Authorization:`Bearer ${tok}`, Accept:'application/vnd.github+json', 'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    if(!r.ok){
+      const e = await r.json();
+      if(r.status===409 || r.status===422){
+        showToast('Conflict SHA, reîncerc...', 'ok');
+        setTimeout(saveGH, 1500);
+      } else {
+        showToast('Eroare: ' + (e.message || r.status), 'err');
+      }
+      return;
+    }
+    setSaved();
+    showToast('Salvat pe GitHub! ✓');
+  } catch(e){
+    showToast('Eroare rețea: ' + e.message, 'err');
+  }
 }
 
+/* ── GITHUB LOAD ── */
 async function loadGH(){
-  const tok=$('ghTok').value.trim(), repo=$('ghRepo').value.trim(), file=$('ghFile').value.trim()||'turnusuri.json';
-  if(!tok||!repo){showToast('Completează token și repo!','err');return}
-  try{
-    const r=await fetch(`https://api.github.com/repos/${repo}/contents/${file}`,{headers:{Authorization:`Bearer ${tok}`,Accept:'application/vnd.github+json'}});
-    if(!r.ok){showToast('Fișierul nu există încă.','err');return}
-    const d=await r.json();
-    const json=decodeURIComponent(escape(atob(d.content)));
-    const loaded=JSON.parse(json);
-    if(Array.isArray(loaded)){D=loaded;render();$('stxt').textContent='SINCRONIZAT ✓';showToast('Date încărcate!')}
-  }catch(e){showToast('Eroare: '+e.message,'err')}
+  const tok = $('ghTok').value.trim();
+  const repo = $('ghRepo').value.trim();
+  const file = $('ghFile').value.trim() || 'turnusuri.json';
+  if(!tok || !repo){ showToast('Completează token și repo!', 'err'); return; }
+  showToast('Se încarcă...', 'ok');
+  try {
+    const r = await fetch(`https://api.github.com/repos/${repo}/contents/${file}?_=${Date.now()}`, {
+      headers:{Authorization:`Bearer ${tok}`, Accept:'application/vnd.github+json'},
+      cache:'no-store'
+    });
+    if(!r.ok){ showToast('Fișierul nu există încă.', 'err'); return; }
+    const d = await r.json();
+    // Decodare Safari-compatible
+    const raw = atob(d.content.replace(/\s/g,''));
+    const bytes = new Uint8Array(raw.length);
+    for(let i=0; i<raw.length; i++) bytes[i] = raw.charCodeAt(i);
+    const json = new TextDecoder().decode(bytes);
+    const loaded = JSON.parse(json);
+    if(Array.isArray(loaded)){
+      D = loaded;
+      render();
+      setSaved();
+      showToast('Date încărcate! ✓');
+      closeTokenModal();
+    }
+  } catch(e){
+    showToast('Eroare: ' + e.message, 'err');
+  }
 }
 
+/* ── AUTO SYNC ── */
+async function autoSync(){
+  const tok = $('ghTok').value.trim();
+  const repo = $('ghRepo').value.trim();
+  if(!tok || !repo) return;
+  try {
+    const file = $('ghFile').value.trim() || 'turnusuri.json';
+    const r = await fetch(`https://api.github.com/repos/${repo}/contents/${file}?_=${Date.now()}`, {
+      headers:{Authorization:`Bearer ${tok}`, Accept:'application/vnd.github+json'},
+      cache:'no-store'
+    });
+    if(!r.ok) return;
+    const d = await r.json();
+    const raw = atob(d.content.replace(/\s/g,''));
+    const bytes = new Uint8Array(raw.length);
+    for(let i=0; i<raw.length; i++) bytes[i] = raw.charCodeAt(i);
+    const json = new TextDecoder().decode(bytes);
+    const loaded = JSON.parse(json);
+    if(Array.isArray(loaded)){ D = loaded; render(); setSaved(); }
+  } catch(e){}
+}
+
+/* ── INIT ── */
 loadCfg();
 render();
-if(localStorage.getItem('ghTok')&&localStorage.getItem('ghRepo')) setTimeout(loadGH,500);
+// Auto-sync la deschidere
+if(localStorage.getItem('ghTok') && localStorage.getItem('ghRepo')){
+  setTimeout(autoSync, 600);
+}
+// Re-sync la revenire pe tab (mobil)
+document.addEventListener('visibilitychange', function(){
+  if(document.visibilityState === 'visible'){
+    autoSync();
+  }
+});
 </script>
 </body>
 </html>
