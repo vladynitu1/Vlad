@@ -227,32 +227,26 @@ main{position:relative;z-index:1;max-width:940px;margin:0 auto;padding:24px 16px
     <button class="mclose" onclick="closeTokenModal()">✕</button>
     <h2>🔑 GitHub Token</h2>
     <div class="tok-hint">
-      Sincronizare date pe toate dispozitivele.<br><br>
+      Sincronizare automată pe toate dispozitivele.<br>
+      Repo: <strong>vladynitu1/Vlad</strong> · Fișier: <strong>turnusuri.json</strong><br><br>
       <strong>Cum obții tokenul:</strong><br>
       1. Mergi pe <a href="https://github.com/settings/tokens/new" target="_blank">github.com/settings/tokens/new</a><br>
       2. Bifează permisiunea <strong>repo</strong><br>
       3. Click <strong>Generate token</strong> și copiază-l
     </div>
     <div class="tok-field">
-      <label>Token</label>
+      <label>Personal Access Token</label>
       <input id="ghTok" class="tok-input" type="password" placeholder="ghp_xxxxxxxxxxxxxxxx" oninput="saveCfg()">
     </div>
-    <div class="tok-field">
-      <label>Repo (user/repo)</label>
-      <input id="ghRepo" class="tok-input" type="text" placeholder="user/repo" oninput="saveCfg()">
-    </div>
-    <div class="tok-field">
-      <label>Fișier</label>
-      <input id="ghFile" class="tok-input" type="text" placeholder="turnusuri.json" oninput="saveCfg()">
-    </div>
+    <div id="tokStatus" style="font-family:var(--fm);font-size:.7rem;min-height:18px;margin-bottom:8px;color:var(--gr)"></div>
     <div class="tok-actions">
       <button class="btn btn-g" onclick="loadGH()">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
         Încarcă din GitHub
       </button>
-      <button class="btn btn-gr" onclick="saveGH();closeTokenModal()">
+      <button class="btn btn-gr" onclick="saveGH()">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v14a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-        Salvează
+        Salvează pe GitHub
       </button>
       <button class="btn btn-ac" onclick="closeTokenModal()">✓ OK</button>
     </div>
@@ -276,14 +270,26 @@ main{position:relative;z-index:1;max-width:940px;margin:0 auto;padding:24px 16px
 let D=[];
 const $ = id => document.getElementById(id);
 
-/* ── CONFIG ── */
+/* ── GITHUB CONFIG (hardcodat, ca in fisa de pontaj) ── */
+const GH_USER = 'vladynitu1';
+const GH_REPO = 'Vlad';
+const GH_FILE = 'turnusuri.json';
+let ghToken = localStorage.getItem('gh_token') || '';
+
+function ghHeaders(){
+  return {
+    'Authorization': 'token ' + ghToken,
+    'Accept': 'application/vnd.github+json',
+    'Content-Type': 'application/json'
+  };
+}
+
 function saveCfg(){
-  ['ghTok','ghRepo','ghFile'].forEach(k => localStorage.setItem(k, $(k).value));
+  ghToken = $('ghTok').value.trim();
+  localStorage.setItem('gh_token', ghToken);
 }
 function loadCfg(){
-  ['ghTok','ghRepo','ghFile'].forEach(k => {
-    $(k).value = localStorage.getItem(k) || (k==='ghFile' ? 'turnusuri.json' : '');
-  });
+  $('ghTok').value = ghToken;
 }
 
 /* ── TOKEN MODAL ── */
@@ -530,18 +536,20 @@ function addTren(ti, gi){ D[ti].grupe[gi].trenuri.push(newTren()); render(); mu(
 function delTren(ti, gi, tri){ D[ti].grupe[gi].trenuri.splice(tri,1); render(); mu(); }
 
 /* ── GITHUB SAVE (Safari-compatible) ── */
+function showTokStatus(msg, color){
+  const el = $('tokStatus');
+  if(el){ el.textContent = msg; el.style.color = color || 'var(--gr)'; }
+}
+
 async function saveGH(){
-  const tok = $('ghTok').value.trim();
-  const repo = $('ghRepo').value.trim();
-  const file = $('ghFile').value.trim() || 'turnusuri.json';
-  if(!tok || !repo){
+  if(!ghToken){
     openTokenModal();
-    showToast('Setează token și repo!', 'err');
+    showToast('Introdu tokenul GitHub!', 'err');
     return;
   }
   showToast('Se salvează...', 'ok');
+  showTokStatus('⏳ Se salvează...', 'var(--am)');
 
-  // Encode UTF-8 compatibil Safari (fara TextEncoder in context vechi)
   const body = JSON.stringify(D, null, 2);
   const bytes = new TextEncoder().encode(body);
   let binary = '';
@@ -551,13 +559,14 @@ async function saveGH(){
   // Citeste SHA curent
   let sha = null;
   try {
-    const r = await fetch(`https://api.github.com/repos/${repo}/contents/${file}?_=${Date.now()}`, {
-      headers:{Authorization:`Bearer ${tok}`, Accept:'application/vnd.github+json'},
-      cache:'no-store'
-    });
+    const r = await fetch(
+      `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_FILE}?_=${Date.now()}`,
+      { headers: ghHeaders(), cache: 'no-store' }
+    );
     if(r.ok){ const d = await r.json(); sha = d.sha; }
     else if(r.status !== 404){
       showToast('Eroare citire SHA: ' + r.status, 'err');
+      showTokStatus('❌ Eroare SHA: ' + r.status, 'var(--rd)');
       return;
     }
   } catch(e){}
@@ -565,43 +574,46 @@ async function saveGH(){
   try {
     const payload = { message: `Turnusuri ${new Date().toLocaleString('ro')}`, content: enc };
     if(sha) payload.sha = sha;
-    const r = await fetch(`https://api.github.com/repos/${repo}/contents/${file}`, {
-      method:'PUT',
-      headers:{Authorization:`Bearer ${tok}`, Accept:'application/vnd.github+json', 'Content-Type':'application/json'},
-      body: JSON.stringify(payload)
-    });
+    const r = await fetch(
+      `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_FILE}`,
+      { method:'PUT', headers: ghHeaders(), body: JSON.stringify(payload) }
+    );
     if(!r.ok){
-      const e = await r.json();
+      const e = await r.json().catch(()=>({}));
       if(r.status===409 || r.status===422){
-        showToast('Conflict SHA, reîncerc...', 'ok');
+        showTokStatus('⚠️ Reîncerc...', 'var(--am)');
         setTimeout(saveGH, 1500);
       } else {
         showToast('Eroare: ' + (e.message || r.status), 'err');
+        showTokStatus('❌ ' + (e.message || r.status), 'var(--rd)');
       }
       return;
     }
     setSaved();
     showToast('Salvat pe GitHub! ✓');
+    showTokStatus('✅ Salvat cu succes!', 'var(--gr)');
   } catch(e){
     showToast('Eroare rețea: ' + e.message, 'err');
+    showTokStatus('❌ ' + e.message, 'var(--rd)');
   }
 }
 
 /* ── GITHUB LOAD ── */
 async function loadGH(){
-  const tok = $('ghTok').value.trim();
-  const repo = $('ghRepo').value.trim();
-  const file = $('ghFile').value.trim() || 'turnusuri.json';
-  if(!tok || !repo){ showToast('Completează token și repo!', 'err'); return; }
+  if(!ghToken){ showToast('Introdu tokenul GitHub!', 'err'); return; }
   showToast('Se încarcă...', 'ok');
+  showTokStatus('⏳ Se încarcă...', 'var(--am)');
   try {
-    const r = await fetch(`https://api.github.com/repos/${repo}/contents/${file}?_=${Date.now()}`, {
-      headers:{Authorization:`Bearer ${tok}`, Accept:'application/vnd.github+json'},
-      cache:'no-store'
-    });
-    if(!r.ok){ showToast('Fișierul nu există încă.', 'err'); return; }
+    const r = await fetch(
+      `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_FILE}?_=${Date.now()}`,
+      { headers: ghHeaders(), cache: 'no-store' }
+    );
+    if(!r.ok){
+      showToast('Fișierul nu există încă.', 'err');
+      showTokStatus('⚠️ Fișierul nu există.', 'var(--am)');
+      return;
+    }
     const d = await r.json();
-    // Decodare Safari-compatible
     const raw = atob(d.content.replace(/\s/g,''));
     const bytes = new Uint8Array(raw.length);
     for(let i=0; i<raw.length; i++) bytes[i] = raw.charCodeAt(i);
@@ -612,24 +624,22 @@ async function loadGH(){
       render();
       setSaved();
       showToast('Date încărcate! ✓');
-      closeTokenModal();
+      showTokStatus('✅ Date încărcate cu succes!', 'var(--gr)');
     }
   } catch(e){
     showToast('Eroare: ' + e.message, 'err');
+    showTokStatus('❌ ' + e.message, 'var(--rd)');
   }
 }
 
 /* ── AUTO SYNC ── */
 async function autoSync(){
-  const tok = $('ghTok').value.trim();
-  const repo = $('ghRepo').value.trim();
-  if(!tok || !repo) return;
+  if(!ghToken) return;
   try {
-    const file = $('ghFile').value.trim() || 'turnusuri.json';
-    const r = await fetch(`https://api.github.com/repos/${repo}/contents/${file}?_=${Date.now()}`, {
-      headers:{Authorization:`Bearer ${tok}`, Accept:'application/vnd.github+json'},
-      cache:'no-store'
-    });
+    const r = await fetch(
+      `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_FILE}?_=${Date.now()}`,
+      { headers: ghHeaders(), cache: 'no-store' }
+    );
     if(!r.ok) return;
     const d = await r.json();
     const raw = atob(d.content.replace(/\s/g,''));
@@ -644,15 +654,9 @@ async function autoSync(){
 /* ── INIT ── */
 loadCfg();
 render();
-// Auto-sync la deschidere
-if(localStorage.getItem('ghTok') && localStorage.getItem('ghRepo')){
-  setTimeout(autoSync, 600);
-}
-// Re-sync la revenire pe tab (mobil)
+if(ghToken) setTimeout(autoSync, 600);
 document.addEventListener('visibilitychange', function(){
-  if(document.visibilityState === 'visible'){
-    autoSync();
-  }
+  if(document.visibilityState === 'visible') autoSync();
 });
 </script>
 </body>
