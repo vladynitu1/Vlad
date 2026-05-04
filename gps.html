@@ -4,117 +4,87 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>TFC Navigator</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&display=swap');
 
-:root {
-–bg: #0a0e14;
-–surface: #111720;
-–border: #1e2d40;
-–accent: #00c8ff;
-–accent2: #ff6b35;
-–green: #00e676;
-–yellow: #ffd600;
-–red: #ff3d57;
-–text: #e8f0fe;
-–muted: #4a6080;
-–passed: #1a2535;
-}
-
-- { box-sizing: border-box; margin: 0; padding: 0; }
-
-html {
-background: #0a0e14 !important;
-background-color: #0a0e14 !important;
-}
-
-body {
+html, body {
+margin: 0; padding: 0;
+width: 100%; height: 100%;
+background-color: #0a0e14;
+color: #e8f0fe;
 font-family: ‘Barlow’, sans-serif;
-background: #0a0e14 !important;
-background-color: #0a0e14 !important;
-color: #e8f0fe !important;
-height: 100dvh;
-min-height: 100vh;
 overflow: hidden;
-display: flex;
-flex-direction: column;
 -webkit-text-size-adjust: 100%;
+box-sizing: border-box;
 }
+
+*, *::before, *::after { box-sizing: border-box; }
 
 /* ── HEADER ── */
 #header {
-background: var(–surface);
-border-bottom: 2px solid var(–accent);
+width: 100%;
+background-color: #111720;
+border-bottom: 2px solid #00c8ff;
 padding: 8px 16px;
 display: flex;
 align-items: center;
 gap: 12px;
-flex-shrink: 0;
 position: relative;
 z-index: 100;
+flex-shrink: 0;
 }
-
 #header-logo {
 font-family: ‘Share Tech Mono’, monospace;
 font-size: 11px;
-color: var(–accent);
+color: #00c8ff;
 letter-spacing: 2px;
 opacity: 0.7;
-white-space: nowrap;
 }
-
 #train-badge {
 font-family: ‘Barlow Condensed’, sans-serif;
 font-size: 28px;
 font-weight: 900;
-color: var(–accent);
-letter-spacing: -1px;
-line-height: 1;
+color: #00c8ff;
+display: none;
 }
-
 #route-label {
 flex: 1;
 font-family: ‘Barlow Condensed’, sans-serif;
 font-size: 14px;
 font-weight: 600;
-color: var(–muted);
-letter-spacing: 0.5px;
+color: #4a6080;
 overflow: hidden;
 text-overflow: ellipsis;
 white-space: nowrap;
+display: none;
 }
-
-#gps-indicator {
+#spacer { flex: 1; }
+#gps-wrap {
 display: flex;
 align-items: center;
 gap: 6px;
 font-family: ‘Share Tech Mono’, monospace;
 font-size: 11px;
-color: var(–muted);
+color: #4a6080;
 }
-
 #gps-dot {
 width: 8px; height: 8px;
 border-radius: 50%;
-background: var(–muted);
-transition: background 0.3s;
+background-color: #4a6080;
+flex-shrink: 0;
 }
-
-#gps-dot.active { background: var(–green); box-shadow: 0 0 8px var(–green); animation: pulse 2s infinite; }
-#gps-dot.error { background: var(–red); }
-
-@keyframes pulse {
-0%,100% { opacity: 1; }
-50% { opacity: 0.4; }
-}
-
+#gps-dot.active { background-color: #00e676; box-shadow: 0 0 8px #00e676; }
+#gps-dot.error  { background-color: #ff3d57; }
 #btn-change {
+display: none;
 background: transparent;
-border: 1px solid var(–border);
-color: var(–muted);
+border: 1px solid #1e2d40;
+color: #4a6080;
 font-family: ‘Barlow Condensed’, sans-serif;
 font-size: 12px;
 font-weight: 600;
@@ -122,10 +92,18 @@ letter-spacing: 1px;
 padding: 4px 10px;
 border-radius: 4px;
 cursor: pointer;
-transition: all 0.2s;
+-webkit-appearance: none;
 white-space: nowrap;
 }
-#btn-change:hover { border-color: var(–accent); color: var(–accent); }
+
+/* ── WRAPPER ── */
+#wrapper {
+width: 100%;
+height: calc(100vh - 42px);
+display: flex;
+flex-direction: column;
+background-color: #0a0e14;
+}
 
 /* ── SEARCH SCREEN ── */
 #search-screen {
@@ -135,101 +113,143 @@ flex-direction: column;
 align-items: center;
 justify-content: center;
 padding: 32px 24px;
-gap: 24px;
+gap: 28px;
+background-color: #0a0e14;
 }
 
-.search-title {
+.s-title {
 font-family: ‘Barlow Condensed’, sans-serif;
-font-size: 42px;
+font-size: 52px;
 font-weight: 900;
-color: var(–accent);
+color: #00c8ff;
+text-align: center;
+line-height: 0.95;
 letter-spacing: -1px;
-text-align: center;
-line-height: 1;
 }
-.search-sub {
-font-size: 13px;
-color: var(–muted);
-text-align: center;
-letter-spacing: 1px;
+.s-sub {
 font-family: ‘Share Tech Mono’, monospace;
+font-size: 11px;
+color: #4a6080;
+letter-spacing: 2px;
+text-align: center;
+margin-top: 6px;
 }
 
-#search-box {
+/* THE INPUT BOX */
+#search-row {
 display: flex;
-gap: 0;
 width: 100%;
-max-width: 420px;
-border: 2px solid #00c8ff;
-border-radius: 8px;
+max-width: 380px;
+border-radius: 10px;
 overflow: hidden;
-background: #111720;
+border: 2px solid #00c8ff;
 }
 
 #train-input {
 flex: 1;
-background: #111720 !important;
-background-color: #111720 !important;
-border: none;
-color: #e8f0fe !important;
--webkit-text-fill-color: #e8f0fe !important;
 font-family: ‘Share Tech Mono’, monospace;
-font-size: 28px;
-padding: 14px 16px;
-outline: none;
-letter-spacing: 4px;
+font-size: 32px;
+letter-spacing: 6px;
 text-align: center;
+padding: 16px 12px;
+background-color: #111720;
+color: #e8f0fe;
+border: none;
+outline: none;
 -webkit-appearance: none;
 appearance: none;
 border-radius: 0;
-}
-#train-input::placeholder {
-color: #4a6080 !important;
--webkit-text-fill-color: #4a6080 !important;
-letter-spacing: 2px;
-font-size: 20px;
+min-width: 0;
+/* Force iOS Safari to use our colors */
+-webkit-text-fill-color: #e8f0fe;
+opacity: 1;
 }
 
-#btn-search {
-background: #00c8ff !important;
-background-color: #00c8ff !important;
-border: none;
-color: #0a0e14 !important;
--webkit-text-fill-color: #0a0e14 !important;
-font-family: ‘Barlow Condensed’, sans-serif;
-font-size: 15px;
-font-weight: 700;
+#train-input::-webkit-input-placeholder {
+color: #4a6080;
+-webkit-text-fill-color: #4a6080;
+font-size: 18px;
 letter-spacing: 2px;
-padding: 14px 20px;
+}
+
+#btn-go {
+background-color: #00c8ff;
+color: #0a0e14;
+-webkit-text-fill-color: #0a0e14;
+font-family: ‘Barlow Condensed’, sans-serif;
+font-size: 18px;
+font-weight: 900;
+letter-spacing: 2px;
+padding: 16px 22px;
+border: none;
+outline: none;
 cursor: pointer;
 -webkit-appearance: none;
 appearance: none;
 border-radius: 0;
-min-width: 70px;
+flex-shrink: 0;
 }
 
-#search-status {
+#status-msg {
 font-family: ‘Share Tech Mono’, monospace;
 font-size: 12px;
-color: var(–accent);
+color: #00c8ff;
 text-align: center;
-min-height: 18px;
+min-height: 20px;
 letter-spacing: 1px;
 }
-#search-status.error { color: var(–red); }
+#status-msg.err { color: #ff3d57; }
 
-/* ── MAIN APP ── */
+.hint-text {
+font-family: ‘Share Tech Mono’, monospace;
+font-size: 10px;
+color: #2a3d55;
+text-align: center;
+line-height: 1.8;
+max-width: 300px;
+}
+
+/* ── LOADING ── */
+#loading {
+display: none;
+position: fixed;
+inset: 0;
+background-color: rgba(10,14,20,0.93);
+z-index: 999;
+align-items: center;
+justify-content: center;
+flex-direction: column;
+gap: 18px;
+}
+#loading.show { display: flex; }
+.spinner {
+width: 44px; height: 44px;
+border: 3px solid #1e2d40;
+border-top-color: #00c8ff;
+border-radius: 50%;
+animation: spin 0.75s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+#load-txt {
+font-family: ‘Share Tech Mono’, monospace;
+font-size: 13px;
+color: #00c8ff;
+letter-spacing: 2px;
+}
+
+/* ── APP SCREEN ── */
 #app-screen {
 flex: 1;
 display: none;
-overflow: hidden;
 flex-direction: column;
+overflow: hidden;
+background-color: #0a0e14;
 }
 
-/* ── NEXT STATION BANNER ── */
-#next-banner {
-background: var(–surface);
-border-bottom: 1px solid var(–border);
+/* NEXT STATION BANNER */
+#banner {
+background-color: #111720;
+border-bottom: 1px solid #1e2d40;
 padding: 10px 16px;
 display: grid;
 grid-template-columns: 1fr auto 1fr;
@@ -237,61 +257,56 @@ align-items: center;
 gap: 8px;
 flex-shrink: 0;
 }
-
-#next-station-name {
+.b-label {
+font-family: ‘Share Tech Mono’, monospace;
+font-size: 9px;
+color: #4a6080;
+letter-spacing: 2px;
+}
+#next-name {
 font-family: ‘Barlow Condensed’, sans-serif;
-font-size: 22px;
+font-size: 20px;
 font-weight: 700;
-color: var(–text);
+color: #e8f0fe;
+white-space: nowrap;
 overflow: hidden;
 text-overflow: ellipsis;
-white-space: nowrap;
 }
-.next-label {
+#km-val {
 font-family: ‘Share Tech Mono’, monospace;
-font-size: 9px;
-color: var(–muted);
-letter-spacing: 2px;
-}
-
-#km-remaining {
-font-family: ‘Share Tech Mono’, monospace;
-font-size: 26px;
-color: var(–accent);
+font-size: 28px;
+color: #00c8ff;
 text-align: center;
-font-weight: bold;
 line-height: 1;
+font-weight: bold;
 }
-#km-label {
+#km-lbl {
 font-family: ‘Share Tech Mono’, monospace;
 font-size: 9px;
-color: var(–muted);
+color: #4a6080;
 text-align: center;
 letter-spacing: 2px;
 }
-
-#next-times {
-text-align: right;
-}
-.time-row {
+#next-times { text-align: right; }
+.t-row {
 display: flex;
 justify-content: flex-end;
 align-items: baseline;
-gap: 6px;
+gap: 5px;
 }
-.time-tag {
+.t-tag {
 font-family: ‘Share Tech Mono’, monospace;
 font-size: 9px;
-color: var(–muted);
+color: #4a6080;
 letter-spacing: 1px;
 }
-.time-val {
+.t-val {
 font-family: ‘Share Tech Mono’, monospace;
 font-size: 16px;
-color: var(–yellow);
+color: #ffd600;
 }
 
-/* ── SPLIT LAYOUT ── */
+/* SPLIT */
 #split {
 flex: 1;
 display: grid;
@@ -299,88 +314,78 @@ grid-template-columns: 1fr 1fr;
 overflow: hidden;
 }
 
-/* ── MAP ── */
+/* MAP */
 #map {
 width: 100%;
 height: 100%;
-background: #0d1520;
 }
 
-/* ── STATION LIST ── */
-#station-list-wrap {
+/* STATION LIST */
+#list-wrap {
 overflow-y: auto;
-background: var(–bg);
-border-left: 1px solid var(–border);
-scroll-behavior: smooth;
+background-color: #0a0e14;
+border-left: 1px solid #1e2d40;
 }
-#station-list-wrap::-webkit-scrollbar { width: 4px; }
-#station-list-wrap::-webkit-scrollbar-track { background: var(–bg); }
-#station-list-wrap::-webkit-scrollbar-thumb { background: var(–border); border-radius: 2px; }
+#list-wrap::-webkit-scrollbar { width: 3px; }
+#list-wrap::-webkit-scrollbar-track { background: #0a0e14; }
+#list-wrap::-webkit-scrollbar-thumb { background: #1e2d40; }
 
-.station-item {
+.st-item {
 display: grid;
 grid-template-columns: 3px 1fr auto;
-gap: 0 10px;
 align-items: stretch;
-padding: 0;
-border-bottom: 1px solid rgba(30,45,64,0.5);
+border-bottom: 1px solid rgba(30,45,64,0.4);
+min-height: 58px;
+background-color: #0a0e14;
 position: relative;
-min-height: 56px;
-transition: background 0.3s;
+transition: background-color 0.3s;
 }
-
-.station-item.passed {
-background: var(–passed);
-opacity: 0.5;
+.st-item.passed {
+background-color: #0d1420;
+opacity: 0.45;
 }
-.station-item.current {
-background: rgba(0, 200, 255, 0.06);
-border-left: none;
+.st-item.current {
+background-color: rgba(0,200,255,0.05);
 }
-.station-item.current .station-bar { background: var(–accent); }
-
-.station-bar {
-background: var(–border);
+.st-bar {
+background-color: #1e2d40;
 width: 3px;
-border-radius: 0;
 align-self: stretch;
 }
-.station-item.passed .station-bar { background: var(–muted); opacity: 0.3; }
+.st-item.passed .st-bar { background-color: #1e2d40; opacity: 0.3; }
+.st-item.current .st-bar { background-color: #00c8ff; }
 
-.station-info {
-padding: 8px 0 6px;
+.st-info {
+padding: 8px 0 6px 0;
 display: flex;
 flex-direction: column;
 justify-content: center;
 gap: 2px;
 min-width: 0;
 }
-
-.station-name {
+.st-name {
 font-family: ‘Barlow Condensed’, sans-serif;
-font-size: 14px;
+font-size: 13px;
 font-weight: 600;
-color: var(–text);
+color: #e8f0fe;
 white-space: nowrap;
 overflow: hidden;
 text-overflow: ellipsis;
 line-height: 1.2;
 }
-.station-item.passed .station-name {
+.st-item.passed .st-name {
 text-decoration: line-through;
-color: var(–muted);
+color: #4a6080;
 }
-.station-item.current .station-name { color: var(–accent); }
-
-.station-km {
+.st-item.current .st-name { color: #00c8ff; }
+.st-km {
 font-family: ‘Share Tech Mono’, monospace;
 font-size: 10px;
-color: var(–muted);
-letter-spacing: 0.5px;
+color: #2a3d55;
 }
 
-.station-times {
-padding: 8px 10px 6px 0;
+.st-times {
+padding: 8px 10px 6px 4px;
 display: flex;
 flex-direction: column;
 align-items: flex-end;
@@ -390,254 +395,209 @@ gap: 1px;
 .st-arr {
 font-family: ‘Share Tech Mono’, monospace;
 font-size: 12px;
-color: var(–text);
+color: #e8f0fe;
 line-height: 1;
 }
 .st-dep {
 font-family: ‘Share Tech Mono’, monospace;
 font-size: 11px;
-color: var(–yellow);
+color: #ffd600;
 line-height: 1;
 }
-.station-item.passed .st-arr,
-.station-item.passed .st-dep { color: var(–muted); }
-
-.st-label {
+.st-lbl {
 font-size: 8px;
-color: var(–muted);
+color: #2a3d55;
 letter-spacing: 0.5px;
+font-family: ‘Share Tech Mono’, monospace;
 }
+.st-item.passed .st-arr,
+.st-item.passed .st-dep { color: #2a3d55; }
 
-/* current marker dot */
-.station-item.current::before {
+/* current pulse dot */
+.st-item.current::before {
 content: ‘’;
 position: absolute;
-left: -5px;
+left: -4px;
 top: 50%;
 transform: translateY(-50%);
-width: 10px; height: 10px;
+width: 9px; height: 9px;
 border-radius: 50%;
-background: var(–accent);
-box-shadow: 0 0 12px var(–accent);
+background-color: #00c8ff;
+box-shadow: 0 0 10px #00c8ff;
 z-index: 2;
 }
 
-/* ── LOADING OVERLAY ── */
-#loading {
-display: none;
-position: fixed;
-inset: 0;
-background: rgba(10,14,20,0.92);
-z-index: 200;
-align-items: center;
-justify-content: center;
-flex-direction: column;
-gap: 16px;
-}
-#loading.show { display: flex; }
-
-.spinner {
-width: 40px; height: 40px;
-border: 3px solid var(–border);
-border-top-color: var(–accent);
-border-radius: 50%;
-animation: spin 0.8s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.loading-text {
-font-family: ‘Share Tech Mono’, monospace;
-font-size: 13px;
-color: var(–accent);
-letter-spacing: 2px;
-}
-
-/* ── MOBILE RESPONSIVE ── */
 @media (max-width: 600px) {
-#split { grid-template-columns: 1fr; grid-template-rows: 40vh 1fr; }
-#station-list-wrap { border-left: none; border-top: 1px solid var(–border); }
+#split {
+grid-template-columns: 1fr;
+grid-template-rows: 38vh 1fr;
 }
-
-/* accuracy badge */
-#accuracy-badge {
-font-family: ‘Share Tech Mono’, monospace;
-font-size: 10px;
-color: var(–muted);
-text-align: center;
-padding: 2px 4px;
-background: rgba(255,255,255,0.03);
-border-radius: 3px;
+#list-wrap { border-left: none; border-top: 1px solid #1e2d40; }
 }
 </style>
 
 </head>
 <body>
 
-<!-- LOADING -->
+<!-- LOADING OVERLAY -->
 
 <div id="loading">
   <div class="spinner"></div>
-  <div class="loading-text" id="loading-text">SE ÎNCARCĂ...</div>
+  <div id="load-txt">SE ÎNCARCĂ...</div>
 </div>
 
 <!-- HEADER -->
 
 <div id="header">
   <div id="header-logo">TFC NAV</div>
-  <div id="train-badge" style="display:none"></div>
-  <div id="route-label" style="display:none"></div>
-  <div style="flex:1"></div>
-  <div id="gps-indicator">
+  <div id="train-badge"></div>
+  <div id="route-label"></div>
+  <div id="spacer"></div>
+  <div id="gps-wrap">
     <div id="gps-dot"></div>
-    <span id="gps-text">GPS</span>
+    <span id="gps-txt">GPS</span>
   </div>
-  <button id="btn-change" style="display:none" onclick="showSearch()">↩ SCHIMBĂ</button>
+  <button id="btn-change" onclick="showSearch()">↩ SCHIMBĂ</button>
 </div>
 
-<!-- SEARCH SCREEN -->
+<!-- WRAPPER -->
 
-<div id="search-screen">
-  <div>
-    <div class="search-title">TFC<br>NAVIGATOR</div>
-    <div class="search-sub" style="margin-top:8px">MECANIC DE LOCOMOTIVĂ · LIVE GPS</div>
-  </div>
-  <div id="search-box">
-    <input id="train-input" type="number" placeholder="NR TREN" autocomplete="off" inputmode="numeric">
-    <button id="btn-search" onclick="searchTrain()">▶ GO</button>
-  </div>
-  <div id="search-status"></div>
-  <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);text-align:center;max-width:320px;line-height:1.6;">
-    Introdu numărul trenului TFC.<br>
-    Datele sunt extrase live din mersultrenurilor.infofer.ro
-  </div>
+<div id="wrapper">
+
+  <!-- SEARCH SCREEN -->
+
+  <div id="search-screen">
+    <div>
+      <div class="s-title">TFC<br>NAVIGATOR</div>
+      <div class="s-sub">MECANIC DE LOCOMOTIVĂ · LIVE GPS</div>
+    </div>
+
+```
+<div id="search-row">
+  <input
+    id="train-input"
+    type="tel"
+    inputmode="numeric"
+    pattern="[0-9]*"
+    placeholder="NR TREN"
+    autocomplete="off"
+    autocorrect="off"
+    autocapitalize="off"
+    spellcheck="false"
+  >
+  <button id="btn-go" onclick="searchTrain()">GO ▶</button>
 </div>
 
-<!-- APP SCREEN -->
+<div id="status-msg"></div>
 
-<div id="app-screen">
-  <!-- Next station banner -->
-  <div id="next-banner">
-    <div>
-      <div class="next-label">STAȚIA URMĂTOARE</div>
-      <div id="next-station-name">—</div>
-    </div>
-    <div>
-      <div id="km-remaining">—</div>
-      <div id="km-label">KM RĂMAȘI</div>
-    </div>
-    <div id="next-times">
-      <div class="time-row">
-        <span class="time-tag">SOS</span>
-        <span class="time-val" id="next-arr">—</span>
+<div class="hint-text">
+  Introdu numărul trenului TFC.<br>
+  Date live din mersultrenurilor.infofer.ro
+</div>
+```
+
+  </div>
+
+  <!-- APP SCREEN -->
+
+  <div id="app-screen">
+    <!-- Banner -->
+    <div id="banner">
+      <div>
+        <div class="b-label">STAȚIA URMĂTOARE</div>
+        <div id="next-name">—</div>
       </div>
-      <div class="time-row">
-        <span class="time-tag">PL</span>
-        <span class="time-val" id="next-dep">—</span>
+      <div>
+        <div id="km-val">—</div>
+        <div id="km-lbl">KM RĂMAȘI</div>
       </div>
+      <div id="next-times">
+        <div class="t-row"><span class="t-tag">SOS</span><span class="t-val" id="n-arr">—</span></div>
+        <div class="t-row"><span class="t-tag">PL</span><span class="t-val" id="n-dep">—</span></div>
+      </div>
+    </div>
+    <!-- Split -->
+    <div id="split">
+      <div id="map"></div>
+      <div id="list-wrap"><div id="st-list"></div></div>
     </div>
   </div>
 
-  <!-- Split: map + station list -->
-
-  <div id="split">
-    <div id="map"></div>
-    <div id="station-list-wrap">
-      <div id="station-list"></div>
-    </div>
-  </div>
 </div>
 
 <script>
-// ══════════════════════════════════════════
-// STATE
-// ══════════════════════════════════════════
-let state = {
+// ── STATE ──────────────────────────────────────────
+var G = {
   trainNo: null,
-  stations: [],       // { name, km, arr, dep, lat, lng }
-  currentIdx: 0,
-  userLat: null,
-  userLng: null,
+  stations: [],
+  curIdx: 0,
+  lat: null,
+  lng: null,
   watchId: null,
   map: null,
-  userMarker: null,
-  routeLine: null,
-  accuracy: null,
+  marker: null,
 };
 
-// ══════════════════════════════════════════
-// UI HELPERS
-// ══════════════════════════════════════════
-const $ = id => document.getElementById(id);
-const showLoading = (msg='SE ÎNCARCĂ...') => {
-  $('loading-text').textContent = msg;
-  $('loading').classList.add('show');
-};
-const hideLoading = () => $('loading').classList.remove('show');
-const setStatus = (msg, err=false) => {
-  $('search-status').textContent = msg;
-  $('search-status').className = err ? 'error' : '';
-};
+// ── HELPERS ────────────────────────────────────────
+function el(id) { return document.getElementById(id); }
+function showLoad(msg) { el('load-txt').textContent = msg || 'SE ÎNCARCĂ...'; el('loading').classList.add('show'); }
+function hideLoad() { el('loading').classList.remove('show'); }
+function setMsg(msg, err) {
+  el('status-msg').textContent = msg;
+  el('status-msg').className = err ? 'err' : '';
+}
 
-// ══════════════════════════════════════════
-// ENTER KEY
-// ══════════════════════════════════════════
-$('train-input').addEventListener('keydown', e => { if(e.key==='Enter') searchTrain(); });
+// Enter key
+el('train-input').addEventListener('keyup', function(e) {
+  if (e.key === 'Enter' || e.keyCode === 13) searchTrain();
+});
 
-// ══════════════════════════════════════════
-// SEARCH TRAIN via Claude API (CORS proxy)
-// ══════════════════════════════════════════
-async function searchTrain() {
-  const no = $('train-input').value.trim();
-  if(!no) { setStatus('Introdu numărul trenului!', true); return; }
-  showLoading('CAUT TRENUL ' + no + '...');
-  setStatus('');
-  try {
-    const stations = await fetchTrainData(no);
-    if(!stations || stations.length === 0) {
-      hideLoading();
-      setStatus('Trenul ' + no + ' nu a fost găsit sau nu are stații.', true);
+// ── SEARCH ─────────────────────────────────────────
+function searchTrain() {
+  var no = el('train-input').value.replace(/\D/g, '').trim();
+  if (!no) { setMsg('Introdu numărul trenului!', true); return; }
+  showLoad('CAUT TRENUL ' + no + '...');
+  setMsg('');
+  fetchTrain(no).then(function(stations) {
+    hideLoad();
+    if (!stations || stations.length === 0) {
+      setMsg('Trenul ' + no + ' nu a fost găsit.', true);
       return;
     }
-    state.trainNo = no;
-    state.stations = stations;
-    state.currentIdx = 0;
-    showApp();
-    hideLoading();
-  } catch(e) {
-    hideLoading();
-    setStatus('Eroare: ' + e.message, true);
-  }
+    G.trainNo = no;
+    G.stations = stations;
+    G.curIdx = 0;
+    launchApp();
+  }).catch(function(err) {
+    hideLoad();
+    setMsg('Eroare: ' + err.message, true);
+  });
 }
 
-// ══════════════════════════════════════════
-// FETCH via Claude API (bypass CORS)
-// ══════════════════════════════════════════
-async function fetchTrainData(trainNo) {
-  showLoading('EXTRAG DATE DIN INFOFER...');
+// ── FETCH via Anthropic API ─────────────────────────
+function fetchTrain(no) {
+  var today = new Date();
+  var dd = String(today.getDate()).padStart(2,'0');
+  var mm = String(today.getMonth()+1).padStart(2,'0');
+  var yyyy = today.getFullYear();
+  var dateRo = dd + '.' + mm + '.' + yyyy;
+  var dateISO = yyyy + '-' + mm + '-' + dd;
 
-  const today = new Date();
-  const dateStr = today.getFullYear() + '-' +
-    String(today.getMonth()+1).padStart(2,'0') + '-' +
-    String(today.getDate()).padStart(2,'0');
+  var prompt = 'Cauta pe web trenul CFR numarul ' + no + ' pentru data ' + dateRo + '.\n' +
+    'Acceseaza https://mersultrenurilor.infofer.ro/ro-RO/Itineraries?trainNumber=' + no + '&date=' + dateISO + ' sau orice alta sursa.\n\n' +
+    'Returneaza DOAR un JSON array cu toate statiile/opririle trenului, fara alt text, fara markdown, fara explicatii.\n\n' +
+    'Format strict:\n' +
+    '[{"name":"Nume Statie","km":0,"arr":"","dep":"HH:MM","lat":45.0,"lng":25.0},...]\n\n' +
+    'Campuri:\n' +
+    '- name: numele statiei (string)\n' +
+    '- km: km pe ruta (numar, 0 daca necunoscut)\n' +
+    '- arr: ora sosire HH:MM (string gol pentru prima statie)\n' +
+    '- dep: ora plecare HH:MM (string gol pentru ultima statie)\n' +
+    '- lat: latitudine Romania (numar, 0 daca necunoscuta)\n' +
+    '- lng: longitudine Romania (numar, 0 daca necunoscuta)\n\n' +
+    'IMPORTANT: Returneaza NUMAI JSON array. Nicio alta informatie.';
 
-  const prompt = `Accesează URL-ul exact: https://mersultrenurilor.infofer.ro/ro-RO/Itineraries?trainNumber=${trainNo}&date=${dateStr}
-
-Extrage TOATE stațiile/opririle trenului ${trainNo} din pagina HTML returnată.
-
-Pentru fiecare stație returnează un JSON array cu obiecte care au exact câmpurile:
-- "name": numele stației (string)
-- "km": km pe rută (număr, 0 dacă nu există)  
-- "arr": ora sosire în format "HH:MM" (string, "" dacă e prima stație)
-- "dep": ora plecare în format "HH:MM" (string, "" dacă e ultima stație)
-- "lat": latitudine aproximativă (număr, 0 dacă necunoscută)
-- "lng": longitudine aproximativă (număr, 0 dacă necunoscută)
-
-Returnează DOAR JSON array-ul, fără alte explicații, fără markdown, fără text suplimentar.
-Exemplu: [{"name":"Cluj-Napoca","km":0,"arr":"","dep":"06:00","lat":46.77,"lng":23.59},...]
-
-IMPORTANT: Dacă nu poți accesa URL-ul, încearcă https://mersultrenurilor.infofer.ro/api/treniitinerare?trenNr=${trainNo}&data=${dateStr} sau orice endpoint API disponibil pe domeniu. Returnează datele complete ale tuturor stațiilor.`;
-
-  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+  return fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -646,307 +606,207 @@ IMPORTANT: Dacă nu poți accesa URL-ul, încearcă https://mersultrenurilor.inf
       tools: [{ type: 'web_search_20250305', name: 'web_search' }],
       messages: [{ role: 'user', content: prompt }]
     })
+  })
+  .then(function(r) {
+    if (!r.ok) throw new Error('API ' + r.status);
+    return r.json();
+  })
+  .then(function(data) {
+    var text = '';
+    for (var i = 0; i < data.content.length; i++) {
+      if (data.content[i].type === 'text') text += data.content[i].text;
+    }
+    // extract JSON array
+    var m = text.match(/\[[\s\S]*\]/);
+    if (m) {
+      try {
+        var arr = JSON.parse(m[0]);
+        if (Array.isArray(arr) && arr.length > 0) return arr;
+      } catch(e) {}
+    }
+    throw new Error('Nu s-au putut parsa datele pentru trenul ' + no);
   });
-
-  if(!resp.ok) throw new Error('API error ' + resp.status);
-  const data = await resp.json();
-
-  // Collect all text from response
-  let text = data.content
-    .filter(b => b.type === 'text')
-    .map(b => b.text)
-    .join('\n');
-
-  // Try to parse JSON from response
-  const jsonMatch = text.match(/\[[\s\S]*\]/);
-  if(!jsonMatch) {
-    // Try alternative: ask Claude to use known Romanian train data
-    return await fetchTrainDataFallback(trainNo);
-  }
-
-  try {
-    const stations = JSON.parse(jsonMatch[0]);
-    if(Array.isArray(stations) && stations.length > 0) return stations;
-  } catch(e) {}
-
-  return await fetchTrainDataFallback(trainNo);
 }
 
-// Fallback: ask Claude to provide train data from its knowledge + search
-async function fetchTrainDataFallback(trainNo) {
-  showLoading('CAUT DATE ALTERNATIVE...');
-
-  const prompt = `Caută și returnează datele complete pentru trenul CFR/TFC numărul ${trainNo} din România.
-
-Trebuie să returnezi un JSON array cu TOATE stațiile de pe ruta acestui tren.
-Caută pe mersultrenurilor.infofer.ro sau orice sursă disponibilă.
-
-Format STRICT - returnează DOAR JSON array, fără text:
-[
-  {"name":"NumeStatie","km":0,"arr":"","dep":"HH:MM","lat":45.00,"lng":25.00},
-  ...
-]
-
-Câmpuri:
-- name: numele stației
-- km: kilometrul pe rută (număr)
-- arr: ora sosire HH:MM (gol "" pentru prima stație)
-- dep: ora plecare HH:MM (gol "" pentru ultima stație)  
-- lat: latitudine România (număr zecimal)
-- lng: longitudine România (număr zecimal)
-
-Caută activ pe web pentru trenul ${trainNo}. Returnează DOAR JSON.`;
-
-  const resp = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 4000,
-      tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-      messages: [{ role: 'user', content: prompt }]
-    })
-  });
-
-  if(!resp.ok) throw new Error('API fallback error ' + resp.status);
-  const data = await resp.json();
-
-  const text = data.content.filter(b=>b.type==='text').map(b=>b.text).join('\n');
-  const jsonMatch = text.match(/\[[\s\S]*?\]/);
-  if(jsonMatch) {
-    try {
-      const stations = JSON.parse(jsonMatch[0]);
-      if(Array.isArray(stations) && stations.length > 0) return stations;
-    } catch(e) {}
+// ── LAUNCH APP ─────────────────────────────────────
+function launchApp() {
+  el('search-screen').style.display = 'none';
+  el('app-screen').style.display = 'flex';
+  el('train-badge').textContent = G.trainNo;
+  el('train-badge').style.display = 'block';
+  var s = G.stations;
+  if (s.length >= 2) {
+    el('route-label').textContent = s[0].name + ' → ' + s[s.length-1].name;
+    el('route-label').style.display = 'block';
   }
-  throw new Error('Nu s-au putut obține datele pentru trenul ' + trainNo);
-}
+  el('btn-change').style.display = 'block';
 
-// ══════════════════════════════════════════
-// SHOW APP
-// ══════════════════════════════════════════
-function showSearch() {
-  $('app-screen').style.display = 'none';
-  $('search-screen').style.display = 'flex';
-  $('train-badge').style.display = 'none';
-  $('route-label').style.display = 'none';
-  $('btn-change').style.display = 'none';
-  if(state.watchId) navigator.geolocation.clearWatch(state.watchId);
-}
-
-function showApp() {
-  $('search-screen').style.display = 'none';
-  $('app-screen').style.display = 'flex';
-  $('train-badge').textContent = state.trainNo;
-  $('train-badge').style.display = 'block';
-
-  // Route label
-  const s = state.stations;
-  if(s.length >= 2) {
-    $('route-label').textContent = s[0].name + ' → ' + s[s.length-1].name;
-    $('route-label').style.display = 'block';
-  }
-  $('btn-change').style.display = 'block';
-
-  renderStationList();
+  renderList();
   initMap();
   startGPS();
-}
-
-// ══════════════════════════════════════════
-// RENDER STATION LIST
-// ══════════════════════════════════════════
-function renderStationList() {
-  const list = $('station-list');
-  list.innerHTML = '';
-  state.stations.forEach((st, i) => {
-    const div = document.createElement('div');
-    div.className = 'station-item' + (i < state.currentIdx ? ' passed' : i === state.currentIdx ? ' current' : '');
-    div.id = 'st-' + i;
-    div.innerHTML = `
-      <div class="station-bar"></div>
-      <div class="station-info">
-        <div class="station-name">${st.name}</div>
-        <div class="station-km">${st.km ? 'km ' + st.km : ''}</div>
-      </div>
-      <div class="station-times">
-        ${st.arr ? `<div class="st-label">SOS</div><div class="st-arr">${st.arr}</div>` : ''}
-        ${st.dep ? `<div class="st-label">PL</div><div class="st-dep">${st.dep}</div>` : ''}
-      </div>
-    `;
-    list.appendChild(div);
-  });
-  scrollToCurrentStation();
-}
-
-function scrollToCurrentStation() {
-  const el = $('st-' + state.currentIdx);
-  if(el) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
-}
-
-// ══════════════════════════════════════════
-// UPDATE CURRENT STATION (by GPS proximity)
-// ══════════════════════════════════════════
-function updateCurrentStation() {
-  if(!state.userLat || state.stations.length === 0) return;
-
-  // Find closest station ahead (or current)
-  let bestIdx = state.currentIdx;
-  let bestDist = Infinity;
-
-  for(let i = state.currentIdx; i < state.stations.length; i++) {
-    const st = state.stations[i];
-    if(!st.lat || !st.lng) continue;
-    const d = haversine(state.userLat, state.userLng, st.lat, st.lng);
-    if(d < bestDist) { bestDist = d; bestIdx = i; }
-  }
-
-  // If within 300m of a station → mark as passed (move to next)
-  if(bestDist < 0.3 && bestIdx > 0) {
-    bestIdx = Math.min(bestIdx + 1, state.stations.length - 1);
-  }
-
-  if(bestIdx !== state.currentIdx) {
-    state.currentIdx = bestIdx;
-    renderStationList();
-  }
-
   updateBanner();
 }
 
+function showSearch() {
+  el('app-screen').style.display = 'none';
+  el('search-screen').style.display = 'flex';
+  el('train-badge').style.display = 'none';
+  el('route-label').style.display = 'none';
+  el('btn-change').style.display = 'none';
+  if (G.watchId) navigator.geolocation.clearWatch(G.watchId);
+}
+
+// ── STATION LIST ───────────────────────────────────
+function renderList() {
+  var list = el('st-list');
+  list.innerHTML = '';
+  G.stations.forEach(function(st, i) {
+    var cls = 'st-item';
+    if (i < G.curIdx) cls += ' passed';
+    else if (i === G.curIdx) cls += ' current';
+
+    var div = document.createElement('div');
+    div.className = cls;
+    div.id = 'si-' + i;
+
+    var arrHtml = st.arr ? '<div class="st-lbl">SOS</div><div class="st-arr">' + st.arr + '</div>' : '';
+    var depHtml = st.dep ? '<div class="st-lbl">PL</div><div class="st-dep">' + st.dep + '</div>' : '';
+
+    div.innerHTML =
+      '<div class="st-bar"></div>' +
+      '<div class="st-info">' +
+        '<div class="st-name">' + st.name + '</div>' +
+        '<div class="st-km">' + (st.km ? 'km ' + st.km : '') + '</div>' +
+      '</div>' +
+      '<div class="st-times">' + arrHtml + depHtml + '</div>';
+
+    list.appendChild(div);
+  });
+  scrollToCurrent();
+}
+
+function scrollToCurrent() {
+  var el2 = el('si-' + G.curIdx);
+  if (el2) el2.scrollIntoView({ block: 'center', behavior: 'smooth' });
+}
+
+// ── BANNER ─────────────────────────────────────────
 function updateBanner() {
-  const next = state.stations[state.currentIdx];
-  if(!next) return;
+  var next = G.stations[G.curIdx];
+  if (!next) return;
+  el('next-name').textContent = next.name;
+  el('n-arr').textContent = next.arr || '—';
+  el('n-dep').textContent = next.dep || '—';
 
-  $('next-station-name').textContent = next.name;
-  $('next-arr').textContent = next.arr || '—';
-  $('next-dep').textContent = next.dep || '—';
-
-  // Km remaining
-  if(state.userLat && next.lat && next.lng) {
-    const d = haversine(state.userLat, state.userLng, next.lat, next.lng);
-    $('km-remaining').textContent = d.toFixed(1);
-  } else if(next.km && state.stations[state.currentIdx-1]?.km) {
-    const diff = next.km - state.stations[state.currentIdx-1].km;
-    $('km-remaining').textContent = diff.toFixed(0);
+  if (G.lat && next.lat && next.lng) {
+    var d = haversine(G.lat, G.lng, next.lat, next.lng);
+    el('km-val').textContent = d.toFixed(1);
   } else {
-    $('km-remaining').textContent = '—';
+    el('km-val').textContent = '—';
   }
 }
 
-// ══════════════════════════════════════════
-// GPS
-// ══════════════════════════════════════════
+// ── GPS ────────────────────────────────────────────
 function startGPS() {
-  if(!('geolocation' in navigator)) {
-    setGPSStatus('error', 'NO GPS');
-    return;
-  }
-  setGPSStatus('wait', 'WAIT');
-  state.watchId = navigator.geolocation.watchPosition(
-    onGPS, onGPSError,
-    { enableHighAccuracy: true, maximumAge: 3000, timeout: 10000 }
-  );
-}
-
-function onGPS(pos) {
-  state.userLat = pos.coords.latitude;
-  state.userLng = pos.coords.longitude;
-  state.accuracy = pos.coords.accuracy;
-  setGPSStatus('active', Math.round(state.accuracy) + 'm');
-  updateUserMarker();
-  updateCurrentStation();
-}
-
-function onGPSError(err) {
-  setGPSStatus('error', 'ERR');
-}
-
-function setGPSStatus(status, label) {
-  const dot = $('gps-dot');
-  dot.className = status === 'active' ? 'active' : status === 'error' ? 'error' : '';
-  $('gps-text').textContent = label;
-}
-
-// ══════════════════════════════════════════
-// MAP
-// ══════════════════════════════════════════
-function initMap() {
-  if(state.map) { state.map.remove(); state.map = null; }
-
-  state.map = L.map('map', { zoomControl: true, attributionControl: false });
-
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    maxZoom: 19
-  }).addTo(state.map);
-
-  // Draw route line
-  const coords = state.stations
-    .filter(s => s.lat && s.lng)
-    .map(s => [s.lat, s.lng]);
-
-  if(coords.length >= 2) {
-    state.routeLine = L.polyline(coords, {
-      color: '#00c8ff',
-      weight: 3,
-      opacity: 0.7
-    }).addTo(state.map);
-    state.map.fitBounds(state.routeLine.getBounds(), { padding: [20, 20] });
-  } else {
-    // Default Romania view
-    state.map.setView([45.9, 24.9], 7);
-  }
-
-  // Station markers
-  state.stations.forEach((st, i) => {
-    if(!st.lat || !st.lng) return;
-    const isLast = i === state.stations.length - 1;
-    const isFirst = i === 0;
-    L.circleMarker([st.lat, st.lng], {
-      radius: (isFirst || isLast) ? 7 : 4,
-      color: isFirst ? '#00e676' : isLast ? '#ff3d57' : '#00c8ff',
-      fillColor: isFirst ? '#00e676' : isLast ? '#ff3d57' : '#0a0e14',
-      fillOpacity: 1,
-      weight: 2
-    }).addTo(state.map).bindPopup(`<b>${st.name}</b><br>${st.arr||''} / ${st.dep||''}`);
+  if (!navigator.geolocation) { gpsStatus('error', 'NO GPS'); return; }
+  gpsStatus('wait', 'WAIT');
+  G.watchId = navigator.geolocation.watchPosition(onPos, onPosErr, {
+    enableHighAccuracy: true,
+    maximumAge: 3000,
+    timeout: 15000
   });
 }
 
-function updateUserMarker() {
-  if(!state.map || !state.userLat) return;
-
-  const pos = [state.userLat, state.userLng];
-
-  if(!state.userMarker) {
-    const icon = L.divIcon({
-      html: `<div style="
-        width:18px;height:18px;
-        background:#ff6b35;
-        border:3px solid white;
-        border-radius:50%;
-        box-shadow:0 0 14px #ff6b35;
-      "></div>`,
-      iconSize: [18, 18],
-      iconAnchor: [9, 9],
-      className: ''
-    });
-    state.userMarker = L.marker(pos, { icon, zIndexOffset: 1000 }).addTo(state.map);
-  } else {
-    state.userMarker.setLatLng(pos);
-  }
-
-  state.map.panTo(pos, { animate: true, duration: 1 });
+function onPos(pos) {
+  G.lat = pos.coords.latitude;
+  G.lng = pos.coords.longitude;
+  gpsStatus('active', Math.round(pos.coords.accuracy) + 'm');
+  moveUserMarker();
+  checkStationProgress();
+  updateBanner();
 }
 
-// ══════════════════════════════════════════
-// HAVERSINE (km)
-// ══════════════════════════════════════════
+function onPosErr() { gpsStatus('error', 'ERR'); }
+
+function gpsStatus(cls, txt) {
+  el('gps-dot').className = cls;
+  el('gps-txt').textContent = txt;
+}
+
+function checkStationProgress() {
+  if (!G.lat || G.stations.length === 0) return;
+  // Find nearest station from current onward
+  var best = G.curIdx, bestD = Infinity;
+  for (var i = G.curIdx; i < G.stations.length; i++) {
+    var st = G.stations[i];
+    if (!st.lat || !st.lng) continue;
+    var d = haversine(G.lat, G.lng, st.lat, st.lng);
+    if (d < bestD) { bestD = d; best = i; }
+  }
+  // Within 300m → mark as passed
+  if (bestD < 0.3 && best >= G.curIdx) {
+    var newIdx = Math.min(best + 1, G.stations.length - 1);
+    if (newIdx !== G.curIdx) {
+      G.curIdx = newIdx;
+      renderList();
+    }
+  }
+}
+
+// ── MAP ────────────────────────────────────────────
+function initMap() {
+  if (G.map) { G.map.remove(); G.map = null; G.marker = null; }
+
+  G.map = L.map('map', { zoomControl: true, attributionControl: false });
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(G.map);
+
+  var coords = [];
+  G.stations.forEach(function(st) {
+    if (st.lat && st.lng) coords.push([st.lat, st.lng]);
+  });
+
+  if (coords.length >= 2) {
+    var line = L.polyline(coords, { color: '#00c8ff', weight: 3, opacity: 0.7 }).addTo(G.map);
+    G.map.fitBounds(line.getBounds(), { padding: [24, 24] });
+  } else {
+    G.map.setView([45.9, 24.9], 7);
+  }
+
+  G.stations.forEach(function(st, i) {
+    if (!st.lat || !st.lng) return;
+    var isF = i === 0, isL = i === G.stations.length - 1;
+    L.circleMarker([st.lat, st.lng], {
+      radius: (isF || isL) ? 7 : 4,
+      color: isF ? '#00e676' : isL ? '#ff3d57' : '#00c8ff',
+      fillColor: isF ? '#00e676' : isL ? '#ff3d57' : '#0a0e14',
+      fillOpacity: 1, weight: 2
+    }).addTo(G.map).bindPopup('<b>' + st.name + '</b><br>' + (st.arr || '') + ' / ' + (st.dep || ''));
+  });
+}
+
+function moveUserMarker() {
+  if (!G.map || !G.lat) return;
+  var pos = [G.lat, G.lng];
+  if (!G.marker) {
+    var icon = L.divIcon({
+      html: '<div style="width:18px;height:18px;background:#ff6b35;border:3px solid #fff;border-radius:50%;box-shadow:0 0 14px #ff6b35;"></div>',
+      iconSize: [18, 18], iconAnchor: [9, 9], className: ''
+    });
+    G.marker = L.marker(pos, { icon: icon, zIndexOffset: 1000 }).addTo(G.map);
+  } else {
+    G.marker.setLatLng(pos);
+  }
+  G.map.panTo(pos, { animate: true, duration: 1 });
+}
+
+// ── HAVERSINE (km) ──────────────────────────────────
 function haversine(lat1, lng1, lat2, lng2) {
-  const R = 6371;
-  const dLat = (lat2-lat1) * Math.PI/180;
-  const dLng = (lng2-lng1) * Math.PI/180;
-  const a = Math.sin(dLat/2)**2 +
-    Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  var R = 6371;
+  var dLat = (lat2 - lat1) * Math.PI / 180;
+  var dLng = (lng2 - lng1) * Math.PI / 180;
+  var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) *
+    Math.sin(dLng/2) * Math.sin(dLng/2);
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 </script>
