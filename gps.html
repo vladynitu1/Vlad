@@ -26,14 +26,22 @@
 
 - { box-sizing: border-box; margin: 0; padding: 0; }
 
+html {
+background: #0a0e14 !important;
+background-color: #0a0e14 !important;
+}
+
 body {
 font-family: ‘Barlow’, sans-serif;
-background: var(–bg);
-color: var(–text);
+background: #0a0e14 !important;
+background-color: #0a0e14 !important;
+color: #e8f0fe !important;
 height: 100dvh;
+min-height: 100vh;
 overflow: hidden;
 display: flex;
 flex-direction: column;
+-webkit-text-size-adjust: 100%;
 }
 
 /* ── HEADER ── */
@@ -152,40 +160,53 @@ display: flex;
 gap: 0;
 width: 100%;
 max-width: 420px;
-border: 2px solid var(–border);
+border: 2px solid #00c8ff;
 border-radius: 8px;
 overflow: hidden;
-transition: border-color 0.2s;
+background: #111720;
 }
-#search-box:focus-within { border-color: var(–accent); }
 
 #train-input {
 flex: 1;
-background: var(–surface);
+background: #111720 !important;
+background-color: #111720 !important;
 border: none;
-color: var(–text);
+color: #e8f0fe !important;
+-webkit-text-fill-color: #e8f0fe !important;
 font-family: ‘Share Tech Mono’, monospace;
 font-size: 28px;
 padding: 14px 16px;
 outline: none;
 letter-spacing: 4px;
 text-align: center;
+-webkit-appearance: none;
+appearance: none;
+border-radius: 0;
 }
-#train-input::placeholder { color: var(–muted); letter-spacing: 2px; font-size: 20px; }
+#train-input::placeholder {
+color: #4a6080 !important;
+-webkit-text-fill-color: #4a6080 !important;
+letter-spacing: 2px;
+font-size: 20px;
+}
 
 #btn-search {
-background: var(–accent);
+background: #00c8ff !important;
+background-color: #00c8ff !important;
 border: none;
-color: var(–bg);
+color: #0a0e14 !important;
+-webkit-text-fill-color: #0a0e14 !important;
 font-family: ‘Barlow Condensed’, sans-serif;
 font-size: 15px;
 font-weight: 700;
 letter-spacing: 2px;
 padding: 14px 20px;
 cursor: pointer;
-transition: opacity 0.2s;
+-webkit-appearance: none;
+appearance: none;
+border-radius: 0;
+min-width: 70px;
 }
-#btn-search:hover { opacity: 0.85; }
 
 #search-status {
 font-family: ‘Share Tech Mono’, monospace;
