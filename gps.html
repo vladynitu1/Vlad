@@ -128,12 +128,6 @@ LIVRETE MODAL
 #btnadd{background:#ffd600;color:#0a0e14;font-family:‘Barlow Condensed’,sans-serif;font-size:15px;font-weight:900;letter-spacing:2px;padding:10px 20px;border:none;border-radius:6px;cursor:pointer;width:100%;}
 
 /* PDF Upload section */
-#pdfzone{border:2px dashed #1e2d40;border-radius:10px;padding:28px 20px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;margin-bottom:16px;position:relative;}
-#pdfzone:hover,#pdfzone.drag{border-color:#ffd600;background:rgba(255,214,0,.04);}
-#pdfzone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
-#pdficon{font-size:32px;margin-bottom:8px;}
-#pdftxt{font-family:‘Barlow Condensed’,sans-serif;font-size:15px;font-weight:700;color:#4a6080;letter-spacing:1px;}
-#pdfsub{font-family:‘Share Tech Mono’,monospace;font-size:10px;color:#2a3d55;margin-top:4px;}
 #pdfresult{background:#0d1520;border:1px solid #1e2d40;border-radius:8px;padding:12px;font-family:‘Share Tech Mono’,monospace;font-size:11px;color:#e8f0fe;line-height:1.7;display:none;white-space:pre-wrap;max-height:260px;overflow-y:auto;word-break:break-all;}
 #pdfresult::-webkit-scrollbar{width:3px;}
 #pdfresult::-webkit-scrollbar-thumb{background:#1e2d40;}
@@ -267,12 +261,22 @@ Poți lăsa km gol — se completează automat din coordonate
 ```
 <!-- TAB: PDF Upload -->
 <div id="tab-pdf" class="lmtabcontent">
-  <div id="pdfzone" ondragover="pdfDrag(event,true)" ondragleave="pdfDrag(event,false)" ondrop="pdfDrop(event)">
-    <input type="file" accept=".pdf,application/pdf" onchange="pdfPicked(this.files)">
-    <div id="pdficon">📄</div>
-    <div id="pdftxt">APASĂ SAU TRAGE LIVRETUL PDF AICI</div>
-    <div id="pdfsub">Se extrage textul automat din PDF</div>
-  </div>
+  <!-- Hidden real file input -->
+  <input id="pdffileinput" type="file" accept=".pdf,application/pdf"
+    style="display:none" onchange="pdfPicked(this.files)">
+
+  <!-- Big visible tap button for iOS -->
+  <button id="pdfbtnpick" onclick="document.getElementById('pdffileinput').click()"
+    style="width:100%;background:#111720;border:2px dashed #ffd600;border-radius:12px;
+           padding:32px 20px;cursor:pointer;margin-bottom:14px;-webkit-appearance:none;
+           display:flex;flex-direction:column;align-items:center;gap:10px;">
+    <div style="font-size:36px;">📄</div>
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;
+                color:#ffd600;letter-spacing:2px;">SELECTEAZĂ LIVRET PDF</div>
+    <div id="pdfsub" style="font-family:'Share Tech Mono',monospace;font-size:10px;
+                color:#4a6080;letter-spacing:1px;">Apasă aici să alegi fișierul PDF</div>
+  </button>
+
   <div id="pdfresult"></div>
   <div id="pdfbtns" style="display:none">
     <button id="btncopypdf" onclick="copyPdfText()">📋 COPIAZĂ TEXT</button>
@@ -281,7 +285,7 @@ Poți lăsa km gol — se completează automat din coordonate
   <div id="pdffeedback"></div>
   <div class="fhint" style="margin-top:12px">
     <b>Cum funcționează:</b><br>
-    1. Uploadeaz? livretul PDF al trenului<br>
+    1. Apasă butonul galben și selectează livretul PDF<br>
     2. Se extrage textul din PDF automat<br>
     3. Apasă "PASEAZĂ ÎN FORMULAR" și du-te la tab-ul <b>ADAUGĂ TREN</b><br>
     4. Completează / curăță textul și salvează
@@ -774,8 +778,7 @@ function pdfPicked(files) {
     showToast('Selectează un fișier PDF!',true);
     return;
   }
-  el('pdftxt').textContent='SE PROCESEAZĂ '+file.name+'...';
-  el('pdfsub').textContent='';
+  el('pdfsub').textContent='⏳ SE PROCESEAZĂ: '+file.name+'...';
   el('pdfresult').style.display='none';
   el('pdfbtns').style.display='none';
   el('pdffeedback').textContent='';
@@ -829,8 +832,7 @@ function extractPdfText(arrayBuffer, filename) {
               el('pdfresult').textContent = fullText;
               el('pdfresult').style.display = 'block';
               el('pdfbtns').style.display = 'flex';
-              el('pdftxt').textContent = '✓ ' + filename;
-              el('pdfsub').textContent = totalPages + ' pagini • ' + fullText.length + ' caractere extrase';
+              el('pdfsub').textContent = '✓ ' + filename + ' • ' + totalPages + ' pagini • ' + fullText.length + ' caractere';
               el('pdffeedback').textContent = '✓ Text extras cu succes!';
             }
           });
@@ -838,8 +840,7 @@ function extractPdfText(arrayBuffer, filename) {
       })(i);
     }
   }).catch(function(err) {
-    el('pdftxt').textContent = 'EROARE la procesare PDF';
-    el('pdfsub').textContent = err.message;
+    el('pdfsub').textContent = 'EROARE: ' + err.message;
     showToast('Eroare PDF: '+err.message, true);
   });
 }
