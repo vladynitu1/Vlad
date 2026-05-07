@@ -50,6 +50,11 @@
           "id": 205,
           "amount": 500,
           "reason": "Imprumut"
+        },
+        {
+          "id": 211,
+          "amount": 100,
+          "reason": "M"
         }
       ]
     },
@@ -66,5 +71,5 @@
     }
   ],
   "nextPersonId": 105,
-  "nextEntryId": 211
+  "nextEntryId": 212
 }
