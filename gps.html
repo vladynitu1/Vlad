@@ -930,8 +930,8 @@ function parseLivret(lines,fname){
   parsedTrains=[];
   var cur=null;
 
-  var SKIP=/^(SUMAR|PROCENT|Automotoare|MASA|Dist\.|Vit\s*max|Min\s*rst|Timpi|0[01]h|GR\.A$|^-+$|^\d+\s*$)/i;
-  var TECHNICAL=/^(P\.\s*M\.|P\.\s*mac\.|Ram\.|Semnal|Hm\.|Tj\.)/i;
+  var SKIP=/^(SUMAR|PROCENT|Automotoare|MASA\s|Dist\s|Vit\s*max|Min\s*rst|Timpi|GR\.A$|simpl|^0[01]h)/i;
+  var SKIP_STA=/P\.\s*[Mm]\.?\s*Ram|P\.\s*mac|Tj\.\s*\d|Triaj\b/i;
 
   function extractTimes(str){
     var times=[],m,re=/\b(\d{1,2})[\.:](\d{2})\b/g;
@@ -943,63 +943,57 @@ function parseLivret(lines,fname){
     return times;
   }
 
-  function extractKm(str){
-    var m=str.match(/\b(\d{1,4})[,.]?(\d{0,3})\s*(?:km|Km)?\b/);
-    if(m)return parseFloat(m[1]+(m[2]?'.'+m[2]:''));
-    return 0;
-  }
-
   function cleanName(raw){
-    // Remove times
-    var s=raw.replace(/\b\d{1,2}[\.:]?\d{2}\b/g,' ');
-    // Remove standalone numbers (km markers)
-    s=s.replace(/\b\d{1,4}[,.]?\d{0,3}\b/g,' ');
-    // Remove special chars
-    s=s.replace(/[□■▪·|\/\\]/g,' ');
+    var s=raw;
+    s=s.replace(/\b\d{1,2}[\.:]?\d{2}\b/g,' ');
+    s=s.replace(/\b\d{4,}\b/g,' ');
+    s=s.replace(/\b\d{1,3}\b/g,' ');
+    s=s.replace(/[□■▪·|\/\\%=]/g,' ');
+    s=s.replace(/[-\u2013\u2014]+/g,' ');
     s=s.replace(/\s+/g,' ').trim();
-    // Must start with a letter
-    s=s.replace(/^[^A-Za-zÀ-ÿĂăÂâÎîȘșȚțA-Z]+/,'').trim();
+    s=s.replace(/^[^A-Za-z\u00C0-\u00FF\u0100-\u017F]+/,'').trim();
+    s=s.replace(/\s*GR\.?\s*A\s*$/i,'').trim();
+    s=s.replace(/\s*[Hh]m\.\s*$/,'').trim();
+    s=s.replace(/\s+h\.\s*$/,'').trim();
     return s;
   }
 
   lines.forEach(function(line){
     line=line.trim();
-    if(!line||line.length<3)return;
+    if(!line||line.length<2)return;
 
-    // Detect train number line: "Nr. 10061 ..."  or just "10061"
-    var mTrain=line.match(/(?:Nr\.\s*|^)(\d{4,6})\s+(.*)/i);
-    if(mTrain&&parseInt(mTrain[1])>1000){
+    var mTrain=line.match(/Nr\.\s*(\d{4,6})\s+(.*)/i);
+    if(mTrain){
       if(cur&&cur.stations.length>=2)parsedTrains.push(cur);
-      cur={no:mTrain[1],name:mTrain[2].replace(/^\s*[-–—]\s*/,'').trim(),stations:[]};
+      var tname=mTrain[2].trim().replace(/GR\.?\s*A\s*$/i,'').trim();
+      cur={no:mTrain[1],name:tname,stations:[]};
       return;
     }
 
     if(!cur)return;
-    if(SKIP.test(line.trim()))return;
-    if(TECHNICAL.test(line))return;
+    if(SKIP.test(line))return;
+    if(SKIP_STA.test(line))return;
 
     var times=extractTimes(line);
     if(!times.length)return;
 
     var name=cleanName(line);
-    if(!name||name.length<2)return;
-    if(!/[A-Za-zÀ-ÿĂăÂâÎîȘșȚț]{2,}/.test(name))return;
-    if(TECHNICAL.test(name))return;
+    if(!name||name.length<3)return;
+    if(!/[A-Za-z\u00C0-\u00FF\u0100-\u017F]{3,}/.test(name))return;
+    if(SKIP_STA.test(name))return;
 
-    // Extract km if present
-    var km=0;
-    var kmM=line.match(/\b(\d{1,3})[,.](\d{1,3})\b/);
-    if(kmM)km=parseFloat(kmM[1]+'.'+kmM[2]);
-
-    var sta={name:name,km:km,arr:'',dep:''};
+    var sta={name:name,km:0,arr:'',dep:'',stops:false};
     var n=cur.stations.length;
     if(n===0){
       sta.dep=times[times.length-1];
+      sta.stops=true;
     } else if(times.length>=2){
       sta.arr=times[0];
       sta.dep=times[1];
+      sta.stops=(sta.arr!==sta.dep);
     } else {
       sta.arr=times[0];
+      sta.stops=true;
     }
 
     var last=cur.stations[cur.stations.length-1];
@@ -1010,6 +1004,7 @@ function parseLivret(lines,fname){
 
   if(cur&&cur.stations.length>=2)parsedTrains.push(cur);
   showPreview(fname);
+}
 }
 
 function normName(s){
