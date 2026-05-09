@@ -468,12 +468,14 @@ function doSearch(){
   G.no=no;G.cur=0;G.warned1km={};G.warned300m={};
   G.stations=t.stations.map(function(s){
     var c=getC(s.name);
+    // Km: prioritate livret → baza date CFR → 0
+    var km=s.km||getCFRkm(s.name)||0;
     return{
       name:s.name,
-      km:s.km||0,
+      km:km,
       arr:s.arr||'',
       dep:s.dep||'',
-      speed:s.speed||0,     // FIX 4: viteza din livret
+      speed:s.speed||0,
       lat:c?c[0]:0,
       lng:c?c[1]:0,
       stops:s.stops!==false
@@ -991,20 +993,39 @@ function extractAndParse(buf,fname){
 }
 
 function parseLivret(lines,fname){
+  // ═══════════════════════════════════════════════════════
+  // PARSER COMPLET RESCRIS pentru formatul livretului TFC/CFR
+  //
+  // Format real dintr-un rând de stație:
+  //   [dist_simplu] [km_cum] [vit_max] NUME STATIE [min_rst] [timpi] Sosire [Opr] Plecare
+  //
+  // Exemple din livret:
+  //   "PLOIEŞTI SUD 09.48"                          → prima statie, doar plecare
+  //   "3.0 3.0 70 PLOIEŞTI VEST 2 6 09.54 12 10.06" → intermediara cu km cum=3.0, vit=70
+  //   "13.3 100 Buftea Hm. 9 10.44 1 10.45"         → km relativ, vit=100
+  //   "9.5 62.0 BUCUREŞTI NORD GR.A 2 11 11.03"     → ultima statie, doar sosire
+  //   "3.4 P. mac. R1 Buciumeni 3 - - 10.48"        → punct tehnic, NO STOP
+  //   "2.9 90 P. M. Ram. Ploieşti Tj. 3 - - 10.09"  → punct tehnic, NO STOP
+  // ═══════════════════════════════════════════════════════
   parsedTrains=[];
   var cur=null;
 
-  var SKIP=/^(SUMAR|PROCENT|Automotoare|MASA\s|Dist\s|Vit\s*max|Min\s*rst|Timpi|GR\.A$|simpl|^0[01]h)/i;
+  // Linii de ignorat complet
+  var SKIP_RE=/^(SUMAR|PROCENT|Automotoare|GR\.A\s*$|simpl|Dist\s|Vit\s|Min\s|Timpi|^\d{2}h\s*\d{2}m|MASA\s)/i;
 
-  function isTech(line){
-    return /P\.\s*[Mm]\.?\s*Ram/i.test(line)||
-           /P\.\s*mac/i.test(line)||
-           /\bTj\.\s*\d/i.test(line)||
-           /Triaj\b/i.test(line);
+  // Punct tehnic fara oprire pasageri (P.M. Ram, P.mac, Triaj, etc.)
+  function isTechPoint(line){
+    return /P\.\s*[Mm]\.?\s*[Rr]am/i.test(line) ||
+           /P\.\s*mac/i.test(line) ||
+           /\bTriaj\b/i.test(line) ||
+           /\bTj\b/i.test(line) ||
+           /\bR\d\b.*Buciumeni/i.test(line);
   }
 
+  // Extrage toate orele HH.MM sau HH:MM din linie
   function getTimes(str){
-    var times=[],m,re=/\b(\d{1,2})[\.:](\d{2})\b/g;
+    var times=[],m;
+    var re=/\b(\d{1,2})[\.:](\d{2})\b/g;
     while((m=re.exec(str))!==null){
       var h=+m[1],mi=+m[2];
       if(h>=0&&h<=23&&mi>=0&&mi<=59)
@@ -1013,98 +1034,181 @@ function parseLivret(lines,fname){
     return times;
   }
 
-  // FIX 5: extrage viteza maxima din linie (ex: "120", "80" dupa km)
-  function getSpeed(str){
-    // Cauta pattern "km NR viteza" - ex: "245 120" sau "Vmax 100"
-    var m=str.match(/\b(160|140|120|100|80|60|50|40|30|20)\b/g);
-    if(m&&m.length){
-      // Ia prima valoare care arata a viteza CFR standard
-      for(var i=0;i<m.length;i++){
-        var v=parseInt(m[i]);
-        if(v>=20&&v<=160&&v%10===0)return v;
-      }
+  // Extrage km cumulat din linie (numarul mai mare dupa primul numar mic de dist)
+  // Ex: "3.0 3.0 70 PLOIESTI VEST" → kmCum=3.0
+  // Ex: "9.5 62.0 BUCURESTI NORD"  → kmCum=62.0
+  // Ex: "13.3 100 Buftea"          → kmCum=0 (nu exista km cum explicit)
+  function getKmCum(str){
+    // Pattern: doua numere zecimale consecutive la inceput de linie → al doilea e km cum
+    var m=str.match(/^\s*(\d+[.,]\d+)\s+(\d+[.,]\d+)\s/);
+    if(m){
+      var v1=parseFloat(m[1].replace(',','.'));
+      var v2=parseFloat(m[2].replace(',','.'));
+      // km cum e in general > dist simplu, si mai mare decat ~2
+      if(v2>v1&&v2>2) return v2;
     }
     return 0;
   }
 
-  function cleanN(raw){
+  // Extrage viteza maxima din linie
+  // In livret, viteza apare DUPA km si INAINTE de numele statiei
+  // Ex: "3.0 3.0 70 PLOIESTI VEST" → vit=70
+  // Ex: "13.3 100 Buftea"          → vit=100
+  // Ex: "4.6 Brazi"                → vit=0 (mostenita de la anterioara)
+  function getVitMax(str){
+    // Cauta viteza standard CFR (20,30,40,50,60,70,80,90,100,120,140,160)
+    // dupa numerele de km de la inceputul liniei
+    var m=str.match(/^\s*(?:\d+[.,]\d+\s+){1,2}(160|140|120|100|90|80|70|60|50|40|30|20)\s+[A-Z]/);
+    if(m) return parseInt(m[1]);
+    // Alternativ: 30 cu superscript (Hm. 4\n30) - viteza restrictionata
+    return 0;
+  }
+
+  // Curata numele statiei de toate cifrele, km, viteze, timpi
+  function cleanName(raw){
     var s=raw;
-    s=s.replace(/\b\d{1,2}[\.:]?\d{2}\b/g,' ');
-    s=s.replace(/\b\d{4,}\b/g,' ');
+    // Scoate ore HH.MM sau HH:MM
+    s=s.replace(/\b\d{1,2}[\.:](\d{2})\b/g,' ');
+    // Scoate numere mari (km cum)
+    s=s.replace(/\b\d{2,4}[.,]\d+\b/g,' ');
+    // Scoate viteze si timpi (numere 1-3 cifre izolate)
     s=s.replace(/\b\d{1,3}\b/g,' ');
+    // Scoate semne tehnice
+    s=s.replace(/[-–—]+\s*[-–—]*/g,' ');
     s=s.replace(/[\/\\%=\|]/g,' ');
-    s=s.replace(/[-\u2013\u2014]+/g,' ');
+    // Scoate sufixe tehnice
+    s=s.replace(/\bGR\.?\s*[AB]\b/gi,'');
+    s=s.replace(/\bHm\b\.?/gi,'');
+    s=s.replace(/\bh\b\.?(?=\s|$)/gi,'');
+    s=s.replace(/\bhc\b\.?/gi,'');
+    s=s.replace(/\bHc\b\.?/gi,'');
+    // Curata spatii multiple
     s=s.replace(/\s+/g,' ').trim();
+    // Scoate prefix non-litera
     s=s.replace(/^[^A-Za-z\u00C0-\u024F]+/,'').trim();
-    s=s.replace(/\s*GR\.?\s*A\s*$/i,'').trim();
-    s=s.replace(/\s*[Hh]m\.\s*$/,'').trim();
-    s=s.replace(/\s+h\.\s*$/,'').trim();
+    // Scoate sufix non-litera
+    s=s.replace(/[^A-Za-z\u00C0-\u024F\s]+$/,'').trim();
     return s;
+  }
+
+  // Verifica daca linia are "- -" (fara oprire)
+  function isNoStop(str){
+    return /\s-\s*-\s/.test(str) || /\s-\s*-\s*$/.test(str);
   }
 
   lines.forEach(function(line){
     line=line.trim();
     if(!line||line.length<2)return;
 
-    // Detectare numar tren
-    var mT=line.match(/Nr\.\s*(\d{4,6})\s+(.*)/i);
+    // ── Detectare numar tren ──
+    var mT=line.match(/^Nr\.\s*(\d{4,6})\s+(.*)/i);
     if(mT){
-      if(cur&&cur.stations.length>=2)parsedTrains.push(cur);
-      var tn=mT[2].trim().replace(/GR\.?\s*A\s*$/i,'').trim();
+      // Salveaza trenul anterior
+      if(cur&&cur.stations.length>=2) parsedTrains.push(cur);
+      var tn=mT[2].trim()
+        .replace(/GR\.?\s*[AB]\s*$/i,'')
+        .replace(/\s+/g,' ').trim();
       cur={no:mT[1],name:tn,stations:[]};
       return;
     }
 
     if(!cur)return;
-    if(SKIP.test(line))return;
-    if(isTech(line))return;
 
-    var times=getTimes(line);
-    
-    // FIX 5: captureaza si liniile cu O SINGURA ORA (terminus/ultima statie)
-    if(!times.length)return;
+    // ── Skip linii de header/sumar ──
+    if(SKIP_RE.test(line))return;
 
-    var name=cleanN(line);
-    if(!name||name.length<3)return;
-    if(!/[A-Za-z\u00C0-\u024F]{3,}/.test(name))return;
-
-    // FIX 4: extrage viteza din linie
-    var speed=getSpeed(line);
-
-    var n=cur.stations.length;
-    var sta={name:name,km:0,arr:'',dep:'',speed:speed,stops:false};
-
-    // FIX 5: logica imbunatatita pentru terminus (prima si ultima statie)
-    if(n===0){
-      // Prima statie: doar plecare
-      sta.dep=times[times.length-1];
-      sta.stops=true;
-    } else if(times.length>=2){
-      // Statie intermediara: sosire + plecare
-      sta.arr=times[0];
-      sta.dep=times[1];
-      sta.stops=(sta.arr!==sta.dep);
-    } else if(times.length===1){
-      // FIX 5: O singura ora = fie terminus final (numai sosire), fie statie simpla
-      // Daca vine dupa o statie cu dep si e ultima detectata, e terminus
-      sta.arr=times[0];
-      sta.dep='';  // nu pleaca (terminus)
-      sta.stops=true;
+    // ── Punct tehnic (nu apare in lista calatorilor) ──
+    // Il procesam doar pentru a extrage viteza (care se aplica URMATOAREI statii)
+    if(isTechPoint(line)){
+      var techVit=getVitMax(line);
+      if(techVit&&cur.stations.length>0){
+        // Aplicam viteza pe ultima statie adaugata (viteza de la ea incolo)
+        cur.stations[cur.stations.length-1].speedNext=techVit;
+      }
+      return;
     }
 
+    // ── Extrage timpi ──
+    var times=getTimes(line);
+
+    // ── Extrage km cumulat ──
+    var kmCum=getKmCum(line);
+
+    // ── Extrage viteza ──
+    var vit=getVitMax(line);
+
+    // ── Curata numele ──
+    var name=cleanName(line);
+    if(!name||name.length<2)return;
+    if(!/[A-Za-z\u00C0-\u024F]{2,}/.test(name))return;
+
+    // Evita duplicate consecutive
     var last=cur.stations[cur.stations.length-1];
     if(last&&normN(last.name)===normN(name))return;
+
+    var noStop=isNoStop(line);
+    var n=cur.stations.length;
+
+    var sta={
+      name:name,
+      km:kmCum||0,
+      arr:'',dep:'',
+      speed:vit||0,
+      stops:!noStop
+    };
+
+    if(n===0){
+      // ── PRIMA STATIE: are o singura ora = ora de plecare ──
+      if(times.length>=1){
+        sta.dep=times[times.length-1]; // ultima ora din linie = plecare
+        sta.arr='';
+        sta.stops=true;
+      } else {
+        return; // fara ora, skip
+      }
+    } else if(times.length===0){
+      // Linie fara ore - poate fi statie tehnica sau fara oprire
+      if(!noStop) return;
+      sta.stops=false;
+    } else if(times.length===1){
+      // O singura ora = terminus final (sosire) sau statie simpla fara plec
+      sta.arr=times[0];
+      sta.dep='';
+      sta.stops=true;
+    } else {
+      // Doua+ ore = sosire + plecare
+      sta.arr=times[0];
+      sta.dep=times[times.length-1]; // ultima = plecare (ignora "Opr" din mijloc)
+      sta.stops=(sta.arr!==sta.dep)||!noStop;
+    }
+
+    // Aplica km CFR real din baza de date locala daca nu am din livret
+    if(!sta.km){
+      var cfrkm=getCFRkm(name);
+      if(cfrkm) sta.km=cfrkm;
+    }
+
     cur.stations.push(sta);
+
+    // Daca viteza e pe acest rand, aplica si pe statia precedenta (viteza de la precedenta la aceasta)
+    if(vit&&n>0&&!cur.stations[n-1].speedNext){
+      cur.stations[n-1].speedNext=vit;
+    }
   });
 
-  // FIX 5: Adauga si ultimul tren (chiar daca are doar 1 statie in plus fata de minim)
-  if(cur){
-    if(cur.stations.length>=2){
-      parsedTrains.push(cur);
-    } else if(cur.stations.length===1){
-      // Tren cu o singura statie detectata - ignora
-    }
-  }
+  // Salveaza ultimul tren
+  if(cur&&cur.stations.length>=2) parsedTrains.push(cur);
+
+  // Post-procesare: propagare viteze
+  parsedTrains.forEach(function(t){
+    var lastV=0;
+    t.stations.forEach(function(s){
+      if(s.speed) lastV=s.speed;
+      else if(s.speedNext) lastV=s.speedNext;
+      if(!s.speed&&lastV) s.speed=lastV;
+      delete s.speedNext;
+    });
+  });
 
   showPreview(fname);
 }
@@ -1349,86 +1453,228 @@ function delAlert(i){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// COORDONATE STATII CFR (extinse cu mai multe statii TFC)
+// BAZA DATE STATII CFR: [lat, lng, km_cfr]
+// km_cfr = km real pe linia CFR (borna kilometric oficila)
+// Surse: Wikipedia, Documentul de Referinta CFR, livrete oficiale
 // ═══════════════════════════════════════════════════════════════
 var C={
-  // Magistrala 1 (Buc Nord - Brasov)
-  "Bucuresti Nord":[44.4518,26.0849],"Bucuresti Basarab":[44.4489,26.0731],
-  "Chitila":[44.5063,26.0261],"Buftea":[44.566,25.951],
-  "Titu":[44.656,25.584],"Gaesti":[44.726,25.316],
-  "Campulung":[45.264,25.037],"Golesti":[45.114,25.021],
-  "Pitesti":[44.857,24.869],"Costesti":[44.668,24.885],
-  "Balș":[44.360,24.092],"Piatra Olt":[44.360,24.270],
-  "Slatina":[44.431,24.364],"Caracal":[44.118,24.355],
-  "Craiova":[44.32,23.799],"Filiasi":[44.558,23.518],
-  "Drobeta Turnu Severin":[44.632,22.656],"Caransebes":[45.415,22.215],
-  "Lugoj":[45.689,21.903],"Timisoara Nord":[45.76,21.238],
-  "Arad":[46.184,21.309],
-  // Magistrala 1 (Buc - Brasov) directa
-  "Ploiesti Sud":[44.929,26.028],"Ploiesti Vest":[44.946,25.99],
-  "Ploiesti Nord":[44.954,26.049],"Campina":[45.126,25.739],
-  "Comarnic":[45.253,25.635],"Breaza":[45.185,25.672],
-  "Sinaia":[45.349,25.553],"Busteni":[45.409,25.536],
-  "Azuga":[45.453,25.556],"Predeal":[45.508,25.576],
-  "Brasov":[45.6576,25.5976],
-  // Linie Ploiesti-Buzau-Focsani-Bacau
-  "Gageni":[44.991,26.08],"Buda":[45.012,26.105],
-  "Malaesti":[45.052,26.17],"Cotofenesti":[45.102,26.21],
-  "Buzau":[45.15,26.82],"Ramnicu Sarat":[45.38,27.056],
-  "Marasesti":[45.885,27.226],"Adjud":[46.103,27.178],
-  "Focsani":[45.696,27.187],"Bacau":[46.567,26.914],
-  "Roman":[46.92,26.927],"Iasi":[47.159,27.601],
-  "Suceava":[47.651,26.254],"Suceava Nord":[47.662,26.248],
-  "Vaslui":[46.638,27.728],"Barlad":[46.229,27.67],
-  "Tecuci":[45.849,27.423],"Galati":[45.435,28.008],
-  "Braila":[45.269,27.957],
-  // Linie Constanta
-  "Constanta":[44.18,28.634],"Fetesti":[44.375,27.846],
-  "Medgidia":[44.253,28.272],"Cernavoda":[44.333,28.02],
-  "Lehliu":[44.436,26.85],
-  // Transilvania
-  "Cluj-Napoca":[46.768,23.589],"Cluj Napoca":[46.768,23.589],
-  "Oradea":[47.046,21.919],"Sibiu":[45.798,24.126],
-  "Alba Iulia":[46.066,23.58],"Deva":[45.878,22.91],
-  "Simeria":[45.852,22.854],"Targu Mures":[46.543,24.558],
-  "Sighisoara":[46.219,24.795],"Blaj":[46.176,23.917],
-  "Medias":[46.158,24.352],"Fagaras":[45.843,24.972],
-  "Sfantu Gheorghe":[45.868,25.787],"Bod":[45.733,25.638],
-  "Ghimbav":[45.662,25.512],
-  // Alte orase
-  "Baia Mare":[47.657,23.569],"Satu Mare":[47.792,22.883],
-  "Bistrita":[47.132,24.5],"Vatra Dornei":[47.348,25.359],
-  "Ramnicu Valcea":[45.099,24.368],"Targu Jiu":[45.035,23.275],
-  "Petrosani":[45.413,23.37],
-  "Giurgiu Nord":[43.938,25.968],"Targoviste":[44.927,25.457],
-  "Slanic":[45.231,25.941],"Valenii de Munte":[45.194,26.042],
-  "Mizil":[45.01,26.443],"Urlati":[44.995,26.239],
-  // Statii Plopeni/Buda/Gageni (linie TFC)
-  "Plopeni":[45.044,26.126],"Plopeni Sat Hm":[45.03,26.11],
-  "Gageni Hc":[44.997,26.087],
-  // Bucuresti statii mici
-  "Bucuresti Baneasa":[44.4951,26.0841],"Bucuresti Obor":[44.453,26.1072],
-  "Bucuresti Progresu":[44.3961,26.0634],
-  // Altele
-  "Brazi":[44.972,26.027],"Peris":[44.626,26.049],
-  "Scrovistea":[44.67,26.073],"Crivina":[44.791,26.06],
-  "Cocorastii Mislii":[44.989,25.961],"Filipestii de Padure":[45.02,25.973],
-  "Gura Vitioarei":[45.078,26.025],"Prajani":[45.131,26.063],
-  "Batrani":[45.158,26.021],"Teisani":[45.175,26.007],
-  "Magurele Prahova":[45.208,25.998],"Moinesti":[46.47,26.478],
-  "Alexandria":[43.976,25.332],"Rosiori Nord":[44.117,24.990],
-  "Giurgiu":[43.904,25.963],"Videle":[44.281,25.509],
-  "Turnu Magurele":[43.747,24.882],"Zimnicea":[43.648,25.368],
-  "Corabia":[43.773,24.509]
+  // ── MAGISTRALA 300: București Nord → Brașov → Oradea (km de la Buc Nord) ──
+  "Bucuresti Nord":     [44.4518,26.0849,  0],
+  "Depoul Buc Triaj":   [44.4425,26.0720,  4],
+  "Chitila":            [44.5063,26.0261,  9.1],
+  "Buftea":             [44.566, 25.951,  17.8],
+  "Darza":              [44.596, 25.924,  22],
+  "Peris":              [44.626, 26.049,  26.4],
+  "Scrovistea":         [44.67,  26.073,  30.7],
+  "Crivina":            [44.791, 26.060,  35.0],
+  "Prahova":            [44.862, 26.040,  40.3],
+  "Brazi":              [44.972, 26.027,  45.1],
+  "Ploiesti Triaj":     [44.914, 26.011,  49.7],
+  "Ploiesti Sud":       [44.929, 26.028,  52.4],
+  "Ploiesti Vest":      [44.946, 25.990,  55.4],
+  "Buda":               [45.012, 26.105,  62.4],
+  "Floresti Prahova":   [45.074, 25.974,  73.5],
+  "Campina":            [45.126, 25.739,  87.6],
+  "Breaza":             [45.185, 25.672,  98.2],
+  "Breaza Nord":        [45.197, 25.661, 100.4],
+  "Comarnic":           [45.253, 25.635, 103.8],
+  "Posada":             [45.299, 25.599, 108.3],
+  "Valea Larga":        [45.329, 25.575, 113.2],
+  "Sinaia Sud":         [45.339, 25.557, 115.8],
+  "Sinaia":             [45.349, 25.553, 118.0],
+  "Poiana Tapului":     [45.380, 25.539, 121.4],
+  "Busteni":            [45.409, 25.536, 125.6],
+  "Azuga":              [45.453, 25.556, 129.8],
+  "Predeal":            [45.508, 25.576, 134.5],
+  "Timisu de Sus":      [45.560, 25.540, 140.0],
+  "Timisu de Jos":      [45.607, 25.526, 144.5],
+  "Darste":             [45.635, 25.534, 147.3],
+  "Brasov":             [45.657, 25.598, 166.0],
+  "Bod":                [45.733, 25.638, 174.5],
+  "Sfantu Gheorghe":    [45.868, 25.787, 193.0],
+  "Racos":              [46.041, 25.446, 234.0],
+  "Sighisoara":         [46.219, 24.795, 276.0],
+  "Blaj":               [46.176, 23.917, 336.0],
+  "Teius":              [46.210, 23.675, 354.0],
+  "Alba Iulia":         [46.066, 23.580, 365.0],
+  "Vintu de Jos":       [45.984, 23.398, 381.0],
+  "Simeria":            [45.852, 22.854, 401.0],
+  "Deva":               [45.878, 22.910, 408.0],
+  "Ilia":               [45.935, 22.665, 425.0],
+  "Zam":                [45.917, 22.485, 441.0],
+  "Gurasada":           [45.904, 22.358, 450.0],
+  "Dobra":              [45.878, 22.213, 462.0],
+  "Ulsoare":            [45.947, 22.110, 471.0],
+  "Paulis":             [46.095, 21.850, 497.0],
+  "Arad":               [46.184, 21.309, 526.0],
+  "Curtici":            [46.357, 21.316, 544.0],
+
+  // ── MAGISTRALA 500: București → Ploiești → Buzău → Suceava ──
+  // (București-Ploiești partajat cu M300)
+  "Comarnic Prahova":   [45.253, 25.635, 103.8],
+  "Valea Calugareasca": [44.989, 26.145,  63.5],
+  "Mizil":              [45.010, 26.443,  88.0],
+  "Buzau":              [45.150, 26.820, 128.0],
+  "Ramnicu Sarat":      [45.380, 27.056, 156.0],
+  "Marasesti":          [45.885, 27.226, 207.0],
+  "Adjud":              [46.103, 27.178, 220.0],
+  "Onesti":             [46.244, 26.779, 248.0],
+  "Bacau":              [46.567, 26.914, 286.0],
+  "Roman":              [46.920, 26.927, 323.0],
+  "Pascani":            [47.250, 26.725, 366.0],
+  "Iasi":               [47.159, 27.601, 407.0],
+  "Suceava":            [47.651, 26.254, 456.0],
+  "Suceava Nord":       [47.662, 26.248, 459.0],
+  "Vicosani":           [47.933, 25.930, 487.0],
+
+  // ── MAGISTRALA 800: București → Constanța ──
+  "Bucuresti Baneasa":  [44.495, 26.084,   9.0],
+  "Buftea Hm":          [44.566, 25.951,  17.8],
+  "Fundulea":           [44.456, 26.519,  43.0],
+  "Lehliu":             [44.436, 26.850,  64.0],
+  "Fetesti":            [44.375, 27.846, 130.0],
+  "Cernavoda":          [44.333, 28.020, 145.0],
+  "Medgidia":           [44.253, 28.272, 163.0],
+  "Constanta":          [44.180, 28.634, 225.0],
+  "Mangalia":           [43.817, 28.588, 268.0],
+
+  // ── MAGISTRALA 700: București → Urziceni ──
+  "Mogosoaia":          [44.560, 25.998,  12.0],
+  "Balotesti":          [44.618, 26.061,  21.0],
+  "Urziceni":           [44.717, 26.642,  70.0],
+
+  // ── LINIE 100/101: București → Craiova → Timișoara ──
+  "Bucuresti Progresu": [44.396, 26.063,   5.0],
+  "Videle":             [44.281, 25.509,  55.0],
+  "Rosiori Nord":       [44.117, 24.990,  90.0],
+  "Alexandria":         [43.976, 25.332, 112.0],
+  "Caracal":            [44.118, 24.355, 162.0],
+  "Craiova":            [44.320, 23.799, 225.0],
+  "Filiasi":            [44.558, 23.518, 265.0],
+  "Strehaia":           [44.623, 23.207, 305.0],
+  "Drobeta Turnu Severin":[44.632,22.656,356.0],
+  "Orsova":             [44.724, 22.389, 383.0],
+  "Baile Herculane":    [44.870, 22.416, 404.0],
+  "Caransebes":         [45.415, 22.215, 440.0],
+  "Lugoj":              [45.689, 21.903, 477.0],
+  "Timisoara Nord":     [45.760, 21.238, 533.0],
+  "Timisoara Est":      [45.754, 21.284, 531.0],
+
+  // Linie 101: Chitila → Pitești
+  "Titu":               [44.656, 25.584,  47.0],
+  "Gaesti":             [44.726, 25.316,  72.0],
+  "Golesti":            [45.114, 25.021,  89.0],
+  "Pitesti":            [44.857, 24.869,  97.0],
+  "Costesti":           [44.668, 24.885, 114.0],
+  "Slatina":            [44.431, 24.364, 190.0],
+  "Piatra Olt":         [44.360, 24.270, 203.0],
+
+  // ── LINIE 305: Ploiești → Vălenii de Munte → Slănic ──
+  "Ploiesti Nord":      [44.954, 26.049,  56.0],
+  "Urlati":             [44.995, 26.239,  70.0],
+  "Mizil Vest":         [45.010, 26.421,  82.0],
+  "Valenii de Munte":   [45.194, 26.042, 195.0],
+  "Magurele Prahova":   [45.208, 25.998, 203.0],
+  "Gura Vitioarei":     [45.078, 26.025, 214.0],
+  "Cocorastii Mislii":  [44.989, 25.961, 220.0],
+
+  // ── LINIE 306: Ploiești → Slănic / Plopeni ──
+  "Gageni":             [44.991, 26.080,  60.0],
+  "Gageni Hc":          [44.997, 26.087,  61.0],
+  "Plopeni":            [45.044, 26.126,  67.0],
+  "Plopeni Sat":        [45.030, 26.110,  65.0],
+  "Filipestii de Padure":[45.020,25.973,  74.0],
+  "Batrani":            [45.158, 26.021,  88.0],
+  "Teisani":            [45.175, 26.007,  90.0],
+  "Prajani":            [45.131, 26.063,  82.0],
+  "Slanic":             [45.231, 25.941,  94.5],
+  "Moinesti":           [46.470, 26.478, 302.0],
+
+  // ── LINIE 302: Ploiești → Târgoviște ──
+  "Targoviste":         [44.927, 25.457,  82.0],
+
+  // ── LINIE 104: București → Giurgiu ──
+  "Giurgiu Nord":       [43.938, 25.968, 102.0],
+  "Giurgiu":            [43.904, 25.963, 105.0],
+
+  // ── LINIE 300 NORD: Brașov → Cluj → Oradea ──
+  "Ghimbav":            [45.662, 25.512, 170.0],
+  "Rasnov":             [45.590, 25.457, 179.0],
+  "Zarnesti Hm":        [45.560, 25.357, 185.0],
+  "Fagaras":            [45.843, 24.972, 239.0],
+  "Copsa Mica":         [46.105, 24.230, 297.0],
+  "Medias":             [46.158, 24.352, 306.0],
+  "Targu Mures":        [46.543, 24.558, 357.0],
+  "Cluj-Napoca":        [46.768, 23.589, 455.0],
+  "Cluj Napoca":        [46.768, 23.589, 455.0],
+  "Jibou":              [47.258, 23.254, 516.0],
+  "Oradea":             [47.046, 21.919, 647.0],
+
+  // ── LINIE 400: Brașov → Sf. Gheorghe → Adjud ──
+  "Intorsura Buzaului":  [45.678, 26.021, 208.0],
+  "Bretcu":              [45.895, 26.350, 232.0],
+  "Targu Secuiesc":      [46.003, 26.145, 247.0],
+  "Focsani":             [45.696, 27.187, 286.0],
+
+  // ── LINIE 500 NORD: Suceava → Vatra Dornei ──
+  "Vatra Dornei":       [47.348, 25.359, 523.0],
+  "Campulung Moldovenesc":[47.525,25.561,496.0],
+
+  // ── LINIE 600: Iași → Galați ──
+  "Vaslui":             [46.638, 27.728, 450.0],
+  "Barlad":             [46.229, 27.670, 492.0],
+  "Tecuci":             [45.849, 27.423, 521.0],
+  "Galati":             [45.435, 28.008, 561.0],
+  "Braila":             [45.269, 27.957, 579.0],
+
+  // ── LINIE 700 NORD: Satu Mare → Baia Mare ──
+  "Satu Mare":          [47.792, 22.883, 601.0],
+  "Baia Mare":          [47.657, 23.569, 635.0],
+  "Bistrita":           [47.132, 24.500, 670.0],
+
+  // ── LINIE 300 VEST: Arad → Timișoara ──
+  "Sibiu":              [45.798, 24.126, 380.0],
+  "Ramnicu Valcea":     [45.099, 24.368, 310.0],
+  "Targu Jiu":          [45.035, 23.275, 291.0],
+  "Petrosani":          [45.413, 23.370, 340.0],
+  "Turnu Magurele":     [43.747, 24.882, 285.0],
+  "Zimnicea":           [43.648, 25.368, 320.0],
+  "Corabia":            [43.773, 24.509, 350.0],
+
+  // ── București stații mici ──
+  "Bucuresti Basarab":  [44.449, 26.073,   2.5],
+  "Bucuresti Obor":     [44.453, 26.107,   6.0],
+  "Bucuresti Triaj":    [44.442, 26.072,   4.0],
+
+  // ── Statii intermediare linie 300 Buc-Ploiesti ──
+  "Buciumeni":          [44.530, 25.963,  14.0],
+  "Darza Hm":           [44.596, 25.924,  22.0],
+  "Prahova Hm":         [44.862, 26.040,  40.3]
 };
 
-function getC(name){
-  if(!name)return null;
+// ─── getCFRkm: returneaza km CFR real pentru o statie ───────────
+// Normalizare aggresiva pentru matching indiferent de diacritice/majuscule/Hm/h
+function getCFRkm(name){
+  if(!name) return 0;
   var n=normN(name);
-  for(var k in C){if(normN(k)===n)return C[k];}
+  // Match exact
+  for(var k in C){ if(normN(k)===n && C[k][2]) return C[k][2]; }
+  // Match partial (prefix sau substring)
   for(var k in C){
     var nk=normN(k);
-    if(n.length>4&&(n.indexOf(nk)===0||nk.indexOf(n)===0))return C[k];
+    if(C[k][2] && n.length>3 && (nk.indexOf(n)===0 || n.indexOf(nk)===0)) return C[k][2];
+  }
+  return 0;
+}
+
+// ─── getC: returneaza [lat,lng] pentru o statie ─────────────────
+function getC(name){
+  if(!name) return null;
+  var n=normN(name);
+  for(var k in C){ if(normN(k)===n) return [C[k][0],C[k][1]]; }
+  for(var k in C){
+    var nk=normN(k);
+    if(n.length>4 && (nk.indexOf(n)===0 || n.indexOf(nk)===0)) return [C[k][0],C[k][1]];
   }
   return null;
 }
