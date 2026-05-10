@@ -96,6 +96,7 @@ html,body{width:100%;height:100%;background:#0a0e14;color:#e8f0fe;font-family:'S
 .si.cur .siname{color:#00c8ff}
 .sikm{font-size:8px;color:#2a3d55}
 .sispeed{font-size:9px;color:#ffd600;font-weight:bold}
+.sispeed-none{color:#2a3d55;font-weight:normal}
 .sitimes{padding:3px 5px;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:1px;flex-shrink:0}
 .sarr{font-size:10px;color:#e8f0fe;line-height:1}
 .sdep{font-size:10px;color:#ffd600;line-height:1}
@@ -522,7 +523,7 @@ function showSearch(){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// FIX 4: VITEZE DIN LIVRET IN LISTA STATII
+// LISTA STATII - viteza exact din livret, doar unde e scrisa
 // ═══════════════════════════════════════════════════════════════
 function renderList(){
   var h='';
@@ -530,23 +531,25 @@ function renderList(){
     var cls='si'+(i<G.cur?' passed':i===G.cur?' cur':'');
     h+='<div class="'+cls+'" id="si'+i+'">';
     h+='<div class="sibar"></div>';
-    h+='<div class="siinfo"><div class="siname">'+esc(s.name)+'</div>';
-    var meta='';
-    if(s.km)meta+='km '+s.km;
-    if(s.speed)meta+=(meta?' | ':'')+s.speed+' km/h';
-    if(meta)h+='<div class="sikm">'+esc(meta)+'</div>';
-    // viteza evidentiata separat daca exista
+    h+='<div class="siinfo">';
+    h+='<div class="siname">'+esc(s.name)+'</div>';
+    // Km CFR
+    if(s.km) h+='<div class="sikm">km '+s.km+'</div>';
+    // Viteza: exact din livret sau — daca nu e scrisa
     if(s.speed){
       h+='<div class="sispeed">&#9654; '+s.speed+' km/h</div>';
+    } else {
+      h+='<div class="sispeed sispeed-none">&#8212;</div>';
     }
-    h+='</div><div class="sitimes">';
-    if(s.arr)h+='<div class="sarr">'+s.arr+'</div>';
-    if(s.dep)h+='<div class="sdep">'+s.dep+'</div>';
+    h+='</div>';
+    h+='<div class="sitimes">';
+    if(s.arr) h+='<div class="sarr">'+s.arr+'</div>';
+    if(s.dep) h+='<div class="sdep">'+s.dep+'</div>';
     h+='</div></div>';
   });
   $$('slist').innerHTML=h;
   var el=$$('si'+G.cur);
-  if(el)$$('lwrap').scrollTop=el.offsetTop;
+  if(el) $$('lwrap').scrollTop=el.offsetTop;
 }
 
 // ═══════════════════════════════════════════════════════════════
