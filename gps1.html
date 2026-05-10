@@ -1028,9 +1028,9 @@ function parseLivret(lines,fname){
 
   // ── STEP 1: Pre-procesare – uneste randurile rupte de PDF.js ──────
   function isOnlyNumbersOrTimes(s){
-    // Rand care contine DOAR ore, numere, spatii, cratime, procente
-    // Ex: "09.48", "2 11 11.03", "4 10.13 1 10.14", "- - 10.09"
-    var stripped=s.replace(/[\d\s\.\:\-\%\/mh]/gi,'');
+    // Rand care contine DOAR ore, numere, spatii, cratime, h, m (pentru durate)
+    // Accepta: "09.48", "2 11 11.03", "- - 10.09", "2 9 - - 09.58", "10.2830 10.29"
+    var stripped=s.replace(/[\d\s\.\:\-hm]/gi,'');
     return stripped.length===0 && /\d/.test(s);
   }
   function hasStationName(s){
@@ -1069,7 +1069,7 @@ function parseLivret(lines,fname){
     // Viteza apare dupa 0-2 numere zecimale si inainte de litera mare
     // Ex: "3.0 3.0 70 PLOIESTI" → 70 (viteza de la Ploiesti la urmatoarea)
     // Ex: "13.3 100 Buftea"     → 100
-    var m=str.match(/^\s*(?:\d{1,3}[.,]\d\s+){0,2}(160|140|120|100|90|80|70|60|50|40|30|20)\s+[A-Z\u00C0-\u024F]/);
+    var m=str.match(/^\s*(?:\d{1,3}[.,]\d\s+){0,2}(160|140|120|115|110|100|90|85|80|70|65|60|50|40|30|20)\s+[A-Z\u00C0-\u024F]/);
     if(m) return parseInt(m[1]);
     return 0;
   }
@@ -1162,19 +1162,17 @@ function parseLivret(lines,fname){
       stops:!noStop
     };
 
-    // ── VITEZE CORECTE ──
-    // Viteza de pe randul statiei X = viteza de la statia ANTERIOARA la X
-    // Exemplu din livret:
-    //   PLOIESTI SUD (prima, fara viteza)
-    //   "3.0 3.0 70 PLOIESTI VEST" → 70 = viteza de la Ploiesti SUD la Ploiesti VEST
-    //   "6.9 9.9 100 BUDA"         → 100 = viteza de la Ploiesti VEST la BUDA
-    //   "3.4 50 Cotofenesti"       → 50 = viteza de la Malaesti la Cotofenesti
-    // Deci viteza o punem pe statia PRECEDENTA (prev.speed = viteza de la prev la cur)
+    // ── VITEZE ──
+    // Viteza de pe randul statiei X = viteza segmentului PRECEDENT→X
+    // Ex: "100 Darste" → 100 = viteza de la BRASOV la DARSTE → o punem pe BRASOV.speed
+    // Ex: " 65 Timisu"  → 65 = viteza de la DARSTE la TIMISU → o punem pe DARSTE.speed
     if(vit && prev){
       prev.speed=vit;
+    } else if(!vit && cur.lastVit && prev){
+      // Viteza venita de la un punct tehnic anterior
+      prev.speed=cur.lastVit;
+      cur.lastVit=0;
     }
-    // Daca nu e viteza noua pe acest rand, statia precedenta pastreaza viteza ei
-    // (propagarea se face in post-procesare)
 
     if(n===0){
       // PRIMA STATIE: are doar ora de plecare
@@ -1203,17 +1201,8 @@ function parseLivret(lines,fname){
   // Ultimul tren fara SUMAR
   if(cur&&cur.stations.length>=2) parsedTrains.push(cur);
 
-  // ── STEP 3: Post-procesare viteze ────────────────────────────────
-  // Viteza de pe randul statiei X = valabila de la X la X+1
-  // Daca o statie nu are viteza, mosteneste de la precedenta
-  parsedTrains.forEach(function(t){
-    delete t.lastVit;
-    var lastV=0;
-    t.stations.forEach(function(s){
-      if(s.speed) lastV=s.speed;
-      else if(lastV) s.speed=lastV;
-    });
-  });
+  // Post-procesare: curata lastVit
+  parsedTrains.forEach(function(t){ delete t.lastVit; });
 
   showPreview(fname);
 }
