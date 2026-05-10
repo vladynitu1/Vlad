@@ -996,80 +996,78 @@ function extractAndParse(buf,fname){
 
 function parseLivret(lines,fname){
   // ═══════════════════════════════════════════════════════════════════
-  // PARSER livret TFC/CFR - bazat pe formatul real vizibil in imagine:
+  // CAUZA REALA A BUG-ULUI:
+  // PDF.js separa rândurile livretului astfel:
+  //   "PLOIEȘTI SUD"  pe un rând
+  //   "09.48"         pe rândul următor   ← parser-ul nu le vedea împreună!
+  // sau:
+  //   "BUCUREȘTI NORD GR.A"  rând
+  //   "2 11 11.03"           rând următor
   //
-  // Coloane: | Dist simpl | km cum | Vit max | STATIE | Min rst | Timpi | Sosire | Opr | Plecare |
-  //
-  // Reguli cheie observate in livret real:
-  //  1. Prima statie: FARA dist/km/vit, are DOAR Plecare (ex: "PLOIESTI SUD  11.36")
-  //  2. Statie intermediara cu oprire: Sosire + Opr + Plecare  (ex: "11.50  1  11.51")
-  //  3. Statie cu ▲ (oprire la cerere): Sosire30 + ▲ + Plecare  
-  //  4. Semnal/punct tehnic "- - HH.MM": fara oprire, doar tranzit
-  //  5. ULTIMA statie: DOAR Sosire, fara Plecare (ex: "SLANIC HM.  6  12.54")
-  //  6. km cum apare doar la unele statii (ex: 3.0, 9.9, 33.7, 44.0)
-  //  7. Vit max apare inaintea numelui statiei (ex: 70, 100, 50)
-  //  8. SUMAR/PROCENT/Automotoare = sfarsit tren → salveaza si trece mai departe
+  // SOLUȚIE: înainte de orice, unim rândul care conține DOAR ore/numere
+  // cu rândul anterior care conține un nume de stație.
   // ═══════════════════════════════════════════════════════════════════
   parsedTrains=[];
   var cur=null;
 
-  // ── helper: extrage toate orele HH.MM / HH:MM (inclusiv HH.MMss cu superscript) ──
+  // ── STEP 1: Pre-procesare – uneste randurile rupte de PDF.js ──────
+  function isOnlyNumbersOrTimes(s){
+    // Rand care contine DOAR ore, numere, spatii, cratime, procente
+    // Ex: "09.48", "2 11 11.03", "4 10.13 1 10.14", "- - 10.09"
+    var stripped=s.replace(/[\d\s\.\:\-\%\/mh]/gi,'');
+    return stripped.length===0 && /\d/.test(s);
+  }
+  function hasStationName(s){
+    return /[A-Za-z\u00C0-\u024F]{3,}/.test(s);
+  }
+
+  var merged=[];
+  for(var li=0;li<lines.length;li++){
+    var l=lines[li].trim();
+    if(!l) continue;
+    // Daca randul e DOAR cifre/ore si randul anterior are un nume → uneste
+    if(isOnlyNumbersOrTimes(l) && merged.length>0 && hasStationName(merged[merged.length-1])){
+      merged[merged.length-1]=merged[merged.length-1]+' '+l;
+    } else {
+      merged.push(l);
+    }
+  }
+
+  // ── Helpers ──────────────────────────────────────────────────────
   function getTimes(str){
+    // Normalizeaza superscript: "10.2830" → "10.28"
+    var s=str.replace(/\b(\d{1,2}\.\d{2})\d{2}\b/g,'$1');
     var times=[], seen={}, m;
-    // Normalizeaza superscript "12.0030" → "12.00" (minutele duble din PDF)
-    var s=str.replace(/(\d{1,2}[\.]\d{2})\d{2}/g,'$1');
     var re=/\b(\d{1,2})[\.:](\d{2})\b/g;
     while((m=re.exec(s))!==null){
       var h=+m[1], mi=+m[2];
       if(h>=0&&h<=23&&mi>=0&&mi<=59){
         var t=(h<10?'0':'')+h+':'+(mi<10?'0':'')+mi;
-        if(!seen[t]){seen[t]=true;times.push(t);}
+        if(!seen[t]){seen[t]=true; times.push(t);}
       }
     }
     return times;
   }
 
-  // ── helper: extrage km cumulat (al doilea numar zecimal la inceput de rand) ──
-  // Ex: "3.0  3.0  70  PLOIESTI VEST" → 3.0
-  // Ex: "3.4  44.0     SLANIC"        → 44.0
-  // Ex: "6.9   9.9 100 BUDA"          → 9.9
-  // Ex: "6.6       Gageni"            → 0 (nu are km cum)
-  function getKmCum(str){
-    // Pattern strict: linie incepe cu 1-2 numere zecimale mici (dist + optional km cum)
-    var m=str.match(/^\s*(\d{1,3}[.,]\d)\s+(\d{1,3}[.,]\d)\s/);
-    if(m){
-      var d=parseFloat(m[1].replace(',','.'));
-      var k=parseFloat(m[2].replace(',','.'));
-      // km cum e >= dist simplu de obicei, si nu e o viteza (vitezele sunt intregi)
-      if(k>=d&&k>1&&String(m[2]).indexOf('.')!==-1) return k;
-    }
-    return 0;
-  }
-
-  // ── helper: extrage viteza maxima (numar intreg bold intre km si numele statiei) ──
-  // Ex: "3.0  3.0  70  PLOIESTI" → 70
-  // Ex: "6.9  9.9 100  BUDA"     → 100
-  // Ex: "3.4  50   Cotofenesti"  → 50
-  // Ex: "6.6      Gageni"        → 0
   function getVitMax(str){
-    // Dupa 1-2 numere zecimale optionale, un numar intreg standard CFR
-    var m=str.match(/^\s*(?:\d{1,3}[.,]\d\s+){0,2}(160|140|120|100|90|80|70|60|50|40|30|20)\s+[A-ZĂÂÎȘȚ]/);
+    // Viteza apare dupa 0-2 numere zecimale si inainte de litera mare
+    // Ex: "3.0 3.0 70 PLOIESTI" → 70 (viteza de la Ploiesti la urmatoarea)
+    // Ex: "13.3 100 Buftea"     → 100
+    var m=str.match(/^\s*(?:\d{1,3}[.,]\d\s+){0,2}(160|140|120|100|90|80|70|60|50|40|30|20)\s+[A-Z\u00C0-\u024F]/);
     if(m) return parseInt(m[1]);
     return 0;
   }
 
-  // ── helper: curata numele statiei ──
   function cleanName(raw){
     var s=raw;
-    s=s.replace(/(\d{1,2}[\.]\d{2})\d{2}/g,'$1'); // superscript
-    s=s.replace(/\b\d{1,2}[\.:](\d{2})\b/g,' ');  // ore
-    s=s.replace(/\b\d{1,3}[.,]\d+\b/g,' ');        // km zecimali
+    s=s.replace(/\b(\d{1,2}\.\d{2})\d{2}\b/g,'$1'); // superscript ore
+    s=s.replace(/\b\d{1,2}[\.:](\d{2})\b/g,' ');    // ore HH.MM
+    s=s.replace(/\b\d{1,3}[.,]\d+\b/g,' ');          // km zecimali
     s=s.replace(/\b(160|140|120|100|90|80|70|60|50|40|30|20)\b/g,' '); // viteze
-    s=s.replace(/\b\d{1,3}\b/g,' ');               // numere mici (timpi, opr)
+    s=s.replace(/\b\d{1,3}\b/g,' ');                 // numere (timpi, opr)
     s=s.replace(/[-–—▲▼►◄]+/g,' ');
     s=s.replace(/[\/\\%=\|]/g,' ');
     s=s.replace(/\bGR\.?\s*[AB]\b/gi,'');
-    // Pastreaza Hm. h. hc. ca parte din nume (Slanic Hm., Gageni h.)
     s=s.replace(/\s+/g,' ').trim();
     s=s.replace(/^[^A-Za-z\u00C0-\u024F]+/,'').trim();
     s=s.replace(/[^A-Za-z\u00C0-\u024F.\s]+$/,'').trim();
@@ -1077,37 +1075,35 @@ function parseLivret(lines,fname){
     return s;
   }
 
-  // ── helper: e punct tehnic fara oprire pasageri? ──
   function isTechPoint(line){
     return /P\.\s*[Mm]\.?\s*[Rr]am/i.test(line) ||
            /P\.\s*mac\b/i.test(line) ||
            /\bTriaj\b/i.test(line) ||
            /Buciumeni/i.test(line) ||
-           /\bR[12]\b.*mac/i.test(line);
+           /\bSemnal\b/i.test(line);
   }
 
-  // ── helper: e linie de sfarsit tren (SUMAR, PROCENT, etc.)? ──
   function isEndOfTrain(line){
     return /^(SUMAR|PROCENT|Automotoare|\d{2}h\s*\d{2}m|In period)/i.test(line);
   }
 
-  // ── helper: e linie de header tabel? ──
   function isHeader(line){
-    return /^(Dist\s|in Km|Vit\s|Max\s|STAII|HALTE|Min\s|Timpi|Sosire|Plecare|simpl|cum\s)/i.test(line);
+    return /^(Dist\b|in Km|Vit\b|Max\b|STATI|HALTE|Min\b|Timpi|Sosire|Plecare|simpl|cum\b|si alte|max\b)/i.test(line);
   }
 
-  lines.forEach(function(line){
+  // ── STEP 2: Parcurge liniile unificate ───────────────────────────
+  merged.forEach(function(line){
     line=line.trim();
     if(!line||line.length<2) return;
 
-    // ── Detectare numar tren: "Nr. 10227 PLOIESTI SUD - SLANIC" ──
+    // Numar tren
     var mT=line.match(/^Nr\.\s*(\d{4,6})\s+(.*)/i);
     if(mT){
       if(cur&&cur.stations.length>=2) parsedTrains.push(cur);
       cur={
         no:mT[1],
         name:mT[2].trim().replace(/GR\.?\s*[AB]\s*$/i,'').replace(/\s+/g,' ').trim(),
-        stations:[]
+        stations:[], lastVit:0
       };
       return;
     }
@@ -1115,111 +1111,85 @@ function parseLivret(lines,fname){
     if(!cur) return;
     if(isHeader(line)) return;
 
-    // ── Sfarsit tren: salveaza INAINTE de a ignora linia ──
     if(isEndOfTrain(line)){
       if(cur.stations.length>=2) parsedTrains.push(cur);
       cur=null;
       return;
     }
 
-    // ── Punct tehnic: extrage viteza si skip ──
+    // Punct tehnic: retine viteza pentru statia precedenta si skip
     if(isTechPoint(line)){
       var tv=getVitMax(line);
-      if(tv&&cur.stations.length>0)
-        cur.stations[cur.stations.length-1]._speedNext=tv;
+      if(tv) cur.lastVit=tv;
       return;
     }
 
     var times=getTimes(line);
-    var kmCum=getKmCum(line);
     var vit=getVitMax(line);
     var name=cleanName(line);
 
     if(!name||name.length<2) return;
     if(!/[A-Za-z\u00C0-\u024F]{2,}/.test(name)) return;
 
-    // Evita duplicate consecutive
+    // Duplicate consecutive
     var prev=cur.stations.length>0?cur.stations[cur.stations.length-1]:null;
     if(prev&&normN(prev.name)===normN(name)) return;
 
     var n=cur.stations.length;
     var noStop=/\s-\s/.test(line);
 
-    var sta={name:name, km:kmCum||0, arr:'', dep:'', speed:vit||0, stops:!noStop};
+    // ── Viteza corecta: viteza de pe randul statiei X = viteza de la X la X+1 ──
+    // Deci o punem pe statia CURENTA (ea e capatul de start al segmentului)
+    var sta={
+      name:name,
+      km:getCFRkm(name)||0,  // km CFR din baza de date
+      arr:'', dep:'',
+      speed:vit||cur.lastVit||0,  // viteza de la aceasta statie spre urmatoarea
+      stops:!noStop
+    };
+    cur.lastVit=0; // reset dupa folosire
 
     if(n===0){
-      // ── PRIMA STATIE: o singura ora = Plecare ──
-      if(times.length===0) return;
+      // PRIMA STATIE: are doar ora de plecare
+      if(times.length===0) return; // fara ora, skip
       sta.dep=times[times.length-1];
       sta.arr='';
       sta.stops=true;
     } else if(times.length===0){
-      // Linie fara ore → skip (Semnal fara timp uneori)
-      if(!noStop) return;
-      sta.stops=false;
+      // Fara ore: skip daca nu e noStop explicit
+      return;
     } else if(times.length===1){
-      // ── ULTIMA STATIE sau statie simpla: o singura ora = Sosire ──
+      // O singura ora = ULTIMA STATIE (doar sosire)
       sta.arr=times[0];
       sta.dep='';
       sta.stops=true;
     } else {
-      // ── STATIE INTERMEDIARA: prima ora=Sosire, ultima ora=Plecare ──
+      // Doua+ ore: prima=sosire, ultima=plecare
       sta.arr=times[0];
       sta.dep=times[times.length-1];
       sta.stops=!noStop;
     }
 
-    // Km: din livret > baza date CFR
-    if(!sta.km){
-      var ck=getCFRkm(name);
-      if(ck) sta.km=ck;
-    }
+    // Viteza: daca am gasit viteza pe acest rand, o aplicam pe ACEASTA statie
+    // (viteza valabila DE LA aceasta statie pana la urmatoarea)
+    if(vit) sta.speed=vit;
 
     cur.stations.push(sta);
-
-    // Viteza pe segmentul precedent
-    if(vit&&n>0&&!cur.stations[n-1]._speedNext)
-      cur.stations[n-1]._speedNext=vit;
   });
 
-  // Salveaza ultimul tren daca nu s-a inchis cu SUMAR
+  // Ultimul tren fara SUMAR
   if(cur&&cur.stations.length>=2) parsedTrains.push(cur);
 
-  // ── Post-procesare: propaga viteze si calculeaza km lipsa ──
+  // ── STEP 3: Post-procesare viteze ────────────────────────────────
+  // Viteza de pe randul statiei X = valabila de la X la X+1
+  // Daca o statie nu are viteza, mosteneste de la precedenta
   parsedTrains.forEach(function(t){
-    // 1. Propaga viteze
+    delete t.lastVit;
     var lastV=0;
-    t.stations.forEach(function(s,i){
-      var v=s.speed||s._speedNext||0;
-      if(v) lastV=v;
+    t.stations.forEach(function(s){
+      if(s.speed) lastV=s.speed;
       else if(lastV) s.speed=lastV;
-      delete s._speedNext;
     });
-
-    // 2. Completeaza km lipsa prin interpolare liniara intre km cunoscuti
-    // Gaseste segmentele cu km la capete si interpoleaza
-    var N=t.stations.length;
-    var i=0;
-    while(i<N){
-      if(!t.stations[i].km){
-        // Gaseste urmatorul km cunoscut
-        var j=i+1;
-        while(j<N&&!t.stations[j].km) j++;
-        // Gaseste km-ul anterior cunoscut
-        var prevKm=i>0?t.stations[i-1].km:0;
-        var nextKm=j<N?t.stations[j].km:0;
-        if(prevKm&&nextKm){
-          // Interpoleaza liniar
-          var steps=j-i+1;
-          for(var k=i;k<j;k++){
-            t.stations[k].km=parseFloat((prevKm+(nextKm-prevKm)*(k-i+1)/steps).toFixed(1));
-          }
-        }
-        i=j+1;
-      } else {
-        i++;
-      }
-    }
   });
 
   showPreview(fname);
