@@ -501,8 +501,10 @@ function doSearch(){
   if(G.stations.length>0)G.stations[0].stops=true;
   if(G.stations.length>1)G.stations[G.stations.length-1].stops=true;
 
-  // FIX 1: cur=0 = prima statie = statie curenta (DE UNDE PLECAM)
-  // Banner arata statie INDEX 1 (urmatoarea), nu 0
+  // Cauta online coordonatele statiilor necunoscute (in background, fara sa blocheze)
+  _searchQueue=[];_searchRunning=false;
+  enqueueStationSearch(G.stations);
+
   G.cur=0;
 
   $$('ss').style.display='none';
@@ -735,102 +737,93 @@ function checkAlerts(){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// FIX 2: HARTA STIL LOCOMOTIVA - fundal deschis, linie galben/portocaliu, sageata rosie
+// HARTA STIL WAZE - zoom 15, centrat pe locomotiva, sageata mare
 // ═══════════════════════════════════════════════════════════════
+var lastLat=null,lastLng=null,G_heading=0;
+
 function initMap(){
   if(G.map){G.map.remove();G.map=null;G.marker=null;G.barMarkers=[];G.alertMarkers=[];}
-  G.map=L.map('map',{zoomControl:true,attributionControl:false});
+  lastLat=null;lastLng=null;G_heading=0;
   G.barMarkers=[];G.alertMarkers=[];
 
-  // Tile deschis (stil harta rutiera standard, vizibil)
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-    maxZoom:19,
-    opacity:0.9
-  }).addTo(G.map);
+  // Centru initial: GPS daca e disponibil, altfel mijlocul traseului
+  var startPos=[45.9,24.9],startZoom=7;
+  if(G.lat){startPos=[G.lat,G.lng];startZoom=15;}
+  else if(G.stations.length>0){
+    var mid=G.stations[Math.floor(G.stations.length/2)];
+    if(mid.lat)startPos=[mid.lat,mid.lng];
+    startZoom=10;
+  }
 
-  // Strat cai ferate OpenRailwayMap peste
-  L.tileLayer('https://tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png',{
-    maxZoom:19,
-    opacity:0.9
-  }).addTo(G.map);
+  G.map=L.map('map',{
+    zoomControl:true,
+    attributionControl:false,
+    zoomSnap:1
+  }).setView(startPos,startZoom);
 
+  // Tiles clare
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(G.map);
+  L.tileLayer('https://tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png',{maxZoom:19,opacity:0.9}).addTo(G.map);
+
+  // Traseu
   var pts=[];
   G.stations.forEach(function(s,i){
     if(!s.lat||!s.lng)return;
     pts.push([s.lat,s.lng]);
-    var isCur=i===G.cur;
-    var isFirst=i===0, isLast=i===G.stations.length-1;
-    
-    // Culori stil locomotiva: verde=start, rosu=final, galben=intermediar
-    var col=isFirst?'#00aa44':isLast?'#cc0000':'#e8a000';
-    var r=isFirst||isLast?7:4;
-    
+    var isFirst=i===0,isLast=i===G.stations.length-1;
     L.circleMarker([s.lat,s.lng],{
-      radius:r,
-      color:'#333',
-      fillColor:col,
-      fillOpacity:1,
-      weight:2
+      radius:isFirst||isLast?8:5,
+      color:'#222',
+      fillColor:isFirst?'#00cc55':isLast?'#ff2222':'#ffd600',
+      fillOpacity:1,weight:2
     }).addTo(G.map).bindPopup(
-      '<b>'+esc(s.name)+'</b>'+
-      (s.km?'<br>km '+s.km:'')+
-      (s.speed?'<br><b>'+s.speed+' km/h</b>':'')+
-      (s.dep?'<br>Pl: '+s.dep:'')+(s.arr?'<br>Sos: '+s.arr:'')
+      '<b>'+esc(s.name)+'</b>'+(s.km?'<br>km '+s.km:'')+(s.speed?'<br>'+s.speed+' km/h':'')
+      +(s.dep?'<br>Pl: '+s.dep:'')+(s.arr?'<br>Sos: '+s.arr:'')
     );
   });
-
   if(pts.length>=2){
-    // Linie traseu - galben/portocaliu gros, stil CFR
-    L.polyline(pts,{color:'#e8a000',weight:4,opacity:0.9}).addTo(G.map);
-    // Contur negru subtire sub linie
-    L.polyline(pts,{color:'#333',weight:6,opacity:0.4}).addTo(G.map);
-    // Linie galbena deasupra
-    L.polyline(pts,{color:'#ffd600',weight:3,opacity:1.0}).addTo(G.map);
-
-    G.map.fitBounds(L.polyline(pts).getBounds(),{padding:[24,24]});
-  }else{
-    G.map.setView([45.9,24.9],7);
+    L.polyline(pts,{color:'#111',weight:8,opacity:0.3}).addTo(G.map);
+    L.polyline(pts,{color:'#ffd600',weight:5,opacity:1}).addTo(G.map);
+    if(!G.lat) G.map.fitBounds(L.polyline(pts).getBounds(),{padding:[30,30]});
   }
   renderBarOnMap();renderAlertOnMap();
 }
 
-// Icon locomotiva (sageata rosie directia de mers)
-function makeLocoIcon(heading){
-  var svg='<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">'
-    +'<circle cx="16" cy="16" r="13" fill="#cc0000" stroke="white" stroke-width="2.5"/>'
-    +'<polygon points="16,4 22,22 16,18 10,22" fill="white" transform="rotate('+(heading||0)+',16,16)"/>'
-    +'</svg>';
-  return L.divIcon({
-    html:svg,
-    className:'',
-    iconSize:[32,32],
-    iconAnchor:[16,16]
-  });
+function makeLocoIcon(deg){
+  var s=56;
+  var svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+s+'" height="'+s+'" viewBox="0 0 56 56">'
+    +'<defs><filter id="dr" x="-30%" y="-30%" width="160%" height="160%">'
+    +'<feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.5"/>'
+    +'</filter></defs>'
+    +'<g transform="rotate('+Math.round(deg)+',28,28)" filter="url(#dr)">'
+    +'<circle cx="28" cy="28" r="20" fill="#cc0000" stroke="white" stroke-width="3.5"/>'
+    +'<polygon points="28,5 36,26 28,21 20,26" fill="white"/>'
+    +'</g></svg>';
+  return L.divIcon({html:svg,className:'',iconSize:[s,s],iconAnchor:[s/2,s/2]});
 }
-
-var lastLat=null, lastLng=null;
 
 function moveMarker(){
   if(!G.map||!G.lat)return;
   var pos=[G.lat,G.lng];
-  
-  // Calculeaza heading pe baza directiei de mers
-  var heading=0;
+
+  // Heading din deplasare GPS
   if(lastLat!==null){
-    var dLng=G.lng-lastLng, dLat=G.lat-lastLat;
-    if(Math.abs(dLat)>0.00001||Math.abs(dLng)>0.00001){
-      heading=Math.atan2(dLng,dLat)*180/Math.PI;
+    var dLng=G.lng-lastLng,dLat=G.lat-lastLat;
+    if(Math.abs(dLat)>0.000008||Math.abs(dLng)>0.000008){
+      G_heading=Math.atan2(dLng,dLat)*180/Math.PI;
     }
   }
   lastLat=G.lat;lastLng=G.lng;
 
   if(!G.marker){
-    G.marker=L.marker(pos,{icon:makeLocoIcon(heading),zIndexOffset:1000}).addTo(G.map);
-  }else{
+    G.marker=L.marker(pos,{icon:makeLocoIcon(G_heading),zIndexOffset:1000}).addTo(G.map);
+  } else {
     G.marker.setLatLng(pos);
-    G.marker.setIcon(makeLocoIcon(heading));
+    G.marker.setIcon(makeLocoIcon(G_heading));
   }
-  G.map.panTo(pos,{animate:true,duration:.8});
+  // Zoom 15 minim, centrat pe locomotiva - stil Waze
+  var z=Math.max(G.map.getZoom(),15);
+  G.map.setView(pos,z,{animate:true,duration:0.5});
 }
 
 function renderBarOnMap(){
@@ -1497,12 +1490,19 @@ var C={
   "Poiana Tapului":     [45.380, 25.539, 121.4],
   "Busteni":            [45.409, 25.536, 125.6],
   "Azuga":              [45.453, 25.556, 129.8],
+  "Azuga Hm":           [45.453, 25.556, 129.8],
   "Predeal":            [45.508, 25.576, 134.5],
   "Timisu de Sus":      [45.560, 25.540, 140.0],
+  "Timisu de Sus Hm":   [45.560, 25.540, 140.0],
   "Timisu de Jos":      [45.607, 25.526, 144.5],
+  "Timisu de Jos Hm":   [45.607, 25.526, 144.5],
   "Darste":             [45.635, 25.534, 147.3],
+  "Darste Hm":          [45.635, 25.534, 147.3],
   "Brasov":             [45.657, 25.598, 166.0],
+  "Brasov Sud":         [45.648, 25.602, 162.0],
+  "Ghimbav":            [45.662, 25.512, 170.0],
   "Bod":                [45.733, 25.638, 174.5],
+  "Bod Hm":             [45.733, 25.638, 174.5],
   "Sfantu Gheorghe":    [45.868, 25.787, 193.0],
   "Racos":              [46.041, 25.446, 234.0],
   "Sighisoara":         [46.219, 24.795, 276.0],
@@ -1664,14 +1664,11 @@ var C={
   "Prahova Hm":         [44.862, 26.040,  40.3]
 };
 
-// ─── getCFRkm: returneaza km CFR real pentru o statie ───────────
-// Normalizare aggresiva pentru matching indiferent de diacritice/majuscule/Hm/h
+// ─── getCFRkm: km CFR din baza de date locala ───────────────────
 function getCFRkm(name){
   if(!name) return 0;
   var n=normN(name);
-  // Match exact
   for(var k in C){ if(normN(k)===n && C[k][2]) return C[k][2]; }
-  // Match partial (prefix sau substring)
   for(var k in C){
     var nk=normN(k);
     if(C[k][2] && n.length>3 && (nk.indexOf(n)===0 || n.indexOf(nk)===0)) return C[k][2];
@@ -1679,16 +1676,83 @@ function getCFRkm(name){
   return 0;
 }
 
-// ─── getC: returneaza [lat,lng] pentru o statie ─────────────────
+// ─── Cache coordonate pentru statii gasite online ───────────────
+var coordCache={};
+try{var _cc=localStorage.getItem('tfc_coords');if(_cc)coordCache=JSON.parse(_cc);}catch(e){}
+function saveCoordCache(){try{localStorage.setItem('tfc_coords',JSON.stringify(coordCache));}catch(e){}}
+
+// ─── getC: returneaza [lat,lng] din baza locala ─────────────────
 function getC(name){
   if(!name) return null;
   var n=normN(name);
+  // 1. Cache online
+  if(coordCache[n]) return coordCache[n];
+  // 2. Baza locala - match exact
   for(var k in C){ if(normN(k)===n) return [C[k][0],C[k][1]]; }
+  // 3. Baza locala - match partial (fara sufixe Hm/h/Hc)
+  var n2=n.replace(/\s+(hm|h|hc|gr\.?\s*[ab])\.?$/,'').trim();
   for(var k in C){
     var nk=normN(k);
-    if(n.length>4 && (nk.indexOf(n)===0 || n.indexOf(nk)===0)) return [C[k][0],C[k][1]];
+    if(nk===n2||(n2.length>3&&(nk.indexOf(n2)===0||n2.indexOf(nk)===0)))
+      return [C[k][0],C[k][1]];
   }
   return null;
+}
+
+// ─── searchStationOnline: cauta statia pe Nominatim OSM ─────────
+// Apelat dupa incarcarea traseului pentru statiile fara coordonate
+var _searchQueue=[], _searchRunning=false;
+
+function enqueueStationSearch(stations){
+  // Adauga in coada doar statiile fara coordonate
+  stations.forEach(function(s,i){
+    if(!s.lat||!s.lng){
+      _searchQueue.push({s:s,i:i,name:s.name});
+    }
+  });
+  if(!_searchRunning) processSearchQueue(stations);
+}
+
+function processSearchQueue(stations){
+  if(!_searchQueue.length){_searchRunning=false;return;}
+  _searchRunning=true;
+  var item=_searchQueue.shift();
+  var n=normN(item.name);
+  if(coordCache[n]){
+    var c=coordCache[n];
+    stations[item.i].lat=c[0];
+    stations[item.i].lng=c[1];
+    if(G.map) updateMapStation(stations[item.i]);
+    setTimeout(function(){processSearchQueue(stations);},50);
+    return;
+  }
+  // Curata numele pentru query: scoate Hm., h., Hc.
+  var q=item.name.replace(/\s+(Hm|Hc|h)\.?\s*$/i,'').trim()+' gara Romania';
+  var url='https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(q)+'&format=json&limit=1&countrycodes=ro&featuretype=railway';
+  fetch(url,{headers:{'Accept-Language':'ro'}})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      if(data&&data.length){
+        var lat=parseFloat(data[0].lat),lng=parseFloat(data[0].lon);
+        coordCache[n]=[lat,lng];
+        saveCoordCache();
+        stations[item.i].lat=lat;
+        stations[item.i].lng=lng;
+        if(G.map) updateMapStation(stations[item.i]);
+      }
+      setTimeout(function(){processSearchQueue(stations);},300); // 300ms intre cereri (respecta Nominatim)
+    })
+    .catch(function(){
+      setTimeout(function(){processSearchQueue(stations);},500);
+    });
+}
+
+function updateMapStation(s){
+  // Adauga marker pe harta pentru statia nou gasita
+  if(!s.lat||!s.lng) return;
+  L.circleMarker([s.lat,s.lng],{
+    radius:4,color:'#222',fillColor:'#ffd600',fillOpacity:0.8,weight:1.5
+  }).addTo(G.map).bindPopup('<b>'+esc(s.name)+'</b>'+(s.km?'<br>km '+s.km:'')+(s.speed?'<br>'+s.speed+' km/h':''));
 }
 
 updateCount();
