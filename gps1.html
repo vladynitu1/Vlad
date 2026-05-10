@@ -17,14 +17,19 @@ html,body{width:100%;height:100%;background:#0a0e14;color:#e8f0fe;font-family:'S
 #hlogo img{height:32px;border-radius:4px}
 #hlogotext{font-size:10px;color:#00c8ff;letter-spacing:2px;opacity:.6;display:none}
 #tbadge{font-size:18px;font-weight:900;color:#00c8ff;display:none;white-space:nowrap}
-#btnpontaj{background:transparent;border:2px solid #00e676;color:#00e676;font-size:11px;font-weight:bold;padding:3px 6px;border-radius:5px;cursor:pointer;white-space:nowrap;flex-shrink:0;text-decoration:none}
 #hsp{flex:1;min-width:2px}
 #gpswrap{display:flex;align-items:center;gap:3px;flex-shrink:0}
 #gpsdot{width:7px;height:7px;border-radius:50%;background:#4a6080;flex-shrink:0}
 #gpsdot.on{background:#00e676;box-shadow:0 0 6px #00e676}
 #gpstxt{font-size:9px;color:#4a6080;white-space:nowrap}
 #btnchg{display:none;background:transparent;border:1px solid #334;color:#668;font-size:10px;padding:2px 6px;border-radius:4px;cursor:pointer;white-space:nowrap;flex-shrink:0}
-#btnliv{background:transparent;border:2px solid #ffd600;color:#ffd600;font-size:11px;font-weight:bold;padding:3px 6px;border-radius:5px;cursor:pointer;white-space:nowrap;flex-shrink:0}
+#btnpontaj2{background:transparent;border:2px solid #00e676;color:#00e676;font-size:15px;padding:3px 7px;border-radius:5px;cursor:pointer;flex-shrink:0}
+#pontajmodal{display:none;position:fixed;inset:0;z-index:6000;flex-direction:column;background:#0a0e14}
+#pontajmodal.on{display:flex}
+#pontajhead{background:#111720;border-bottom:2px solid #00e676;padding:0 12px;height:44px;display:flex;align-items:center;flex-shrink:0}
+#pontajhead h2{flex:1;font-size:16px;font-weight:900;color:#00e676}
+#pontajclose{background:transparent;border:2px solid #00e676;color:#00e676;font-size:13px;font-weight:bold;padding:4px 10px;border-radius:6px;cursor:pointer}
+#pontajiframe{flex:1;border:none;width:100%;height:100%}
 #btnbar{background:transparent;border:2px solid #ff6b35;color:#ff6b35;font-size:11px;font-weight:bold;padding:3px 6px;border-radius:5px;cursor:pointer;white-space:nowrap;flex-shrink:0}
 #btnalert{background:transparent;border:2px solid #ff3d57;color:#ff3d57;font-size:11px;font-weight:bold;padding:3px 6px;border-radius:5px;cursor:pointer;white-space:nowrap;flex-shrink:0}
 
@@ -193,12 +198,12 @@ textarea.fi{min-height:140px;resize:vertical;font-size:12px;line-height:1.8}
   </a>
   <div id="tbadge"></div>
   <div id="hsp"></div>
-  <a href="https://vladynitu1.github.io/Vlad/" target="_blank" id="btnpontaj">&#128197; PONTAJ</a>
   <div id="gpswrap"><div id="gpsdot"></div><span id="gpstxt">GPS</span></div>
   <button id="btnchg" onclick="showSearch()">&#8617;</button>
   <button id="btnalert" onclick="openAlertModal()">&#9888;</button>
   <button id="btnbar" onclick="openBarModal()">BAR</button>
   <button id="btnliv" onclick="openModal()">&#128203; LIVRETE</button>
+  <button id="btnpontaj2" onclick="openPontaj()">&#128197;</button>
 </div>
 
 <div id="wrap">
@@ -358,6 +363,16 @@ textarea.fi{min-height:140px;resize:vertical;font-size:12px;line-height:1.8}
     <div style="font-size:11px;color:#4a6080;margin-bottom:8px">RESTRICTII (<span id="bar-count">0</span>):</div>
     <div id="bar-list"></div>
   </div>
+</div>
+
+<!-- PONTAJ MODAL -->
+
+<div id="pontajmodal">
+  <div id="pontajhead">
+    <h2>&#128197; PONTAJ EMX</h2>
+    <button id="pontajclose" onclick="closePontaj()">&#10005; INCHIDE</button>
+  </div>
+  <iframe id="pontajiframe" src="" allow="geolocation"></iframe>
 </div>
 
 <!-- ALERT MODAL -->
@@ -855,6 +870,14 @@ function setFir(f){
 // ═══════════════════════════════════════════════════════════════
 // LIVRETE MODAL
 // ═══════════════════════════════════════════════════════════════
+function openPontaj(){
+  var m=$$('pontajmodal');
+  var fr=$$('pontajiframe');
+  if(!fr.src||fr.src==='about:blank'||fr.src==='') fr.src='https://vladynitu1.github.io/Vlad/';
+  m.classList.add('on');
+}
+function closePontaj(){$$('pontajmodal').classList.remove('on');}
+
 function openModal(){$$('modal').classList.add('on');tab('p-trains');renderTrains();}
 function closeModal(){$$('modal').classList.remove('on');updateCount();}
 
@@ -1138,16 +1161,27 @@ function parseLivret(lines,fname){
     var n=cur.stations.length;
     var noStop=/\s-\s/.test(line);
 
-    // ── Viteza corecta: viteza de pe randul statiei X = viteza de la X la X+1 ──
-    // Deci o punem pe statia CURENTA (ea e capatul de start al segmentului)
     var sta={
       name:name,
-      km:getCFRkm(name)||0,  // km CFR din baza de date
+      km:getCFRkm(name)||0,
       arr:'', dep:'',
-      speed:vit||cur.lastVit||0,  // viteza de la aceasta statie spre urmatoarea
+      speed:0,  // viteza se seteaza mai jos pe statia PRECEDENTA
       stops:!noStop
     };
-    cur.lastVit=0; // reset dupa folosire
+
+    // ── VITEZE CORECTE ──
+    // Viteza de pe randul statiei X = viteza de la statia ANTERIOARA la X
+    // Exemplu din livret:
+    //   PLOIESTI SUD (prima, fara viteza)
+    //   "3.0 3.0 70 PLOIESTI VEST" → 70 = viteza de la Ploiesti SUD la Ploiesti VEST
+    //   "6.9 9.9 100 BUDA"         → 100 = viteza de la Ploiesti VEST la BUDA
+    //   "3.4 50 Cotofenesti"       → 50 = viteza de la Malaesti la Cotofenesti
+    // Deci viteza o punem pe statia PRECEDENTA (prev.speed = viteza de la prev la cur)
+    if(vit && prev){
+      prev.speed=vit;
+    }
+    // Daca nu e viteza noua pe acest rand, statia precedenta pastreaza viteza ei
+    // (propagarea se face in post-procesare)
 
     if(n===0){
       // PRIMA STATIE: are doar ora de plecare
@@ -1169,10 +1203,6 @@ function parseLivret(lines,fname){
       sta.dep=times[times.length-1];
       sta.stops=!noStop;
     }
-
-    // Viteza: daca am gasit viteza pe acest rand, o aplicam pe ACEASTA statie
-    // (viteza valabila DE LA aceasta statie pana la urmatoarea)
-    if(vit) sta.speed=vit;
 
     cur.stations.push(sta);
   });
