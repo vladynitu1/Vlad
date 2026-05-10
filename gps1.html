@@ -85,19 +85,21 @@ html,body{width:100%;height:100%;background:#0a0e14;color:#e8f0fe;font-family:'S
 #lwrap{overflow-y:auto;-webkit-overflow-scrolling:touch;background:#0a0e14;border-left:1px solid #1e2d40}
 #lwrap::-webkit-scrollbar{width:2px}
 #lwrap::-webkit-scrollbar-thumb{background:#1e2d40}
-.si{display:grid;grid-template-columns:3px 1fr auto;border-bottom:1px solid rgba(30,45,64,.35);min-height:44px}
+.si{display:grid;grid-template-columns:34px 3px 1fr auto;border-bottom:1px solid rgba(30,45,64,.4);min-height:44px;align-items:center}
 .si.passed{opacity:.3}
 .si.cur{background:rgba(0,200,255,.07)}
-.sibar{background:#1e2d40}
+/* Coloana viteza - stanga, exact ca in livret */
+.sivit{font-size:11px;font-weight:900;text-align:center;padding:2px 0;line-height:1}
+.sivit-on{color:#ffd600}
+.sivit-off{color:#2a3d55;font-size:13px;font-weight:normal}
+.sibar{background:#1e2d40;width:3px;height:100%;align-self:stretch}
 .si.cur .sibar{background:#00c8ff}
-.siinfo{padding:4px;display:flex;flex-direction:column;justify-content:center;min-width:0}
+.siinfo{padding:4px 4px 4px 6px;display:flex;flex-direction:column;justify-content:center;min-width:0}
 .siname{font-size:11px;font-weight:bold;color:#e8f0fe;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .si.passed .siname{text-decoration:line-through;color:#4a6080}
 .si.cur .siname{color:#00c8ff}
-.sikm{font-size:8px;color:#2a3d55}
-.sispeed{font-size:9px;color:#ffd600;font-weight:bold}
-.sispeed-none{color:#2a3d55;font-weight:normal}
-.sitimes{padding:3px 5px;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:1px;flex-shrink:0}
+.sikm{font-size:8px;color:#2a3d55;margin-top:1px}
+.sitimes{padding:3px 6px;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:1px;flex-shrink:0}
 .sarr{font-size:10px;color:#e8f0fe;line-height:1}
 .sdep{font-size:10px;color:#ffd600;line-height:1}
 .si.passed .sarr,.si.passed .sdep{color:#2a3d55}
@@ -523,29 +525,38 @@ function showSearch(){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// LISTA STATII - viteza exact din livret, doar unde e scrisa
+// LISTA STATII - exact ca tabelul din livret
 // ═══════════════════════════════════════════════════════════════
 function renderList(){
   var h='';
   G.stations.forEach(function(s,i){
-    var cls='si'+(i<G.cur?' passed':i===G.cur?' cur':'');
+    var passed=i<G.cur, isCur=i===G.cur;
+    var cls='si'+(passed?' passed':isCur?' cur':'');
     h+='<div class="'+cls+'" id="si'+i+'">';
+
+    // Coloana viteza (stanga) - exact ca in livret
+    if(s.speed){
+      h+='<div class="sivit sivit-on">'+s.speed+'</div>';
+    } else {
+      h+='<div class="sivit sivit-off">—</div>';
+    }
+
+    // Bara colorata curenta
     h+='<div class="sibar"></div>';
+
+    // Info statie
     h+='<div class="siinfo">';
     h+='<div class="siname">'+esc(s.name)+'</div>';
-    // Km CFR
     if(s.km) h+='<div class="sikm">km '+s.km+'</div>';
-    // Viteza: exact din livret sau — daca nu e scrisa
-    if(s.speed){
-      h+='<div class="sispeed">&#9654; '+s.speed+' km/h</div>';
-    } else {
-      h+='<div class="sispeed sispeed-none">&#8212;</div>';
-    }
     h+='</div>';
+
+    // Ore
     h+='<div class="sitimes">';
     if(s.arr) h+='<div class="sarr">'+s.arr+'</div>';
     if(s.dep) h+='<div class="sdep">'+s.dep+'</div>';
-    h+='</div></div>';
+    h+='</div>';
+
+    h+='</div>';
   });
   $$('slist').innerHTML=h;
   var el=$$('si'+G.cur);
@@ -1166,15 +1177,17 @@ function parseLivret(lines,fname){
     };
 
     // ── VITEZE ──
-    // Viteza de pe randul statiei X = viteza segmentului PRECEDENT→X
-    // Ex: "100 Darste" → 100 = viteza de la BRASOV la DARSTE → o punem pe BRASOV.speed
-    // Ex: " 65 Timisu"  → 65 = viteza de la DARSTE la TIMISU → o punem pe DARSTE.speed
-    if(vit && prev){
-      prev.speed=vit;
-    } else if(!vit && cur.lastVit && prev){
-      // Viteza venita de la un punct tehnic anterior
-      prev.speed=cur.lastVit;
-      cur.lastVit=0;
+    // Viteza din coloana Vit max = valabila DE LA statia curenta incolo
+    // Exact ca in livret: apare doar la statiile unde se schimba viteza
+    // Ex: "120 Peris" → Peris.speed=120 (valabil pana la urmatoarea cu viteza)
+    // Ex: "90 Ploiesti" → Ploiesti.speed=90
+    // Statiile fara viteza pe rand → speed=0 → afiseaza —
+    sta.speed = vit || 0;
+
+    // Daca vine viteza de la un punct tehnic anterior, o aplicam pe aceasta statie
+    if(!vit && cur.lastVit){
+      sta.speed = cur.lastVit;
+      cur.lastVit = 0;
     }
 
     if(n===0){
