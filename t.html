@@ -27,9 +27,11 @@
 
 - { margin:0; padding:0; box-sizing:border-box; }
 
+html { background: #0a0e1a !important; }
+
 body {
 font-family: ‘Exo 2’, sans-serif;
-background: var(–bg);
+background: #0a0e1a !important;
 color: var(–text);
 min-height: 100vh;
 overflow-x: hidden;
@@ -578,12 +580,16 @@ input[type=file] { display: none; }
 
 <div class="modal-overlay" id="tokenModal">
   <div class="modal">
-    <h2>🔑 INTRODUCERE TOKEN</h2>
-    <div class="modal-error" id="tokenError">TOKEN INVALID. ÎNCEARCĂ DIN NOU.</div>
-    <input type="password" id="tokenInput" placeholder="Token administrator..." />
+    <h2>🔑 GITHUB TOKEN</h2>
+    <p style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:14px;line-height:1.7;">
+      Introdu GitHub Personal Access Token (PAT).<br>
+      Se verifică live la GitHub și se salvează local.
+    </p>
+    <div class="modal-error" id="tokenError">TOKEN INVALID SAU EROARE REȚEA.</div>
+    <input type="text" id="tokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false" />
     <div class="modal-btns">
       <button class="btn btn-secondary" onclick="closeModal('tokenModal')">ANULEAZĂ</button>
-      <button class="btn btn-primary" onclick="submitToken()">CONFIRMARE</button>
+      <button class="btn btn-primary" id="tokenSubmitBtn" onclick="submitToken()">VERIFICĂ</button>
     </div>
   </div>
 </div>
@@ -634,12 +640,11 @@ input[type=file] { display: none; }
 <div class="toast" id="toast"></div>
 
 <script>
-const ADMIN_TOKEN = "emx2026";
-
 let isAdmin = false;
+let githubToken = localStorage.getItem('emx_gh_token') || '';
 let sections = JSON.parse(localStorage.getItem('emx_sections') || '[]');
-let currentEditSectionId = null; // null = new section
-let pendingFiles = []; // {name, size, type, dataUrl}
+let currentEditSectionId = null;
+let pendingFiles = [];
 
 // File type icons
 function getIcon(name) {
@@ -719,36 +724,85 @@ function toggleSection(id) {
 function openTokenModal() {
   if (isAdmin) {
     isAdmin = false;
+    githubToken = '';
+    localStorage.removeItem('emx_gh_token');
     document.getElementById('adminBar').style.display = 'none';
     document.getElementById('tokenStatus').classList.remove('show');
     document.getElementById('tokenBtn').classList.remove('active');
-    document.getElementById('tokenBtn').textContent = '🔑 TOKEN';
+    document.getElementById('tokenBtn').innerHTML = '🔑 TOKEN';
     showToast('Deconectat din modul admin.');
     render();
     return;
   }
   document.getElementById('tokenError').classList.remove('show');
-  document.getElementById('tokenInput').value = '';
+  document.getElementById('tokenInput').value = githubToken || '';
   openModal('tokenModal');
   setTimeout(() => document.getElementById('tokenInput').focus(), 100);
 }
 
-function submitToken() {
+async function submitToken() {
   const val = document.getElementById('tokenInput').value.trim();
-  if (val === ADMIN_TOKEN) {
-    isAdmin = true;
-    closeModal('tokenModal');
-    document.getElementById('adminBar').style.display = 'flex';
-    document.getElementById('tokenStatus').classList.add('show');
-    document.getElementById('tokenBtn').classList.add('active');
-    document.getElementById('tokenBtn').textContent = '🔓 DECONECTARE';
-    showToast('Acces administrator activat!');
-    render();
-  } else {
-    document.getElementById('tokenError').classList.add('show');
-    document.getElementById('tokenInput').value = '';
-    document.getElementById('tokenInput').focus();
+  if (!val) { 
+    document.getElementById('tokenError').textContent = 'INTRODU UN TOKEN.';
+    document.getElementById('tokenError').classList.add('show'); 
+    return; 
   }
+  const btn = document.getElementById('tokenSubmitBtn');
+  btn.textContent = 'SE VERIFICĂ...';
+  btn.disabled = true;
+  document.getElementById('tokenError').classList.remove('show');
+
+  try {
+    const resp = await fetch('https://api.github.com/user', {
+      headers: { 'Authorization': 'token ' + val, 'Accept': 'application/vnd.github.v3+json' }
+    });
+    if (resp.ok) {
+      const user = await resp.json();
+      githubToken = val;
+      localStorage.setItem('emx_gh_token', val);
+      isAdmin = true;
+      closeModal('tokenModal');
+      document.getElementById('adminBar').style.display = 'flex';
+      document.getElementById('tokenStatus').classList.add('show');
+      document.getElementById('tokenStatus').textContent = '🔓 ' + (user.login || 'ADMIN').toUpperCase();
+      document.getElementById('tokenBtn').classList.add('active');
+      document.getElementById('tokenBtn').innerHTML = '🔓 DECONECTARE';
+      showToast('Bun venit, ' + (user.login || 'admin') + '!');
+      render();
+    } else {
+      document.getElementById('tokenError').textContent = resp.status === 401 ? 'TOKEN INVALID. VERIFICĂ ȘI ÎNCEARCĂ DIN NOU.' : 'EROARE ' + resp.status + '. ÎNCEARCĂ DIN NOU.';
+      document.getElementById('tokenError').classList.add('show');
+      document.getElementById('tokenInput').select();
+    }
+  } catch(e) {
+    document.getElementById('tokenError').textContent = 'EROARE REȚEA. VERIFICĂ CONEXIUNEA.';
+    document.getElementById('tokenError').classList.add('show');
+  }
+  btn.textContent = 'VERIFICĂ';
+  btn.disabled = false;
+}
+
+// Auto-login if token saved
+async function tryAutoLogin() {
+  if (!githubToken) return;
+  try {
+    const resp = await fetch('https://api.github.com/user', {
+      headers: { 'Authorization': 'token ' + githubToken }
+    });
+    if (resp.ok) {
+      const user = await resp.json();
+      isAdmin = true;
+      document.getElementById('adminBar').style.display = 'flex';
+      document.getElementById('tokenStatus').classList.add('show');
+      document.getElementById('tokenStatus').textContent = '🔓 ' + (user.login || 'ADMIN').toUpperCase();
+      document.getElementById('tokenBtn').classList.add('active');
+      document.getElementById('tokenBtn').innerHTML = '🔓 DECONECTARE';
+      render();
+    } else {
+      localStorage.removeItem('emx_gh_token');
+      githubToken = '';
+    }
+  } catch(e) { /* silently fail */ }
 }
 
 // ===== MODAL UTILS =====
@@ -937,8 +991,9 @@ document.querySelectorAll('.modal-overlay').forEach(ov => {
   });
 });
 
-// Initial render
+// Initial
 render();
+tryAutoLogin();
 </script>
 
 </body>
