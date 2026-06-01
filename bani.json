@@ -23,6 +23,11 @@
           "id": 212,
           "amount": -50,
           "reason": "Tuns"
+        },
+        {
+          "id": 213,
+          "amount": -50,
+          "reason": "Tuns"
         }
       ]
     },
@@ -76,5 +81,5 @@
     }
   ],
   "nextPersonId": 105,
-  "nextEntryId": 213
+  "nextEntryId": 214
 }
