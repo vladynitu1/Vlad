@@ -477,16 +477,18 @@ async function ensureRepo() {
 }
 
 // Upload one file using Git Data API (no size limit)
+// Always reads latest ref fresh before committing — avoids conflicts
 async function uploadFileToRepo(fileObj, onProgress) {
   const base64 = fileObj.dataUrl.split(',')[1];
   const ts   = Date.now();
   const safe = fileObj.name.replace(/[^a-zA-Z0-9._-]/g,'_');
   const path = `files/${ts}_${safe}`;
   const base = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}`;
+  const sleep = ms => new Promise(r=>setTimeout(r,ms));
 
   if (onProgress) onProgress(10);
 
-  // 1. Create blob
+  // Step 1 — Create blob (content stored on GitHub, no size limit)
   const blobR = await ghFetch(`${base}/git/blobs`, {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({ content: base64, encoding: 'base64' })
@@ -496,50 +498,73 @@ async function uploadFileToRepo(fileObj, onProgress) {
     throw new Error(`Blob failed (${blobR.status}): ${t.slice(0,200)}`);
   }
   const { sha: blobSha } = await blobR.json();
-  if (onProgress) onProgress(30);
+  if (onProgress) onProgress(35);
 
-  // 2. Get latest commit SHA
-  const refR = await ghFetch(`${base}/git/ref/heads/${REPO_BRANCH}`);
-  if (!refR.ok) throw new Error('Nu am putut citi branch-ul');
-  const { object: { sha: latestCommitSha } } = await refR.json();
-  if (onProgress) onProgress(45);
+  // Steps 2-6 with retry loop — re-reads ref each time to avoid stale SHA
+  let lastErr = null;
+  for (let attempt = 1; attempt <= 5; attempt++) {
+    try {
+      // Always fetch the very latest ref before building the commit
+      const refR = await ghFetch(`${base}/git/ref/heads/${REPO_BRANCH}`);
+      if (!refR.ok) throw new Error('Ref read failed: '+refR.status);
+      const { object: { sha: latestCommitSha } } = await refR.json();
+      if (onProgress) onProgress(50);
 
-  // 3. Get base tree SHA
-  const commitR = await ghFetch(`${base}/git/commits/${latestCommitSha}`);
-  if (!commitR.ok) throw new Error('Nu am putut citi commit-ul');
-  const { tree: { sha: baseTreeSha } } = await commitR.json();
-  if (onProgress) onProgress(60);
+      const commitR = await ghFetch(`${base}/git/commits/${latestCommitSha}`);
+      if (!commitR.ok) throw new Error('Commit read failed');
+      const { tree: { sha: baseTreeSha } } = await commitR.json();
+      if (onProgress) onProgress(60);
 
-  // 4. Create new tree
-  const treeR = await ghFetch(`${base}/git/trees`, {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ base_tree: baseTreeSha,
-      tree: [{ path, mode:'100644', type:'blob', sha: blobSha }] })
-  });
-  if (!treeR.ok) throw new Error('Tree failed');
-  const { sha: newTreeSha } = await treeR.json();
-  if (onProgress) onProgress(75);
+      const treeR = await ghFetch(`${base}/git/trees`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          base_tree: baseTreeSha,
+          tree: [{ path, mode:'100644', type:'blob', sha: blobSha }]
+        })
+      });
+      if (!treeR.ok) throw new Error('Tree failed: '+treeR.status);
+      const { sha: newTreeSha } = await treeR.json();
+      if (onProgress) onProgress(75);
 
-  // 5. Create commit
-  const newCommitR = await ghFetch(`${base}/git/commits`, {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ message: `Upload: ${fileObj.name}`,
-      tree: newTreeSha, parents: [latestCommitSha] })
-  });
-  if (!newCommitR.ok) throw new Error('Commit failed');
-  const { sha: newCommitSha } = await newCommitR.json();
-  if (onProgress) onProgress(90);
+      const newCommitR = await ghFetch(`${base}/git/commits`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          message: `Upload: ${fileObj.name}`,
+          tree: newTreeSha,
+          parents: [latestCommitSha]
+        })
+      });
+      if (!newCommitR.ok) throw new Error('Commit failed: '+newCommitR.status);
+      const { sha: newCommitSha } = await newCommitR.json();
+      if (onProgress) onProgress(90);
 
-  // 6. Update branch ref
-  const updateR = await ghFetch(`${base}/git/refs/heads/${REPO_BRANCH}`, {
-    method:'PATCH', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ sha: newCommitSha, force: false })
-  });
-  if (!updateR.ok) throw new Error('Ref update failed');
-  if (onProgress) onProgress(100);
+      const updateR = await ghFetch(`${base}/git/refs/heads/${REPO_BRANCH}`, {
+        method:'PATCH', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ sha: newCommitSha, force: false })
+      });
 
-  const rawUrl = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${REPO_BRANCH}/${path}`;
-  return { path, downloadUrl: rawUrl, name: fileObj.name, size: fileObj.size };
+      if (updateR.ok) {
+        if (onProgress) onProgress(100);
+        // Wait for GitHub to propagate the new ref before next upload
+        await sleep(1500);
+        const rawUrl = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${REPO_BRANCH}/${path}`;
+        return { path, downloadUrl: rawUrl, name: fileObj.name, size: fileObj.size };
+      }
+
+      // 422 = ref conflict (another commit happened between our read and write)
+      // Just retry — we re-read the ref at top of loop
+      const errTxt = await updateR.text();
+      lastErr = new Error(`Ref update failed (${updateR.status}): ${errTxt.slice(0,100)}`);
+      console.warn(`Attempt ${attempt} ref conflict, retrying...`);
+      await sleep(2000 * attempt);
+
+    } catch(e) {
+      lastErr = e;
+      console.warn(`Attempt ${attempt} error:`, e.message);
+      await sleep(2000 * attempt);
+    }
+  }
+  throw lastErr || new Error('Upload failed after 5 attempts');
 }
 
 // Delete file from repo
@@ -961,27 +986,15 @@ async function doUpload(newTitle, secId) {
     const pct = Math.round(i/pend.length*90);
     setLoader(true,`SE URCĂ ${i+1}/${pend.length}: ${pend[i].name}`,pct);
     let uploaded = null;
-    // Retry up to 4 times with increasing delays
-    for(let attempt=1; attempt<=4; attempt++){
-      try {
-        // Re-fetch latest ref before each attempt to avoid stale SHA conflicts
-        uploaded = await uploadFileToRepo(pend[i], p=>
-          setLoader(true,`SE URCĂ ${i+1}/${pend.length}: ${pend[i].name}`,pct+Math.round(p/pend.length*0.9))
-        );
-        break;
-      } catch(e){
-        console.warn(`Attempt ${attempt} failed for ${pend[i].name}:`, e.message);
-        if(attempt<4){
-          setLoader(true,`RETRY ${attempt}/3 - ${pend[i].name}...`,pct);
-          await sleep(2000*attempt);
-        } else {
-          errors.push(pend[i].name+' ('+e.message.slice(0,40)+')');
-        }
-      }
+    try {
+      uploaded = await uploadFileToRepo(pend[i], p=>
+        setLoader(true,`SE URCĂ ${i+1}/${pend.length}: ${pend[i].name}`,pct+Math.round(p/pend.length*0.9))
+      );
+    } catch(e){
+      console.error('Upload final error for', pend[i].name, e.message);
+      errors.push(pend[i].name);
     }
     if(uploaded) sec.files.push(uploaded);
-    // Wait between files so GitHub updates the ref before next upload
-    if(i < pend.length-1) await sleep(1000);
   }
 
   setLoader(true,'SE SALVEAZĂ INDEX...',95);
