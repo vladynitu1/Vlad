@@ -306,14 +306,13 @@ input[type=file]{display:none;}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
 /* ════════════════════════════════════════
-   ⚙️  CONFIG  —  EDITEAZĂ ÎNAINTE DE DEPLOY
+   ⚙️  CONFIG
 ════════════════════════════════════════ */
-const AUTHORIZED  = ['vladynitu1'];       // username-uri GitHub autorizate ca admin
-const REPO_OWNER  = 'vladynitu1';         // username GitHub (owner repo)
-const REPO_NAME   = 'emx-files';         // numele repo-ului (îl creezi pe GitHub, public)
+const AUTHORIZED  = ['vladynitu1'];
+const REPO_OWNER  = 'vladynitu1';
+const REPO_NAME   = 'emx-files';
 const REPO_BRANCH = 'main';
 
-/* Index file stored in a public Gist */
 let INDEX_GIST_ID = localStorage.getItem('emx_igid') || '';
 
 /* ════════════════════════════════════════
@@ -321,9 +320,8 @@ let INDEX_GIST_ID = localStorage.getItem('emx_igid') || '';
 ════════════════════════════════════════ */
 let isAdm  = false;
 let ghTok  = localStorage.getItem('emx_t') || '';
-// secs = [{id, title, icon, files:[{name, size, path, downloadUrl}]}]
 let secs   = [];
-let pend   = [];   // pending files for upload [{name,size,type,dataUrl}]
+let pend   = [];   // [{name, size, type, buffer: ArrayBuffer}]
 let editId = null;
 let pdfDoc = null;
 let pdfScale = 1.4;
@@ -368,21 +366,31 @@ const ghFetch = (url, opts={}) => {
 };
 
 /* ════════════════════════════════════════
-   INDEX  (Gist — stores sections metadata + file paths)
-   Public Gist so anyone can read without token
+   FIX #1: ArrayBuffer → base64 fără truncare
+   btoa() se blochează pe stringuri mari; folosim Uint8Array chunked
+════════════════════════════════════════ */
+function arrayBufferToBase64(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  const chunkSize = 8192;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    const chunk = bytes.subarray(i, i + chunkSize);
+    binary += String.fromCharCode.apply(null, chunk);
+  }
+  return btoa(binary);
+}
+
+/* ════════════════════════════════════════
+   INDEX  (Gist)
 ════════════════════════════════════════ */
 async function indexLoad() {
   setSync('spin','SE ÎNCARCĂ...');
-
-  // Try to find gist if we don't have ID
   if (!INDEX_GIST_ID && ghTok) {
     INDEX_GIST_ID = await findIndexGist();
     if (INDEX_GIST_ID) localStorage.setItem('emx_igid', INDEX_GIST_ID);
   }
-
   if (INDEX_GIST_ID) {
     try {
-      // Use raw URL so no auth needed for public gist
       const r = await fetch(`https://api.github.com/gists/${INDEX_GIST_ID}`);
       if (r.ok) {
         const data = await r.json();
@@ -398,8 +406,6 @@ async function indexLoad() {
       }
     } catch(e) {}
   }
-
-  // Fallback localStorage
   secs = JSON.parse(localStorage.getItem('emx_s')||'[]');
   setSync(secs.length?'ok':'', secs.length?'DATE LOCALE':'NICIO DATĂ');
   renderPub();
@@ -421,7 +427,6 @@ async function indexSave() {
   const content = JSON.stringify(secs);
   localStorage.setItem('emx_s', content);
   if (!ghTok) return;
-
   setSync('spin','SE SALVEAZĂ INDEX...');
   try {
     let r;
@@ -456,10 +461,7 @@ async function indexSave() {
 
 /* ════════════════════════════════════════
    FILE STORAGE  (GitHub Repository Contents API)
-   Files stored as base64 in repo, publicly readable via raw.githubusercontent.com
 ════════════════════════════════════════ */
-
-// Ensure repo exists — create if missing
 async function ensureRepo() {
   const r = await ghFetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}`);
   if (r.status === 404) {
@@ -472,13 +474,14 @@ async function ensureRepo() {
       const t = await cr.text();
       throw new Error('Nu am putut crea repo: '+t);
     }
-    await new Promise(r=>setTimeout(r,2000)); // wait for init
+    await new Promise(r=>setTimeout(r,2000));
   }
 }
 
-// Upload one file using Git Data API (no size limit)
+/* FIX #2: uploadFileToRepo primește {buffer: ArrayBuffer} în loc de dataUrl */
 async function uploadFileToRepo(fileObj, onProgress) {
-  const base64 = fileObj.dataUrl.split(',')[1];
+  // Convertim ArrayBuffer → base64 fără truncare
+  const base64 = arrayBufferToBase64(fileObj.buffer);
   const ts   = Date.now();
   const safe = fileObj.name.replace(/[^a-zA-Z0-9._-]/g,'_');
   const path = `files/${ts}_${safe}`;
@@ -542,7 +545,6 @@ async function uploadFileToRepo(fileObj, onProgress) {
   return { path, downloadUrl: rawUrl, name: fileObj.name, size: fileObj.size };
 }
 
-// Delete file from repo
 async function deleteFileFromRepo(path) {
   if (!ghTok || !path) return;
   try {
@@ -610,7 +612,9 @@ function renderPub(){
 const togPub=id=>{const c=document.getElementById('p'+id);if(c)c.classList.toggle('open');};
 
 /* ════════════════════════════════════════
-   OPEN FILE — fetch from repo raw URL
+   FIX #3: OPEN FILE
+   PDF: fetch ArrayBuffer → PDF.js {data:} (evită CORS pe URL direct)
+   Imagini/restul: fetch → Blob URL (fără truncare)
 ════════════════════════════════════════ */
 async function openFile(f) {
   document.getElementById('povName').textContent = f.name;
@@ -624,25 +628,28 @@ async function openFile(f) {
   const inner=document.getElementById('povInner');
   inner.style.cssText='display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;';
 
-  // For PDF: pass URL directly to PDF.js — avoids FileReader truncation
-  if(ext==='pdf'){
-    await renderPDF(f.downloadUrl, inner);
-    return;
-  }
-
-  // For everything else: fetch as blob -> blob URL (no base64 conversion = no truncation)
+  // Fetch fișierul ca ArrayBuffer (funcționează pentru orice mărime)
+  let buffer = null;
+  let blob   = null;
   let blobUrl = null;
-  let blob = null;
+
   try {
-    const r = await fetch(f.downloadUrl+'?t='+Date.now());
-    if (!r.ok) throw new Error('HTTP '+r.status);
-    blob = await r.blob();
+    const r = await fetch(f.downloadUrl + '?t=' + Date.now());
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    buffer  = await r.arrayBuffer();
+    blob    = new Blob([buffer], {type: getMime(ext)});
     blobUrl = URL.createObjectURL(blob);
   } catch(e) {
     inner.innerHTML =
       `<div class="pov-body"><div class="pov-uns"><div class="ui">⚠️</div>
        <p>NU SE POATE ÎNCĂRCA<br>${e.message}</p>
        <a class="dl-a" href="${f.downloadUrl}" target="_blank">🔗 DESCHIDE LINK</a></div></div>`;
+    return;
+  }
+
+  if (ext === 'pdf') {
+    // Trimitem ArrayBuffer direct la PDF.js — nicio limitare de mărime
+    await renderPDF({data: new Uint8Array(buffer)}, inner);
     return;
   }
 
@@ -669,11 +676,17 @@ async function openFile(f) {
   }
 }
 
+function getMime(ext) {
+  return {pdf:'application/pdf',jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',
+    gif:'image/gif',webp:'image/webp',mp4:'video/mp4',mov:'video/quicktime',
+    mp3:'audio/mpeg',wav:'audio/wav',txt:'text/plain',csv:'text/csv',json:'application/json'}[ext]||'application/octet-stream';
+}
+
 /* ════════════════════════════════════════
-   PDF VIEWER
+   FIX #4: PDF VIEWER
+   Acceptă {data: Uint8Array} SAU {url: string}
 ════════════════════════════════════════ */
-async function renderPDF(src, inner) {
-  // src can be a URL (from GitHub raw) or a dataUrl
+async function renderPDF(source, inner) {
   inner.innerHTML=`
     <div class="pdf-tb" id="pdfTb">
       <button onclick="pdfNav(-1)">◀</button>
@@ -691,19 +704,8 @@ async function renderPDF(src, inner) {
 
   pdfDoc=null; pdfScale=1.4; pdfCurPg=1;
   try {
-    let pdfSource;
-    if (src.startsWith('data:')) {
-      // dataUrl path (legacy)
-      const b64=src.split(',')[1];
-      const bin=atob(b64);
-      const bytes=new Uint8Array(bin.length);
-      for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
-      pdfSource = {data: bytes};
-    } else {
-      // Direct URL — PDF.js fetches it natively, no size limit
-      pdfSource = {url: src+'?t='+Date.now(), withCredentials: false};
-    }
-    pdfDoc=await pdfjsLib.getDocument(pdfSource).promise;
+    // source este deja {data: Uint8Array} — PDF.js îl citește nativ, fără limitare
+    pdfDoc = await pdfjsLib.getDocument(source).promise;
     await pdfRenderAll();
     pdfScrollObserver();
   } catch(e){
@@ -867,7 +869,8 @@ async function delFile(secId,fi){
 }
 
 /* ════════════════════════════════════════
-   UPLOAD
+   FIX #5: addF() — citește ArrayBuffer în loc de dataUrl
+   Evită truncarea FileReader.readAsDataURL pe fișiere mari
 ════════════════════════════════════════ */
 function openNewSec(){
   editId=null; pend=[];
@@ -891,13 +894,19 @@ const onFiles=e=>{addF(Array.from(e.target.files));e.target.value='';};
 const dzO=e=>{e.preventDefault();e.currentTarget.classList.add('drag');};
 const dzL=e=>e.currentTarget.classList.remove('drag');
 const dzD=e=>{e.preventDefault();e.currentTarget.classList.remove('drag');addF(Array.from(e.dataTransfer.files));};
+
 function addF(files){
   files.forEach(f=>{
-    const r=new FileReader();
-    r.onload=ev=>{pend.push({name:f.name,size:f.size,type:f.type,dataUrl:ev.target.result});rPend();};
-    r.readAsDataURL(f);
+    const reader = new FileReader();
+    reader.onload = ev => {
+      // Stocăm ArrayBuffer direct — nicio conversie base64 în memorie
+      pend.push({name: f.name, size: f.size, type: f.type, buffer: ev.target.result});
+      rPend();
+    };
+    reader.readAsArrayBuffer(f); // <-- FIX: ArrayBuffer în loc de readAsDataURL
   });
 }
+
 function rPend(){
   document.getElementById('plist').innerHTML=pend.map((f,i)=>`
     <div class="pi">
@@ -947,25 +956,23 @@ async function doUpload(newTitle, secId) {
     const pct = Math.round(i/pend.length*90);
     setLoader(true,`SE URCĂ ${i+1}/${pend.length}: ${pend[i].name}`,pct);
     let uploaded = null;
-    // Retry up to 3 times — ref conflicts resolve on retry
     for(let attempt=1; attempt<=3; attempt++){
       try {
         uploaded = await uploadFileToRepo(pend[i], p=>
           setLoader(true,`SE URCĂ ${i+1}/${pend.length}: ${pend[i].name}`,pct+Math.round(p/pend.length*0.9))
         );
-        break; // success
+        break;
       } catch(e){
         console.warn(`Attempt ${attempt} failed for ${pend[i].name}:`, e.message);
         if(attempt<3){
           setLoader(true,`RETRY ${attempt}/3: ${pend[i].name}...`,pct);
-          await sleep(1500*attempt); // wait longer on each retry
+          await sleep(1500*attempt);
         } else {
           errors.push(pend[i].name);
         }
       }
     }
     if(uploaded) sec.files.push(uploaded);
-    // Small delay between files to avoid ref conflicts
     if(i < pend.length-1) await sleep(500);
   }
 
