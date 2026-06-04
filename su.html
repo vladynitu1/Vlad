@@ -108,10 +108,10 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .pdf-sw input:focus{border-color:var(--cyan);}
 .pdf-sw button{padding:5px 9px;border-radius:6px;background:rgba(0,210,170,0.08);
   border:1px solid var(--b1);color:var(--cyan);font-family:'Share Tech Mono',monospace;font-size:12px;cursor:pointer;}
-#pdfCont{flex:1;overflow-y:auto;overflow-x:hidden;background:#fff;padding:0;
+#pdfCont{flex:1;overflow-y:auto;overflow-x:auto;background:#fff;padding:0;
   display:flex;flex-direction:column;align-items:flex-start;gap:0;-webkit-overflow-scrolling:touch;}
-.pdf-pw{box-shadow:none;border-radius:0;overflow:hidden;display:block;}
-.pdf-pw canvas{display:block;}
+.pdf-pw{box-shadow:none;border-radius:0;overflow:visible;display:block;margin:0;padding:0;}
+.pdf-pw canvas{display:block;margin:0;padding:0;}
 .pov-body{flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:center;-webkit-overflow-scrolling:touch;}
 .pov-body img{max-width:100%;height:auto;padding:10px;display:block;}
 .pov-uns{text-align:center;padding:40px 20px;margin:auto;}
@@ -714,36 +714,42 @@ async function renderPDF(src, inner) {
 
 async function pdfRenderAll(){
   if(!pdfDoc) return;
-  const cont=document.getElementById('pdfCont');
+  const cont = document.getElementById('pdfCont');
   if(!cont) return;
-  cont.innerHTML='';
-  document.getElementById('pdfPg').textContent=`${pdfCurPg} / ${pdfDoc.numPages}`;
+  cont.innerHTML = '';
+  document.getElementById('pdfPg').textContent = `${pdfCurPg} / ${pdfDoc.numPages}`;
+
+  // Wait a frame so cont has correct layout dimensions
+  await new Promise(r => requestAnimationFrame(r));
+
   const dpr = window.devicePixelRatio || 1;
-  // Use screen width for fit, user zoom (pdfScale) multiplies on top
-  const screenW = window.innerWidth;
+  // Measure the actual container pixel width (no padding on cont)
+  const contW = cont.getBoundingClientRect().width || window.innerWidth;
+
   for(let i=1; i<=pdfDoc.numPages; i++){
     const page = await pdfDoc.getPage(i);
-    // Get natural page dimensions at scale=1
-    const vpBase = page.getViewport({scale:1});
-    // Scale so page WIDTH fills screen, then multiply by user zoom
-    // Height follows naturally — NO clamping, full content always visible
-    const scale = (screenW / vpBase.width) * pdfScale;
-    const vp = page.getViewport({scale});
-    const wrap = document.createElement('div');
-    wrap.className = 'pdf-pw';
-    wrap.id = 'ppg'+i;
-    // Canvas at device pixel ratio for sharpness
+    const vpBase = page.getViewport({scale: 1});
+
+    // Scale: fit page width exactly into container, then apply user zoom
+    const scale = (contW / vpBase.width) * pdfScale;
+    const vp    = page.getViewport({scale});
+
+    // High-res canvas
     const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+    const ctx    = canvas.getContext('2d');
     canvas.width  = Math.round(vp.width  * dpr);
     canvas.height = Math.round(vp.height * dpr);
-    // Display size in CSS pixels — full width, natural height
-    canvas.style.display = 'block';
-    canvas.style.width   = '100vw';
-    canvas.style.height  = 'auto';
+    // CSS size: exact logical pixels — width fills container, height is natural
+    canvas.style.cssText = `display:block;width:${vp.width}px;height:${vp.height}px;`;
     ctx.scale(dpr, dpr);
+
+    const wrap = document.createElement('div');
+    wrap.className = 'pdf-pw';
+    wrap.id = 'ppg' + i;
+    wrap.style.cssText = `width:${vp.width}px;`;
     wrap.appendChild(canvas);
     cont.appendChild(wrap);
+
     await page.render({canvasContext: ctx, viewport: vp}).promise;
   }
 }
