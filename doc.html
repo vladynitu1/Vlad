@@ -476,46 +476,68 @@ async function ensureRepo() {
   }
 }
 
-// Upload one file to repo, return downloadUrl
+// Upload one file using Git Data API (no size limit)
 async function uploadFileToRepo(fileObj, onProgress) {
-  // fileObj = {name, size, type, dataUrl}
-  // Extract pure base64 from dataUrl
   const base64 = fileObj.dataUrl.split(',')[1];
+  const ts   = Date.now();
+  const safe = fileObj.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+  const path = `files/${ts}_${safe}`;
+  const base = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}`;
 
-  // Build unique path
-  const ts    = Date.now();
-  const safe  = fileObj.name.replace(/[^a-zA-Z0-9._-]/g,'_');
-  const path  = `files/${ts}_${safe}`;
+  if (onProgress) onProgress(10);
 
-  // Check if file already exists (get SHA)
-  let sha = null;
-  const chk = await ghFetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}`);
-  if (chk.ok) { const d=await chk.json(); sha=d.sha; }
-
-  const body = {
-    message: `Upload: ${fileObj.name}`,
-    content: base64,
-    branch:  REPO_BRANCH
-  };
-  if (sha) body.sha = sha;
-
-  if (onProgress) onProgress(50);
-
-  const r = await ghFetch(
-    `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}`,
-    {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)}
-  );
-
-  if (!r.ok) {
-    const errText = await r.text();
-    console.error('Upload error', r.status, errText);
-    throw new Error(`Upload eșuat (${r.status}): ${errText.slice(0,200)}`);
+  // 1. Create blob
+  const blobR = await ghFetch(`${base}/git/blobs`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ content: base64, encoding: 'base64' })
+  });
+  if (!blobR.ok) {
+    const t = await blobR.text();
+    throw new Error(`Blob failed (${blobR.status}): ${t.slice(0,200)}`);
   }
+  const { sha: blobSha } = await blobR.json();
+  if (onProgress) onProgress(30);
 
+  // 2. Get latest commit SHA
+  const refR = await ghFetch(`${base}/git/ref/heads/${REPO_BRANCH}`);
+  if (!refR.ok) throw new Error('Nu am putut citi branch-ul');
+  const { object: { sha: latestCommitSha } } = await refR.json();
+  if (onProgress) onProgress(45);
+
+  // 3. Get base tree SHA
+  const commitR = await ghFetch(`${base}/git/commits/${latestCommitSha}`);
+  if (!commitR.ok) throw new Error('Nu am putut citi commit-ul');
+  const { tree: { sha: baseTreeSha } } = await commitR.json();
+  if (onProgress) onProgress(60);
+
+  // 4. Create new tree
+  const treeR = await ghFetch(`${base}/git/trees`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ base_tree: baseTreeSha,
+      tree: [{ path, mode:'100644', type:'blob', sha: blobSha }] })
+  });
+  if (!treeR.ok) throw new Error('Tree failed');
+  const { sha: newTreeSha } = await treeR.json();
+  if (onProgress) onProgress(75);
+
+  // 5. Create commit
+  const newCommitR = await ghFetch(`${base}/git/commits`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ message: `Upload: ${fileObj.name}`,
+      tree: newTreeSha, parents: [latestCommitSha] })
+  });
+  if (!newCommitR.ok) throw new Error('Commit failed');
+  const { sha: newCommitSha } = await newCommitR.json();
+  if (onProgress) onProgress(90);
+
+  // 6. Update branch ref
+  const updateR = await ghFetch(`${base}/git/refs/heads/${REPO_BRANCH}`, {
+    method:'PATCH', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ sha: newCommitSha, force: false })
+  });
+  if (!updateR.ok) throw new Error('Ref update failed');
   if (onProgress) onProgress(100);
 
-  const data = await r.json();
-  // raw URL works without auth for public repos
   const rawUrl = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${REPO_BRANCH}/${path}`;
   return { path, downloadUrl: rawUrl, name: fileObj.name, size: fileObj.size };
 }
