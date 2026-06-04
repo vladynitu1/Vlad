@@ -620,44 +620,43 @@ async function openFile(f) {
   document.getElementById('pov').classList.add('open');
   document.body.style.overflow='hidden';
 
-  let dataUrl = null;
+  const ext=(f.name.split('.').pop()||'').toLowerCase();
+  const inner=document.getElementById('povInner');
+  inner.style.cssText='display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;';
+
+  // For PDF: pass URL directly to PDF.js — avoids FileReader truncation
+  if(ext==='pdf'){
+    await renderPDF(f.downloadUrl, inner);
+    return;
+  }
+
+  // For everything else: fetch as blob -> blob URL (no base64 conversion = no truncation)
+  let blobUrl = null;
+  let blob = null;
   try {
     const r = await fetch(f.downloadUrl+'?t='+Date.now());
-    if (r.ok) {
-      const blob = await r.blob();
-      dataUrl = await new Promise((res,rej)=>{
-        const rd=new FileReader(); rd.onload=()=>res(rd.result); rd.onerror=rej;
-        rd.readAsDataURL(blob);
-      });
-    } else {
-      throw new Error('HTTP '+r.status);
-    }
+    if (!r.ok) throw new Error('HTTP '+r.status);
+    blob = await r.blob();
+    blobUrl = URL.createObjectURL(blob);
   } catch(e) {
-    document.getElementById('povInner').innerHTML =
+    inner.innerHTML =
       `<div class="pov-body"><div class="pov-uns"><div class="ui">⚠️</div>
        <p>NU SE POATE ÎNCĂRCA<br>${e.message}</p>
        <a class="dl-a" href="${f.downloadUrl}" target="_blank">🔗 DESCHIDE LINK</a></div></div>`;
     return;
   }
 
-  const ext=(f.name.split('.').pop()||'').toLowerCase();
-  const inner=document.getElementById('povInner');
-  inner.style.cssText='display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;';
-
-  if(ext==='pdf'){
-    await renderPDF(dataUrl, inner);
-  } else if(['jpg','jpeg','png','gif','webp','heic','heif'].includes(ext)){
+  if(['jpg','jpeg','png','gif','webp','heic','heif'].includes(ext)){
     inner.innerHTML=`<div class="pov-body" style="overflow:auto;-webkit-overflow-scrolling:touch;justify-content:center;align-items:flex-start;">
-      <img src="${dataUrl}" style="max-width:100%;display:block;padding:10px;"></div>`;
+      <img src="${blobUrl}" style="max-width:100%;display:block;padding:10px;"></div>`;
   } else if(['mp4','mov','avi'].includes(ext)){
     inner.innerHTML=`<div class="pov-body" style="background:var(--bg);align-items:center;justify-content:center;">
-      <video src="${dataUrl}" controls style="max-width:100%;max-height:100%;"></video></div>`;
+      <video src="${blobUrl}" controls style="max-width:100%;max-height:100%;"></video></div>`;
   } else if(['mp3','wav'].includes(ext)){
     inner.innerHTML=`<div class="pov-body" style="align-items:center;justify-content:center;">
-      <audio src="${dataUrl}" controls></audio></div>`;
+      <audio src="${blobUrl}" controls></audio></div>`;
   } else if(['txt','csv','json'].includes(ext)){
-    let text='';
-    try{ text=decodeURIComponent(escape(atob(dataUrl.split(',')[1]))); }catch(e){ text='Nu se poate afișa.'; }
+    const text = await blob.text();
     const pre=document.createElement('pre');
     pre.style.cssText='flex:1;overflow:auto;color:var(--txt);font-family:"Share Tech Mono",monospace;font-size:12px;padding:16px;white-space:pre-wrap;word-break:break-word;margin:0;background:var(--bg2);';
     pre.textContent=text;
@@ -666,14 +665,15 @@ async function openFile(f) {
   } else {
     inner.innerHTML=`<div class="pov-body"><div class="pov-uns"><div class="ui">${icoMap(f.name)}</div>
       <p>PREVIZUALIZARE INDISPONIBILĂ</p>
-      <a class="dl-a" href="${dataUrl}" download="${f.name}">⬇ DESCARCĂ</a></div></div>`;
+      <a class="dl-a" href="${blobUrl}" download="${f.name}">⬇ DESCARCĂ</a></div></div>`;
   }
 }
 
 /* ════════════════════════════════════════
    PDF VIEWER
 ════════════════════════════════════════ */
-async function renderPDF(dataUrl, inner) {
+async function renderPDF(src, inner) {
+  // src can be a URL (from GitHub raw) or a dataUrl
   inner.innerHTML=`
     <div class="pdf-tb" id="pdfTb">
       <button onclick="pdfNav(-1)">◀</button>
@@ -691,11 +691,19 @@ async function renderPDF(dataUrl, inner) {
 
   pdfDoc=null; pdfScale=1.4; pdfCurPg=1;
   try {
-    const b64=dataUrl.split(',')[1];
-    const bin=atob(b64);
-    const bytes=new Uint8Array(bin.length);
-    for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
-    pdfDoc=await pdfjsLib.getDocument({data:bytes}).promise;
+    let pdfSource;
+    if (src.startsWith('data:')) {
+      // dataUrl path (legacy)
+      const b64=src.split(',')[1];
+      const bin=atob(b64);
+      const bytes=new Uint8Array(bin.length);
+      for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
+      pdfSource = {data: bytes};
+    } else {
+      // Direct URL — PDF.js fetches it natively, no size limit
+      pdfSource = {url: src+'?t='+Date.now(), withCredentials: false};
+    }
+    pdfDoc=await pdfjsLib.getDocument(pdfSource).promise;
     await pdfRenderAll();
     pdfScrollObserver();
   } catch(e){
@@ -934,18 +942,31 @@ async function doUpload(newTitle, secId) {
   }
 
   const errors = [];
+  const sleep = ms => new Promise(r=>setTimeout(r,ms));
   for(let i=0;i<pend.length;i++){
     const pct = Math.round(i/pend.length*90);
     setLoader(true,`SE URCĂ ${i+1}/${pend.length}: ${pend[i].name}`,pct);
-    try {
-      const uploaded = await uploadFileToRepo(pend[i], p=>
-        setLoader(true,`SE URCĂ ${i+1}/${pend.length}: ${pend[i].name}`,pct+Math.round(p/pend.length*0.9))
-      );
-      sec.files.push(uploaded);
-    } catch(e){
-      console.error('Upload failed for', pend[i].name, e);
-      errors.push(pend[i].name+': '+e.message);
+    let uploaded = null;
+    // Retry up to 3 times — ref conflicts resolve on retry
+    for(let attempt=1; attempt<=3; attempt++){
+      try {
+        uploaded = await uploadFileToRepo(pend[i], p=>
+          setLoader(true,`SE URCĂ ${i+1}/${pend.length}: ${pend[i].name}`,pct+Math.round(p/pend.length*0.9))
+        );
+        break; // success
+      } catch(e){
+        console.warn(`Attempt ${attempt} failed for ${pend[i].name}:`, e.message);
+        if(attempt<3){
+          setLoader(true,`RETRY ${attempt}/3: ${pend[i].name}...`,pct);
+          await sleep(1500*attempt); // wait longer on each retry
+        } else {
+          errors.push(pend[i].name);
+        }
+      }
     }
+    if(uploaded) sec.files.push(uploaded);
+    // Small delay between files to avoid ref conflicts
+    if(i < pend.length-1) await sleep(500);
   }
 
   setLoader(true,'SE SALVEAZĂ INDEX...',95);
