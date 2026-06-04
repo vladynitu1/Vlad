@@ -718,26 +718,33 @@ async function pdfRenderAll(){
   if(!cont) return;
   cont.innerHTML='';
   document.getElementById('pdfPg').textContent=`${pdfCurPg} / ${pdfDoc.numPages}`;
-  // Use screen width directly — most reliable on mobile
-  const availW = window.innerWidth;
-  for(let i=1;i<=pdfDoc.numPages;i++){
-    const page=await pdfDoc.getPage(i);
-    const dpr=window.devicePixelRatio||1;
-    const vpNatural=page.getViewport({scale:1});
-    const fitScale=(availW / vpNatural.width) * pdfScale;
-    const vp=page.getViewport({scale:fitScale});
-    const wrap=document.createElement('div');
-    wrap.className='pdf-pw'; wrap.id='ppg'+i;
-    const canvas=document.createElement('canvas');
-    const ctx=canvas.getContext('2d');
-    // Render at device resolution
-    canvas.width=Math.floor(vp.width*dpr);
-    canvas.height=Math.floor(vp.height*dpr);
-    canvas.style.width=vp.width+'px';
-    canvas.style.height=vp.height+'px';
-    ctx.scale(dpr,dpr);
-    wrap.appendChild(canvas); cont.appendChild(wrap);
-    await page.render({canvasContext:ctx,viewport:vp}).promise;
+  const dpr = window.devicePixelRatio || 1;
+  // Use screen width for fit, user zoom (pdfScale) multiplies on top
+  const screenW = window.innerWidth;
+  for(let i=1; i<=pdfDoc.numPages; i++){
+    const page = await pdfDoc.getPage(i);
+    // Get natural page dimensions at scale=1
+    const vpBase = page.getViewport({scale:1});
+    // Scale so page WIDTH fills screen, then multiply by user zoom
+    // Height follows naturally — NO clamping, full content always visible
+    const scale = (screenW / vpBase.width) * pdfScale;
+    const vp = page.getViewport({scale});
+    const wrap = document.createElement('div');
+    wrap.className = 'pdf-pw';
+    wrap.id = 'ppg'+i;
+    // Canvas at device pixel ratio for sharpness
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width  = Math.round(vp.width  * dpr);
+    canvas.height = Math.round(vp.height * dpr);
+    // Display size in CSS pixels — full width, natural height
+    canvas.style.display = 'block';
+    canvas.style.width   = '100vw';
+    canvas.style.height  = 'auto';
+    ctx.scale(dpr, dpr);
+    wrap.appendChild(canvas);
+    cont.appendChild(wrap);
+    await page.render({canvasContext: ctx, viewport: vp}).promise;
   }
 }
 
