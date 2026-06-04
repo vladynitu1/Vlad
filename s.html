@@ -374,35 +374,55 @@ const ghFetch = (url, opts={}) => {
 async function indexLoad() {
   setSync('spin','SE ÎNCARCĂ...');
 
-  // Try to find gist if we don't have ID
-  if (!INDEX_GIST_ID && ghTok) {
-    INDEX_GIST_ID = await findIndexGist();
+  // Try to find gist ID — with or without token
+  if (!INDEX_GIST_ID) {
+    if (ghTok) {
+      INDEX_GIST_ID = await findIndexGist();
+    } else {
+      // Without token: try hardcoded owner's public gists
+      INDEX_GIST_ID = await findIndexGistPublic();
+    }
     if (INDEX_GIST_ID) localStorage.setItem('emx_igid', INDEX_GIST_ID);
   }
 
   if (INDEX_GIST_ID) {
     try {
-      // Use raw URL so no auth needed for public gist
+      // Public gist API — no auth needed
       const r = await fetch(`https://api.github.com/gists/${INDEX_GIST_ID}`);
       if (r.ok) {
         const data = await r.json();
-        const raw  = data.files?.['emx_index.json']?.raw_url;
+        const raw = data.files?.['emx_index.json']?.raw_url;
         if (raw) {
-          const r2 = await fetch(raw+'?t='+Date.now());
-          if (r2.ok) { secs = await r2.json(); }
+          const r2 = await fetch(raw + '?t=' + Date.now());
+          if (r2.ok) {
+            secs = await r2.json();
+            setSync('ok', 'SINCRONIZAT · ' + new Date().toLocaleTimeString('ro-RO'));
+            renderPub(); return;
+          }
         }
-        setSync('ok','SINCRONIZAT · '+new Date().toLocaleTimeString('ro-RO'));
-        renderPub(); return;
-      } else if (r.status===404) {
-        INDEX_GIST_ID=''; localStorage.removeItem('emx_igid');
+      } else if (r.status === 404) {
+        INDEX_GIST_ID = ''; localStorage.removeItem('emx_igid');
       }
-    } catch(e) {}
+    } catch(e) { console.warn('indexLoad error:', e); }
   }
 
   // Fallback localStorage
-  secs = JSON.parse(localStorage.getItem('emx_s')||'[]');
-  setSync(secs.length?'ok':'', secs.length?'DATE LOCALE':'NICIO DATĂ');
+  secs = JSON.parse(localStorage.getItem('emx_s') || '[]');
+  setSync(secs.length ? 'ok' : '', secs.length ? 'DATE LOCALE' : 'NICIO DATĂ');
   renderPub();
+}
+
+// Search public gists of the repo owner — no auth needed
+async function findIndexGistPublic() {
+  try {
+    const r = await fetch(`https://api.github.com/users/${REPO_OWNER}/gists?per_page=100`);
+    if (r.ok) {
+      const list = await r.json();
+      const g = list.find(x => x.description === 'EMX_INDEX_V2' && x.files['emx_index.json']);
+      return g ? g.id : null;
+    }
+  } catch(e) {}
+  return null;
 }
 
 async function findIndexGist() {
