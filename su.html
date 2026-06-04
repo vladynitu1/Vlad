@@ -109,9 +109,9 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .pdf-sw button{padding:5px 9px;border-radius:6px;background:rgba(0,210,170,0.08);
   border:1px solid var(--b1);color:var(--cyan);font-family:'Share Tech Mono',monospace;font-size:12px;cursor:pointer;}
 #pdfCont{flex:1;overflow-y:auto;overflow-x:hidden;background:#fff;padding:0;
-  display:flex;flex-direction:column;align-items:stretch;gap:2px;-webkit-overflow-scrolling:touch;}
-.pdf-pw{box-shadow:none;border-radius:0;overflow:hidden;width:100%;}
-.pdf-pw canvas{display:block;width:100%!important;height:auto!important;}
+  display:flex;flex-direction:column;align-items:flex-start;gap:0;-webkit-overflow-scrolling:touch;}
+.pdf-pw{box-shadow:none;border-radius:0;overflow:hidden;display:block;}
+.pdf-pw canvas{display:block;}
 .pov-body{flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:center;-webkit-overflow-scrolling:touch;}
 .pov-body img{max-width:100%;height:auto;padding:10px;display:block;}
 .pov-uns{text-align:center;padding:40px 20px;margin:auto;}
@@ -718,24 +718,23 @@ async function pdfRenderAll(){
   if(!cont) return;
   cont.innerHTML='';
   document.getElementById('pdfPg').textContent=`${pdfCurPg} / ${pdfDoc.numPages}`;
-  // Measure available width
-  const availW = cont.clientWidth - 24;
+  // Use screen width directly — most reliable on mobile
+  const availW = window.innerWidth;
   for(let i=1;i<=pdfDoc.numPages;i++){
     const page=await pdfDoc.getPage(i);
     const dpr=window.devicePixelRatio||1;
-    // First get natural size at scale 1
     const vpNatural=page.getViewport({scale:1});
-    // Compute scale to fill container width, then apply user zoom
-    const fitScale = availW / vpNatural.width;
-    const finalScale = fitScale * pdfScale;
-    const vp=page.getViewport({scale:finalScale});
+    const fitScale=(availW / vpNatural.width) * pdfScale;
+    const vp=page.getViewport({scale:fitScale});
     const wrap=document.createElement('div');
     wrap.className='pdf-pw'; wrap.id='ppg'+i;
-    wrap.style.width='100%';
     const canvas=document.createElement('canvas');
     const ctx=canvas.getContext('2d');
-    canvas.width=vp.width*dpr; canvas.height=vp.height*dpr;
-    canvas.style.width='100%'; canvas.style.height='auto';
+    // Render at device resolution
+    canvas.width=Math.floor(vp.width*dpr);
+    canvas.height=Math.floor(vp.height*dpr);
+    canvas.style.width=vp.width+'px';
+    canvas.style.height=vp.height+'px';
     ctx.scale(dpr,dpr);
     wrap.appendChild(canvas); cont.appendChild(wrap);
     await page.render({canvasContext:ctx,viewport:vp}).promise;
