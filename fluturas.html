@@ -144,7 +144,7 @@
         </div>
       </div>
       <div class="field">
-        <label>Cap Secție <span class="badge by">×0.50</span></label>
+        <label>Cap Secție <span class="badge by">×0.75</span></label>
         <div class="input-wrap">
           <input type="number" id="oreCapSectie" value="61" min="0" oninput="onChange()">
           <span class="input-unit">ore</span>
@@ -189,27 +189,6 @@
     <div class="info-box" id="bonuriInfo">—</div>
   </div>
 
-  <!-- DEDUCERI -->
-  <div class="card">
-    <div class="card-title"><span class="dot dot-purple"></span> Deduceri</div>
-    <div class="grid">
-      <div class="field">
-        <label>Deducere de bază</label>
-        <div class="input-wrap">
-          <input type="number" id="deducereBaza" value="0" min="0" oninput="onChange()">
-          <span class="input-unit">RON</span>
-        </div>
-      </div>
-      <div class="field">
-        <label>Deducere suplimentară</label>
-        <div class="input-wrap">
-          <input type="number" id="deducereSuplim" value="100" min="0" oninput="onChange()">
-          <span class="input-unit">RON</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- AVANS -->
   <div class="card">
     <div class="card-title"><span class="dot dot-red"></span> Avans</div>
@@ -239,7 +218,7 @@
       <span class="g">Baza CASS</span> = Brut + Bonuri → CASS 10%<br>
       <span class="g">Baza CAS</span> = Brut → CAS 25%<br>
       <span class="g">Net</span> = Brut − CASS − CAS<br>
-      <span class="g">Baza impozit</span> = Net + Bonuri − Deduceri → Impozit 10%<br>
+      <span class="g">Baza impozit</span> = Net + Bonuri → Impozit 10%<br>
       <span class="y">Salar net</span> = Net − Impozit<br>
       <span class="y">Lichidare</span> = Salar net − Avans − Alte avansuri
     </div>
@@ -273,13 +252,13 @@
 const FIELDS = [
   'salariuBaza','normaOre','oreNormale','oreSuplI',
   'oreFestive','oreNoapte','oreCapSectie','oreScoala','oreFormator',
-  'valoareBon','deducereBaza','deducereSuplim','avansRon','alteAvansuri'
+  'valoareBon','avansRon','alteAvansuri'
 ];
 const STORAGE_KEY = 'emx_fluturas_v2';
 const DEFAULTS = {
   salariuBaza:6710, normaOre:176, oreNormale:160, oreSuplI:20,
   oreFestive:44, oreNoapte:23, oreCapSectie:61, oreScoala:6,
-  oreFormator:0, valoareBon:43, deducereBaza:0, deducereSuplim:100,
+  oreFormator:0, valoareBon:43,
   avansRon:2500, alteAvansuri:0
 };
 
@@ -338,8 +317,6 @@ function calculeaza() {
   const oreScoala      = v('oreScoala');
   const oreFormator    = v('oreFormator');
   const valoareBon     = v('valoareBon');
-  const deducereBaza   = v('deducereBaza');
-  const deducereSuplim = v('deducereSuplim');
   const avansRon       = v('avansRon');
   const alteAvansuri   = v('alteAvansuri');
 
@@ -355,7 +332,7 @@ function calculeaza() {
   const plataSuplI  = Math.round(oreSuplI     * t * 1.75);
   const plataFest   = Math.round(oreFestive   * t * 1.00);
   const plataNoapte = Math.round(oreNoapte    * t * 0.25);
-  const plataCapS   = Math.round(oreCapSectie * t * 0.50);
+  const plataCapS   = Math.round(oreCapSectie * t * 0.75);
   const plataScoala = Math.round(oreScoala    * t * 1.00);
   const plataForm   = Math.round(oreFormator  * t * 1.00);
 
@@ -370,7 +347,7 @@ function calculeaza() {
   const CASS = Math.round(bazaCASS * 0.10);
   const CAS  = Math.round(bazaCAS  * 0.25);
   const net  = totalBrut - CASS - CAS;
-  const bazaImpozit = Math.max(0, net + totalBonuri - deducereBaza - deducereSuplim);
+  const bazaImpozit = Math.max(0, net + totalBonuri);
   const impozit  = Math.round(bazaImpozit * 0.10);
   const salarNet = net - impozit;
   const lichidare = salarNet - avansRon - alteAvansuri;
@@ -381,7 +358,7 @@ function calculeaza() {
     {show:oreSuplI>0,     col:'var(--accent)', lbl:`Ore supl. I — ${oreSuplI} ore × ${fmt(t)} × 1.75`,        val:plataSuplI},
     {show:oreFestive>0,   col:'var(--text)',   lbl:`Festive — ${oreFestive} ore × ${fmt(t)}`,                 val:plataFest},
     {show:oreNoapte>0,    col:'var(--accent)', lbl:`Noapte 25% — ${oreNoapte} ore × ${fmt(t*0.25)}`,          val:plataNoapte},
-    {show:oreCapSectie>0, col:'var(--accent)', lbl:`Cap Secție 50% — ${oreCapSectie} ore × ${fmt(t*0.50)}`,   val:plataCapS},
+    {show:oreCapSectie>0, col:'var(--accent)', lbl:`Cap Secție 75% — ${oreCapSectie} ore × ${fmt(t*0.75)}`,   val:plataCapS},
     {show:oreScoala>0,    col:'var(--text)',   lbl:`Ore Școală — ${oreScoala} ore × ${fmt(t)}`,               val:plataScoala},
     {show:oreFormator>0,  col:'var(--text)',   lbl:`Formator — ${oreFormator} ore × ${fmt(t)}`,               val:plataForm},
   ];
@@ -397,7 +374,7 @@ function calculeaza() {
   html+=`<div class="brow"><span class="lbl" style="color:var(--accent3)">CASS 10% din ${fmtInt(bazaCASS)} (brut+bonuri)</span><span class="val" style="color:var(--accent3)">− ${fmtInt(CASS)} RON</span></div>`;
   html+=`<div class="brow"><span class="lbl" style="color:var(--accent3)">CAS 25% din ${fmtInt(bazaCAS)} (brut)</span><span class="val" style="color:var(--accent3)">− ${fmtInt(CAS)} RON</span></div>`;
   html+=`<div class="brow sep"><span class="lbl">Venit net (Brut − CASS − CAS)</span><span class="val" style="color:#6b9fff;font-size:14px;">${fmtInt(net)} RON</span></div>`;
-  html+=`<div class="brow"><span class="lbl" style="color:#c47fff">Baza impozit = net + bonuri − deduceri = ${fmtInt(bazaImpozit)} RON</span><span class="val"></span></div>`;
+  html+=`<div class="brow"><span class="lbl" style="color:#c47fff">Baza impozit = net + bonuri = ${fmtInt(bazaImpozit)} RON</span><span class="val"></span></div>`;
   html+=`<div class="brow"><span class="lbl" style="color:var(--accent3)">Impozit 10% din ${fmtInt(bazaImpozit)}</span><span class="val" style="color:var(--accent3)">− ${fmtInt(impozit)} RON</span></div>`;
   html+=`<div class="brow grand"><span class="lbl">Salar net</span><span class="val" style="color:var(--accent2);font-size:16px;">${fmtInt(salarNet)} RON</span></div>`;
 
