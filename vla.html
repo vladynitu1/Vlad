@@ -297,7 +297,7 @@ async function extractPdfRows(file){
   const buf = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({data: buf}).promise;
   const allRows = [];
-  const ROW_TOLERANCE = 3;
+  const ROW_TOLERANCE = 2;
   for(let p=1;p<=pdf.numPages;p++){
     const page = await pdf.getPage(p);
     const content = await page.getTextContent();
@@ -385,9 +385,26 @@ function splitBlocksStructured(rows){
     for(let i=0;i<b.allRows.length;i++){
       const tokens = b.allRows[i].items.map(it=>it.str);
       if(tokens.includes('Festive')){
-        surname = firstNameToken(tokens);
-        const nextTokens = b.allRows[i+1] ? b.allRows[i+1].items.map(it=>it.str) : [];
-        firstname = firstNameToken(nextTokens);
+        let sIdx = -1;
+        for(let k=0;k<tokens.length;k++){
+          const t = tokens[k];
+          if(/^\d+([:./]\d+)?$/.test(t) || NON_NAME.has(t)) continue;
+          sIdx = k; break;
+        }
+        surname = sIdx >= 0 ? tokens[sIdx] : '';
+
+        const candidateRows = [];
+        candidateRows.push(sIdx >= 0 ? tokens.slice(sIdx+1) : tokens);
+        if(b.allRows[i+1]) candidateRows.push(b.allRows[i+1].items.map(it=>it.str));
+        if(b.allRows[i+2]) candidateRows.push(b.allRows[i+2].items.map(it=>it.str));
+
+        for(const rowTokens of candidateRows){
+          const isRoleRow = rowTokens.includes('Sef') || rowTokens.includes('Mecanic') ||
+            (rowTokens.includes('V') && rowTokens.some(t => t.indexOf('bilete') === 0));
+          if(isRoleRow) break;
+          const f = firstNameToken(rowTokens);
+          if(f){ firstname = f; break; }
+        }
         break;
       }
     }
