@@ -176,18 +176,78 @@ let state = {
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
+// ---- Local persistence via IndexedDB (works on any static site, incl. GitHub Pages) ----
+const DB_NAME = 'emx-arhiva-db';
+const STORE_NAME = 'kv';
+let _dbPromise = null;
+function openDb(){
+  if(_dbPromise) return _dbPromise;
+  _dbPromise = new Promise((resolve, reject)=>{
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = ()=>{
+      req.result.createObjectStore(STORE_NAME);
+    };
+    req.onsuccess = ()=> resolve(req.result);
+    req.onerror = ()=> reject(req.error);
+  });
+  return _dbPromise;
+}
+const storage = {
+  async get(key){
+    const db = await openDb();
+    return new Promise((resolve, reject)=>{
+      const tx = db.transaction(STORE_NAME, 'readonly');
+      const req = tx.objectStore(STORE_NAME).get(key);
+      req.onsuccess = ()=> resolve(req.result !== undefined ? { key, value: req.result } : null);
+      req.onerror = ()=> reject(req.error);
+    });
+  },
+  async set(key, value){
+    const db = await openDb();
+    return new Promise((resolve, reject)=>{
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      tx.objectStore(STORE_NAME).put(value, key);
+      tx.oncomplete = ()=> resolve({ key, value });
+      tx.onerror = ()=> reject(tx.error);
+    });
+  },
+  async delete(key){
+    const db = await openDb();
+    return new Promise((resolve, reject)=>{
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      tx.objectStore(STORE_NAME).delete(key);
+      tx.oncomplete = ()=> resolve({ key, deleted: true });
+      tx.onerror = ()=> reject(tx.error);
+    });
+  },
+  async list(prefix){
+    const db = await openDb();
+    return new Promise((resolve, reject)=>{
+      const tx = db.transaction(STORE_NAME, 'readonly');
+      const req = tx.objectStore(STORE_NAME).getAllKeys();
+      req.onsuccess = ()=>{
+        let keys = req.result;
+        if(prefix) keys = keys.filter(k => String(k).startsWith(prefix));
+        resolve({ keys });
+      };
+      req.onerror = ()=> reject(req.error);
+    });
+  }
+};
+
+
 function uid(){ return 'doc_' + Date.now() + '_' + Math.random().toString(36).slice(2,8); }
 
 async function loadMeta(cat){
   try{
-    const r = await window.storage.get('docs-meta:' + cat, false);
+    const r = await storage.get('docs-meta:' + cat);
     state.docsMeta[cat] = r ? JSON.parse(r.value) : [];
   }catch(e){
     state.docsMeta[cat] = [];
   }
 }
 async function saveMeta(cat){
-  await window.storage.set('docs-meta:' + cat, JSON.stringify(state.docsMeta[cat]), false);
+  await storage.set('docs-meta:' + cat, JSON.stringify(state.docsMeta[cat]));
 }
 async function loadAllMeta(){
   await loadMeta('conductori');
@@ -328,8 +388,8 @@ async function handleUpload(cat, file, month){
     const rows = await extractPdfRows(file);
     const text = rowsToText(rows);
     const id = uid();
-    await window.storage.set('doc-content:' + id, text, false);
-    await window.storage.set('doc-rows:' + id, JSON.stringify(rows), false);
+    await storage.set('doc-content:' + id, text);
+    await storage.set('doc-rows:' + id, JSON.stringify(rows));
     const meta = { id, filename: file.name, month: month || '', uploadedAt: new Date().toISOString() };
     state.docsMeta[cat].unshift(meta);
     await saveMeta(cat);
@@ -345,8 +405,8 @@ async function deleteDoc(cat, id){
   if(!confirm('Ștergi definitiv acest program?')) return;
   state.docsMeta[cat] = state.docsMeta[cat].filter(d=>d.id!==id);
   await saveMeta(cat);
-  await window.storage.delete('doc-content:' + id, false).catch(()=>{});
-  await window.storage.delete('doc-rows:' + id, false).catch(()=>{});
+  await storage.delete('doc-content:' + id).catch(()=>{});
+  await storage.delete('doc-rows:' + id).catch(()=>{});
   if(state.openDocId===id){ state.view='list'; state.openDocId=null; }
   render();
 }
@@ -364,7 +424,7 @@ function highlight(text, query){
 async function getBlocksForDoc(id){
   let rows = [];
   try{
-    const r = await window.storage.get('doc-rows:' + id, false);
+    const r = await storage.get('doc-rows:' + id);
     rows = r ? JSON.parse(r.value) : [];
   }catch(e){ rows = []; }
   if(!rows.length) return [];
