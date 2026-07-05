@@ -2,1118 +2,488 @@
 <html lang="ro">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>EMX</title>
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EMX Arhivă · Programe Lucru</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
-html,body{margin:0;padding:0;background:#080c18!important;color:#c8ddf0;font-family:'Exo 2',sans-serif;min-height:100vh;}
-*,*::before,*::after{box-sizing:border-box;}
-:root{
-  --bg:#080c18;--bg2:#0d1120;--bg3:#111828;
-  --b0:rgba(0,210,170,0.12);--b1:rgba(0,210,170,0.35);--b2:rgba(0,210,170,0.6);
-  --cyan:#00d2aa;--c2:#00b4ff;--grn:#3dffa0;--org:#ff7c2a;--red:#ff3d5e;
-  --txt:#c8ddf0;--mut:#4a607a;--glow:0 0 20px rgba(0,210,170,0.25);
-}
-body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-  background-image:linear-gradient(rgba(0,210,170,0.025)1px,transparent 1px),
-    linear-gradient(90deg,rgba(0,210,170,0.025)1px,transparent 1px);
-  background-size:36px 36px;}
-#vPublic,#vAdmin{position:relative;z-index:1;}
-#vAdmin{display:none;}
+  :root{
+    --bg:#0a0d10;
+    --panel:#11161b;
+    --panel-2:#161d24;
+    --line:#232c34;
+    --amber:#ffb020;
+    --amber-dim:#8a611c;
+    --red:#ff5252;
+    --green:#34d399;
+    --text:#e7ecef;
+    --muted:#7c8a94;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse at top, #10151a 0%, var(--bg) 55%),
+      repeating-linear-gradient(180deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 3px);
+    color:var(--text);
+    font-family:'JetBrains Mono', monospace;
+    min-height:100vh;
+    padding-bottom:60px;
+  }
+  h1,h2,h3,.display{font-family:'Oswald',sans-serif; letter-spacing:0.03em; text-transform:uppercase;}
 
-.pub{max-width:860px;margin:0 auto;padding:0 14px 80px;}
-.banner{display:flex;align-items:center;justify-content:space-between;padding:22px 0 16px;
-  border-bottom:1px solid var(--b0);margin-bottom:18px;gap:10px;}
-.logo{font-family:'Rajdhani',sans-serif;font-size:56px;font-weight:700;line-height:1;
-  letter-spacing:-2px;user-select:none;}
-.logo .e{color:var(--c2)}.logo .m{color:#fff}.logo .x{color:var(--grn)}
-.logo .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--org);
-  box-shadow:0 0 10px var(--org);margin-left:3px;margin-bottom:8px;vertical-align:middle;
-  animation:blink 2s ease-in-out infinite;}
-@keyframes blink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.6)}}
-.bnr-r{display:flex;align-items:center;gap:8px;flex-shrink:0;}
-.tok-btn{display:flex;align-items:center;gap:6px;padding:9px 14px;border-radius:10px;
-  font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;
-  cursor:pointer;border:1.5px solid rgba(255,124,42,0.4);background:rgba(255,124,42,0.08);
-  color:var(--org);transition:all .2s;white-space:nowrap;}
-.tok-btn:hover{background:rgba(255,124,42,0.18);border-color:var(--org);}
-.tok-btn.on{border-color:var(--cyan);background:rgba(0,210,170,0.08);color:var(--cyan);}
-.adm-btn{display:none;align-items:center;gap:6px;padding:9px 14px;border-radius:10px;
-  font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;
-  cursor:pointer;border:1.5px solid var(--grn);background:rgba(61,255,160,0.07);
-  color:var(--grn);transition:all .2s;white-space:nowrap;}
-.adm-btn.show{display:flex;}.adm-btn:hover{background:rgba(61,255,160,0.15);}
-.sync-bar{display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:8px 12px;
-  border-radius:9px;background:rgba(0,0,0,0.2);border:1px solid var(--b0);
-  font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--mut);letter-spacing:1px;}
-.sdot{width:7px;height:7px;border-radius:50%;background:var(--mut);flex-shrink:0;}
-.sdot.ok{background:var(--grn);box-shadow:0 0 6px var(--grn);}
-.sdot.err{background:var(--red);}
-.sdot.spin{background:var(--cyan);animation:sp 1s ease-in-out infinite;}
-@keyframes sp{0%,100%{opacity:1}50%{opacity:.2}}
-.srch{position:relative;margin-bottom:18px;}
-.srch input{width:100%;padding:11px 14px 11px 42px;background:var(--bg3);border:1.5px solid var(--b0);
-  border-radius:12px;color:var(--txt);font-family:'Exo 2',sans-serif;font-size:15px;outline:none;transition:border-color .2s;}
-.srch input:focus{border-color:var(--b1);box-shadow:var(--glow);}
-.srch input::placeholder{color:var(--mut);}
-.srch-ico{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:16px;pointer-events:none;opacity:.4;}
-.secs{display:flex;flex-direction:column;gap:11px;}
-.sc{background:var(--bg3);border:1.5px solid var(--b0);border-radius:13px;overflow:hidden;transition:border-color .2s;}
-.sc:hover{border-color:var(--b1);}
-.sc-hdr{display:flex;align-items:center;gap:10px;padding:13px 16px;cursor:pointer;
-  background:rgba(0,0,0,0.14);border-bottom:1px solid transparent;transition:background .2s;user-select:none;}
-.sc.open .sc-hdr{border-bottom-color:var(--b0);}
-.sc-hdr:hover{background:rgba(0,210,170,0.04);}
-.sc-ico{width:32px;height:32px;border-radius:7px;flex-shrink:0;display:flex;align-items:center;
-  justify-content:center;font-size:16px;background:rgba(0,210,170,0.08);border:1px solid var(--b0);}
-.sc-ttl{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;color:#fff;flex:1;}
-.sc-cnt{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--mut);}
-.chev{font-size:11px;color:var(--mut);margin-left:4px;transition:transform .2s;}
-.sc.open .chev{transform:rotate(180deg);}
-.fl{display:none;padding:9px 12px 13px;flex-direction:column;gap:6px;}
-.sc.open .fl{display:flex;}
-.fr{display:flex;align-items:center;gap:10px;padding:10px 13px;border-radius:9px;
-  background:rgba(0,0,0,0.2);border:1px solid var(--b0);cursor:pointer;transition:all .2s;}
-.fr:hover{border-color:var(--b2);background:rgba(0,210,170,0.05);transform:translateX(2px);}
-.fr-ico{font-size:18px;flex-shrink:0;}
-.fr-name{flex:1;font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.fr-size{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--mut);flex-shrink:0;}
-.fr-arr{font-size:12px;color:var(--mut);flex-shrink:0;}
-.empty{text-align:center;padding:60px 20px;color:var(--mut);display:none;}
-.empty.show{display:block;}
-.empty div:first-child{font-size:40px;margin-bottom:10px;opacity:.3;}
-.empty div:last-child{font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:3px;}
+  /* ---- Header: split-flap departure board ---- */
+  .board{
+    border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg, #0d1216, #0a0d10);
+    padding:22px 24px 18px;
+    position:sticky; top:0; z-index:20;
+    backdrop-filter:blur(6px);
+  }
+  .board-top{display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:8px;}
+  .board-title{font-size:22px; font-weight:700; color:var(--amber); display:flex; align-items:center; gap:10px;}
+  .board-title .dot{width:9px;height:9px;border-radius:50%;background:var(--green); box-shadow:0 0 8px var(--green); display:inline-block;}
+  .board-sub{color:var(--muted); font-size:11px; letter-spacing:0.12em;}
 
-/* PREVIEW */
-.pov{display:none;position:fixed;inset:0;z-index:300;background:#080c18;flex-direction:column;}
-.pov.open{display:flex;}
-.pov-bar{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--bg2);
-  border-bottom:1px solid var(--b0);flex-shrink:0;}
-.pov-name{flex:1;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;
-  color:var(--cyan);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.pov-close{width:32px;height:32px;border-radius:7px;flex-shrink:0;display:flex;
-  align-items:center;justify-content:center;background:rgba(255,61,94,0.1);
-  border:1px solid rgba(255,61,94,0.3);color:var(--red);font-size:16px;cursor:pointer;}
-.pov-close:hover{background:rgba(255,61,94,0.25);}
-.pdf-tb{display:flex;flex-wrap:wrap;align-items:center;gap:5px;padding:7px 10px;
-  background:var(--bg3);border-bottom:1px solid var(--b0);flex-shrink:0;}
-.pdf-tb button{padding:5px 10px;border-radius:6px;background:rgba(0,210,170,0.08);
-  border:1px solid var(--b1);color:var(--cyan);font-family:'Rajdhani',sans-serif;
-  font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;}
-.pdf-tb button:disabled{opacity:.35;cursor:default;}
-.pdf-pg{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--mut);white-space:nowrap;}
-.pdf-sw{display:flex;align-items:center;gap:4px;width:100%;}
-.pdf-sw input{flex:1;padding:5px 9px;background:var(--bg2);border:1px solid var(--b0);
-  border-radius:6px;color:var(--txt);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;min-width:0;}
-.pdf-sw input:focus{border-color:var(--cyan);}
-.pdf-sw button{padding:5px 9px;border-radius:6px;background:rgba(0,210,170,0.08);
-  border:1px solid var(--b1);color:var(--cyan);font-family:'Share Tech Mono',monospace;font-size:12px;cursor:pointer;}
-#pdfCont{flex:1;overflow-y:auto;overflow-x:hidden;background:#fff;padding:0;
-  display:block;-webkit-overflow-scrolling:touch;}
-.pdf-pw{display:block;width:100%;margin:0;padding:0;line-height:0;}
-.pdf-pw canvas{display:block;width:100%;height:auto;}
-.pov-body{flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:center;-webkit-overflow-scrolling:touch;}
-.pov-body img{max-width:100%;height:auto;padding:10px;display:block;}
-.pov-uns{text-align:center;padding:40px 20px;margin:auto;}
-.pov-uns .ui{font-size:48px;margin-bottom:12px;}
-.pov-uns p{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--mut);letter-spacing:2px;margin-bottom:20px;}
-.dl-a{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border-radius:10px;
-  background:rgba(0,210,170,0.1);border:1.5px solid var(--b1);color:var(--cyan);
-  font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;letter-spacing:1px;text-decoration:none;}
+  .tabs{display:flex; gap:2px; margin-top:16px; border:1px solid var(--line); border-radius:4px; overflow:hidden; width:fit-content;}
+  .tab{
+    padding:10px 20px; cursor:pointer; font-family:'Oswald',sans-serif; font-weight:600;
+    font-size:13px; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted);
+    background:var(--panel); border-right:1px solid var(--line); user-select:none;
+    transition:background .15s, color .15s;
+  }
+  .tab:last-child{border-right:none;}
+  .tab:hover{color:var(--text); background:var(--panel-2);}
+  .tab.active{color:#0a0d10; background:var(--amber);}
 
-/* MODALS */
-.mov{display:none;position:fixed;inset:0;z-index:400;background:rgba(4,7,15,0.9);
-  backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:16px;}
-.mov.open{display:flex;animation:fi .18s;}
-@keyframes fi{from{opacity:0}to{opacity:1}}
-.modal{background:var(--bg2);border:1.5px solid var(--b1);border-radius:15px;padding:24px;
-  width:100%;max-width:420px;animation:su .22s ease;}
-.modal.wide{max-width:500px;}
-@keyframes su{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}
-.modal h2{font-family:'Rajdhani',sans-serif;font-size:19px;font-weight:700;letter-spacing:2px;margin-bottom:5px;}
-.modal h2.c{color:var(--cyan)}.modal h2.g{color:var(--grn)}
-.msub{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--mut);line-height:1.7;margin-bottom:14px;}
-.modal input[type=text]{width:100%;padding:11px 13px;background:rgba(0,210,170,0.05);
-  border:1.5px solid var(--b0);border-radius:9px;color:var(--txt);
-  font-family:'Share Tech Mono',monospace;font-size:13px;outline:none;margin-bottom:12px;transition:border-color .2s;}
-.modal input:focus{border-color:var(--cyan);}
-.merr{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--red);margin-bottom:9px;display:none;}
-.merr.show{display:block;}
-.mbtns{display:flex;gap:9px;}
-.btn{flex:1;padding:11px;border-radius:9px;border:none;font-family:'Rajdhani',sans-serif;
-  font-size:14px;font-weight:700;letter-spacing:1.2px;cursor:pointer;transition:all .2s;}
-.bp{background:linear-gradient(135deg,var(--cyan),var(--c2));color:#060a14;}
-.bp:hover{filter:brightness(1.1);box-shadow:var(--glow);}
-.bp:disabled{opacity:.5;cursor:default;filter:none;}
-.bs{background:rgba(255,255,255,0.04);border:1.5px solid var(--b0);color:var(--mut);}
-.bs:hover{background:rgba(255,255,255,0.08);}
-.dz{border:2px dashed rgba(0,210,170,0.28);border-radius:11px;padding:28px 16px;
-  text-align:center;cursor:pointer;transition:all .2s;margin-bottom:11px;background:rgba(0,210,170,0.02);}
-.dz:hover,.dz.drag{border-color:var(--cyan);background:rgba(0,210,170,0.06);}
-.dz-ico{font-size:30px;margin-bottom:6px;}
-.dz-t{font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;color:var(--cyan);letter-spacing:1px;}
-.dz-s{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--mut);margin-top:3px;}
-.plist{display:flex;flex-direction:column;gap:5px;max-height:150px;overflow-y:auto;margin-bottom:11px;}
-.pi{display:flex;align-items:center;gap:7px;padding:6px 9px;border-radius:7px;
-  background:rgba(0,210,170,0.05);border:1px solid rgba(0,210,170,0.12);font-size:12px;}
-.pi .rm{margin-left:auto;cursor:pointer;color:var(--mut);font-size:14px;}
-.pi .rm:hover{color:var(--red);}
+  main{max-width:1100px; margin:0 auto; padding:24px;}
 
-/* ADMIN */
-.adm{max-width:860px;margin:0 auto;padding:0 14px 80px;}
-.adm-top{display:flex;align-items:center;gap:8px;padding:20px 0 14px;
-  border-bottom:1px solid var(--b0);margin-bottom:18px;flex-wrap:wrap;}
-.adm-top h1{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;letter-spacing:2px;color:var(--grn);flex:1;}
-.back-btn{padding:8px 14px;border-radius:9px;background:rgba(255,255,255,0.04);border:1.5px solid var(--b0);
-  color:var(--mut);font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;cursor:pointer;}
-.back-btn:hover{color:var(--txt);border-color:var(--b1);}
-.nadd-btn{padding:9px 16px;border-radius:9px;background:rgba(0,210,170,0.1);border:1.5px solid var(--b1);
-  color:var(--cyan);font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;cursor:pointer;box-shadow:var(--glow);}
-.nadd-btn:hover{background:rgba(0,210,170,0.2);}
-.adm-secs{display:flex;flex-direction:column;gap:11px;}
-.as{background:var(--bg3);border:1.5px solid var(--b0);border-radius:13px;overflow:hidden;}
-.as-hdr{display:flex;align-items:center;gap:9px;padding:12px 15px;background:rgba(0,0,0,0.16);border-bottom:1px solid var(--b0);}
-.as-ico{width:30px;height:30px;border-radius:7px;flex-shrink:0;display:flex;align-items:center;
-  justify-content:center;font-size:15px;background:rgba(0,210,170,0.07);border:1px solid var(--b0);}
-.as-ttl{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;color:#fff;flex:1;}
-.as-acts{display:flex;gap:6px;}
-.ib{width:30px;height:30px;border-radius:7px;flex-shrink:0;display:flex;align-items:center;
-  justify-content:center;font-size:13px;background:rgba(255,255,255,0.04);border:1px solid var(--b0);
-  color:var(--mut);cursor:pointer;transition:all .2s;}
-.ib:hover{color:var(--cyan);border-color:var(--cyan);background:rgba(0,210,170,0.08);}
-.ib.d:hover{color:var(--red);border-color:var(--red);background:rgba(255,61,94,0.08);}
-.as-files{padding:9px 13px 13px;display:flex;flex-direction:column;gap:6px;}
-.af{display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:8px;
-  background:rgba(0,0,0,0.18);border:1px solid var(--b0);}
-.af-name{flex:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.af-size{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--mut);}
-.add-f-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;border-radius:8px;
-  border:1.5px dashed rgba(0,210,170,0.22);background:transparent;color:rgba(0,210,170,0.45);
-  font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;cursor:pointer;width:100%;}
-.add-f-btn:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(0,210,170,0.05);}
-.tei{background:transparent;border:none;border-bottom:1.5px solid var(--cyan);color:#fff;
-  font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;outline:none;width:100%;padding:2px 3px;}
+  /* ---- Upload panel ---- */
+  .card{
+    background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:18px 20px; margin-bottom:18px;
+  }
+  .row{display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;}
+  label{display:block; font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:6px;}
+  input[type=text], input[type=month]{
+    background:#0d1216; border:1px solid var(--line); color:var(--text); padding:9px 10px; border-radius:4px;
+    font-family:'JetBrains Mono',monospace; font-size:13px; min-width:160px;
+  }
+  input[type=text]:focus, input[type=month]:focus{outline:1px solid var(--amber); border-color:var(--amber);}
+  .btn{
+    background:var(--amber); color:#0a0d10; border:none; padding:10px 18px; border-radius:4px;
+    font-family:'Oswald',sans-serif; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; font-size:12px;
+    cursor:pointer; transition:filter .15s;
+  }
+  .btn:hover{filter:brightness(1.1);}
+  .btn.ghost{background:transparent; border:1px solid var(--line); color:var(--muted);}
+  .btn.ghost:hover{color:var(--red); border-color:var(--red);}
+  .btn:disabled{opacity:.4; cursor:not-allowed;}
+  .file-input-wrap{position:relative;}
+  input[type=file]{
+    font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted);
+    max-width:260px;
+  }
 
-/* LOADER */
-.loader{display:none;position:fixed;inset:0;z-index:500;background:rgba(4,7,14,0.88);
-  backdrop-filter:blur(6px);align-items:center;justify-content:center;flex-direction:column;gap:14px;}
-.loader.show{display:flex;}
-.lspin{width:44px;height:44px;border:3px solid var(--b0);border-top-color:var(--cyan);
-  border-radius:50%;animation:spinr .8s linear infinite;}
-@keyframes spinr{to{transform:rotate(360deg)}}
-.loader p{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--mut);letter-spacing:2px;text-align:center;padding:0 20px;}
-.lprog{width:260px;height:4px;background:var(--b0);border-radius:2px;overflow:hidden;}
-.lprog-bar{height:100%;background:var(--cyan);border-radius:2px;transition:width .3s;}
+  .hint{color:var(--muted); font-size:11px; margin-top:8px; line-height:1.5;}
+  .status{font-size:12px; margin-top:10px; color:var(--amber); min-height:16px;}
 
-/* TOAST */
-.toast{position:fixed;bottom:20px;right:16px;z-index:600;background:var(--bg2);border:1px solid var(--b1);
-  border-radius:10px;padding:10px 16px;font-family:'Share Tech Mono',monospace;font-size:11px;
-  color:var(--cyan);box-shadow:var(--glow);opacity:0;transform:translateY(50px);transition:all .25s;pointer-events:none;}
-.toast.show{opacity:1;transform:translateY(0);}
-.toast.err{border-color:rgba(255,61,94,.45);color:var(--red);}
+  /* ---- Document list ---- */
+  .doc-list{display:flex; flex-direction:column; gap:8px;}
+  .doc-item{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background:var(--panel); border:1px solid var(--line); border-radius:5px; padding:12px 16px;
+    cursor:pointer; transition:border-color .15s, background .15s;
+  }
+  .doc-item:hover{border-color:var(--amber-dim); background:var(--panel-2);}
+  .doc-item.selected{border-color:var(--amber);}
+  .doc-name{font-weight:500; font-size:13.5px;}
+  .doc-meta{color:var(--muted); font-size:11px; margin-top:3px;}
+  .doc-actions{display:flex; gap:8px; align-items:center;}
+  .empty{color:var(--muted); font-size:13px; padding:20px 4px; text-align:center;}
 
-::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:rgba(0,210,170,0.25);border-radius:2px}
-input[type=file]{display:none;}
+  /* ---- Search ---- */
+  .search-bar{display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;}
+  .search-note{font-size:11px; color:var(--muted); margin-top:10px; line-height:1.5; border-left:2px solid var(--amber-dim); padding-left:10px;}
+
+  /* ---- Blocks / results ---- */
+  .block{
+    background:var(--panel); border:1px solid var(--line); border-radius:6px; margin-bottom:14px; overflow:hidden;
+  }
+  .block.match{border-color:var(--amber);}
+  .block-head{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:10px 16px; background:var(--panel-2); border-bottom:1px solid var(--line);
+  }
+  .block-name{font-family:'Oswald',sans-serif; font-weight:600; letter-spacing:0.03em; font-size:14px; color:var(--amber);}
+  .block-idx{color:var(--muted); font-size:11px;}
+  .block-body{padding:12px 16px;}
+  .day-header{
+    font-size:10.5px; color:var(--muted); white-space:pre-wrap; word-break:break-all; margin-bottom:8px;
+    border-bottom:1px dashed var(--line); padding-bottom:8px;
+  }
+  .day-header .day-flag{color:var(--amber); font-weight:700;}
+  .raw-text{
+    font-size:11.5px; line-height:1.7; white-space:pre-wrap; word-break:break-all; color:#c7d0d6; max-height:260px; overflow:auto;
+  }
+  .raw-text mark{background:var(--amber); color:#0a0d10; padding:0 2px; border-radius:2px;}
+  .toggle-raw{font-size:10px; color:var(--muted); cursor:pointer; text-decoration:underline; margin-top:8px; display:inline-block;}
+
+  .back-link{color:var(--muted); font-size:12px; cursor:pointer; margin-bottom:14px; display:inline-block;}
+  .back-link:hover{color:var(--amber);}
+
+  .section-title{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; margin:26px 0 10px;}
+
+  ::-webkit-scrollbar{width:8px; height:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--line); border-radius:4px;}
 </style>
 </head>
 <body>
 
-<div id="vPublic">
-<div class="pub">
-  <div class="banner">
-    <div class="logo"><span class="e">E</span><span class="m">M</span><span class="x">X</span><span class="dot"></span></div>
-    <div class="bnr-r">
-      <button class="adm-btn" id="admBtn" onclick="showAdmin()">⚙️ ADMIN</button>
-      <button class="tok-btn" id="tokBtn" onclick="openTokModal()">🔑 TOKEN</button>
-    </div>
+<div class="board">
+  <div class="board-top">
+    <div class="board-title"><span class="dot"></span>EMX ARHIVĂ · PROGRAME LUCRU</div>
+    <div class="board-sub">STOCARE PERSISTENTĂ &nbsp;·&nbsp; CĂUTARE PE COD</div>
   </div>
-  <div class="sync-bar"><div class="sdot spin" id="sdot"></div><span id="stxt">SE ÎNCARCĂ...</span></div>
-  <div class="srch"><span class="srch-ico">🔍</span>
-    <input type="text" id="srchInp" placeholder="Caută fișiere sau secțiuni..." oninput="renderPub()">
-  </div>
-  <div class="empty" id="emptyPub"><div>📁</div><div>NICIUN FIȘIER DISPONIBIL</div></div>
-  <div class="secs" id="pubSecs"></div>
-</div>
-</div>
-
-<div id="vAdmin">
-<div class="adm">
-  <div class="adm-top">
-    <h1>⚙️ PANOU ADMIN</h1>
-    <button class="back-btn" onclick="showPublic()">← ÎNAPOI</button>
-    <button class="nadd-btn" onclick="openNewSec()">＋ SECȚIUNE NOUĂ</button>
-  </div>
-  <div class="adm-secs" id="admSecs"></div>
-</div>
-</div>
-
-<!-- PREVIEW -->
-<div class="pov" id="pov">
-  <div class="pov-bar">
-    <span class="pov-name" id="povName"></span>
-    <div class="pov-close" onclick="closePrev()">✕</div>
-  </div>
-  <div id="povInner" style="display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;"></div>
-</div>
-
-<!-- TOKEN MODAL -->
-<div class="mov" id="tokModal">
-  <div class="modal">
-    <h2 class="c">🔑 GITHUB TOKEN</h2>
-    <div class="msub">Personal Access Token cu permisiunile <b style="color:var(--cyan)">repo</b> și <b style="color:var(--cyan)">gist</b>.<br>Doar conturile autorizate pot accesa modul admin.</div>
-    <div class="merr" id="tokErr"></div>
-    <input type="text" id="tokInp" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
-    <div class="mbtns">
-      <button class="btn bs" onclick="closeM('tokModal')">ANULEAZĂ</button>
-      <button class="btn bp" id="tokSub" onclick="submitTok()">VERIFICĂ</button>
-    </div>
+  <div class="tabs" id="tabs">
+    <div class="tab active" data-cat="conductori">Șefi Tren / Vânzători Bilete</div>
+    <div class="tab" data-cat="mecanici">Mecanici</div>
   </div>
 </div>
 
-<!-- SECTION MODAL -->
-<div class="mov" id="secModal">
-  <div class="modal wide">
-    <h2 class="g" id="secMTitle">＋ SECȚIUNE NOUĂ</h2>
-    <div class="msub" id="secMSub"></div>
-    <div id="titWrap">
-      <label style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--mut);letter-spacing:2px;display:block;margin-bottom:6px;">TITLU</label>
-      <input type="text" id="titInp" placeholder="ex: Livrete, Grafic August...">
-    </div>
-    <div class="dz" id="dz" onclick="document.getElementById('fi').click()"
-      ondragover="dzO(event)" ondragleave="dzL(event)" ondrop="dzD(event)">
-      <div class="dz-ico">📂</div>
-      <div class="dz-t">TRAGE SAU SELECTEAZĂ FIȘIERE</div>
-      <div class="dz-s">PDF · Word · Excel · Imagini · orice · max 50MB/fișier</div>
-    </div>
-    <div class="plist" id="plist"></div>
-    <div class="merr" id="secErr"></div>
-    <div class="mbtns">
-      <button class="btn bs" onclick="closeM('secModal');rPend()">ANULEAZĂ</button>
-      <button class="btn bp" onclick="confSec()">SALVEAZĂ</button>
-    </div>
-  </div>
-</div>
+<main id="app"></main>
 
-<input type="file" id="fi" multiple onchange="onFiles(event)">
-<div class="toast" id="toast"></div>
-<div class="loader" id="loader">
-  <div class="lspin"></div>
-  <p id="ltxt">SE PROCESEAZĂ...</p>
-  <div class="lprog"><div class="lprog-bar" id="lprogBar" style="width:0%"></div></div>
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
-/* ════════════════════════════════════════
-   ⚙️  CONFIG  —  EDITEAZĂ ÎNAINTE DE DEPLOY
-════════════════════════════════════════ */
-const AUTHORIZED  = ['vladynitu1'];       // username-uri GitHub autorizate ca admin
-const REPO_OWNER  = 'vladynitu1';         // username GitHub (owner repo)
-const REPO_NAME   = 'emx-files';         // numele repo-ului (îl creezi pe GitHub, public)
-const REPO_BRANCH = 'main';
-
-/* Index file stored in a public Gist */
-let INDEX_GIST_ID = localStorage.getItem('emx_igid') || '';
-
-/* ════════════════════════════════════════
-   STATE
-════════════════════════════════════════ */
-let isAdm  = false;
-let ghTok  = localStorage.getItem('emx_t') || '';
-// secs = [{id, title, icon, files:[{name, size, path, downloadUrl}]}]
-let secs   = [];
-let pend   = [];   // pending files for upload [{name,size,type,dataUrl}]
-let editId = null;
-let pdfDoc = null;
-let pdfScale = 1.4;
-let pdfCurPg = 1;
-
-if (typeof pdfjsLib !== 'undefined')
-  pdfjsLib.GlobalWorkerOptions.workerSrc =
-    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-/* ════════════════════════════════════════
-   UTILS
-════════════════════════════════════════ */
-const icoMap = n => {
-  const e=(n.split('.').pop()||'').toLowerCase();
-  return {pdf:'📄',xlsx:'📊',xls:'📊',csv:'📊',docx:'📝',doc:'📝',txt:'📃',
-    jpg:'🖼️',jpeg:'🖼️',png:'🖼️',gif:'🖼️',webp:'🖼️',heic:'🖼️',heif:'🖼️',
-    mp4:'🎬',mov:'🎬',mp3:'🎵',wav:'🎵',zip:'🗜️',rar:'🗜️',pptx:'📑',ppt:'📑'}[e]||'📎';
+const CATS = {
+  conductori: "Șefi Tren / Vânzători Bilete",
+  mecanici: "Mecanici"
 };
-const fmt = b => !b?'':b<1024?b+'B':b<1048576?(b/1024).toFixed(1)+'KB':(b/1048576).toFixed(1)+'MB';
-const openM  = id => document.getElementById(id).classList.add('open');
-const closeM = id => document.getElementById(id).classList.remove('open');
-const showErr = (id,m)=>{ const el=document.getElementById(id); el.textContent=m; el.classList.add('show'); };
-const toast = (m,e=false)=>{
-  const t=document.getElementById('toast');
-  t.textContent=m; t.className='toast show'+(e?' err':'');
-  clearTimeout(t._t); t._t=setTimeout(()=>t.className='toast',3000);
-};
-const setSync=(st,tx)=>{
-  document.getElementById('sdot').className='sdot'+(st==='ok'?' ok':st==='err'?' err':st==='spin'?' spin':'');
-  document.getElementById('stxt').textContent=tx;
-};
-const setLoader=(on,tx='',pct=null)=>{
-  document.getElementById('loader').className='loader'+(on?' show':'');
-  if(tx) document.getElementById('ltxt').textContent=tx;
-  if(pct!==null) document.getElementById('lprogBar').style.width=pct+'%';
+let state = {
+  category: 'conductori',
+  view: 'list', // 'list' | 'detail'
+  openDocId: null,
+  docsMeta: { conductori: [], mecanici: [] },
+  query: '',
+  dayQuery: ''
 };
 
-const ghFetch = (url, opts={}) => {
-  opts.headers = {...(opts.headers||{}), 'Accept':'application/vnd.github.v3+json'};
-  if(ghTok) opts.headers['Authorization']='token '+ghTok;
-  return fetch(url, opts);
-};
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-/* ════════════════════════════════════════
-   INDEX  (Gist — stores sections metadata + file paths)
-   Public Gist so anyone can read without token
-════════════════════════════════════════ */
-async function indexLoad() {
-  setSync('spin','SE ÎNCARCĂ...');
+function uid(){ return 'doc_' + Date.now() + '_' + Math.random().toString(36).slice(2,8); }
 
-  // Try to find gist ID — with or without token
-  if (!INDEX_GIST_ID) {
-    if (ghTok) {
-      INDEX_GIST_ID = await findIndexGist();
-    } else {
-      // Without token: try hardcoded owner's public gists
-      INDEX_GIST_ID = await findIndexGistPublic();
-    }
-    if (INDEX_GIST_ID) localStorage.setItem('emx_igid', INDEX_GIST_ID);
+async function loadMeta(cat){
+  try{
+    const r = await window.storage.get('docs-meta:' + cat, false);
+    state.docsMeta[cat] = r ? JSON.parse(r.value) : [];
+  }catch(e){
+    state.docsMeta[cat] = [];
   }
+}
 
-  if (INDEX_GIST_ID) {
-    try {
-      // Public gist API — no auth needed
-      const r = await fetch(`https://api.github.com/gists/${INDEX_GIST_ID}`);
-      if (r.ok) {
-        const data = await r.json();
-        const raw = data.files?.['emx_index.json']?.raw_url;
-        if (raw) {
-          const r2 = await fetch(raw + '?t=' + Date.now());
-          if (r2.ok) {
-            secs = await r2.json();
-            setSync('ok', 'SINCRONIZAT · ' + new Date().toLocaleTimeString('ro-RO'));
-            renderPub(); return;
-          }
+async function saveMeta(cat){
+  await window.storage.set('docs-meta:' + cat, JSON.stringify(state.docsMeta[cat]), false);
+}
+
+async function loadAllMeta(){
+  await loadMeta('conductori');
+  await loadMeta('mecanici');
+}
+
+function setTabHandlers(){
+  document.querySelectorAll('.tab').forEach(t=>{
+    t.onclick = ()=>{
+      state.category = t.dataset.cat;
+      state.view='list'; state.openDocId=null; state.query=''; state.dayQuery='';
+      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      render();
+    };
+  });
+}
+
+async function extractPdfText(file){
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({data: buf}).promise;
+  let full = '';
+  for(let i=1;i<=pdf.numPages;i++){
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    const lines = {};
+    content.items.forEach(item=>{
+      const y = Math.round(item.transform[5]);
+      if(!lines[y]) lines[y]=[];
+      lines[y].push(item.str);
+    });
+    const ys = Object.keys(lines).map(Number).sort((a,b)=>b-a);
+    ys.forEach(y=>{ full += lines[y].join(' ') + '\n'; });
+    full += '\n';
+  }
+  return full;
+}
+
+// Split raw text into per-employee blocks using the recurring
+// "Nume Data 1 2 3 ..." header row, or the "Nr Nume Data" variant used
+// in the mecanici sheet.
+function splitBlocks(rawText){
+  const lines = rawText.split('\n');
+  const headerRe = /^(Nr\s+)?Nume\s+Data(\s+\d+){5,}/;
+  const dayRowRe = /^(Nr\s+)?Nume\s+Data\s+((\d+\s*)+)/;
+  let blocks = [];
+  let current = null;
+  lines.forEach(line=>{
+    const trimmed = line.trim();
+    if(headerRe.test(trimmed)){
+      if(current) blocks.push(current);
+      const m = trimmed.match(dayRowRe);
+      current = { dayHeader: m ? m[2].trim() : '', lines: [] };
+    } else if(current){
+      current.lines.push(line);
+    }
+  });
+  if(current) blocks.push(current);
+
+  // Guess employee name: look for a line ending in "Festive" (surname line),
+  // the line right after it usually holds the first name.
+  return blocks.map((b, idx)=>{
+    const text = b.lines.join('\n');
+    let surname = '', firstname = '';
+    for(let i=0;i<b.lines.length;i++){
+      if(/Festive\s*$/.test(b.lines[i].trim())){
+        const tok = b.lines[i].trim().match(/^([A-ZĂÂÎȘȚ][A-ZĂÂÎȘȚ\-]{1,})\b/);
+        if(tok) surname = tok[1];
+        if(b.lines[i+1]){
+          const tok2 = b.lines[i+1].trim().replace(/^\d+\s+/, '').match(/^([A-ZĂÂÎȘȚ][a-zA-ZĂÂÎȘȚăâîșț\-]{1,})\b/);
+          if(tok2) firstname = tok2[1];
         }
-      } else if (r.status === 404) {
-        INDEX_GIST_ID = ''; localStorage.removeItem('emx_igid');
+        break;
       }
-    } catch(e) { console.warn('indexLoad error:', e); }
-  }
-
-  // Fallback localStorage
-  secs = JSON.parse(localStorage.getItem('emx_s') || '[]');
-  setSync(secs.length ? 'ok' : '', secs.length ? 'DATE LOCALE' : 'NICIO DATĂ');
-  renderPub();
+    }
+    const name = (surname || firstname) ? `${surname} ${firstname}`.trim() : `Bloc ${idx+1} (nume neidentificat)`;
+    return { id: idx, name, dayHeader: b.dayHeader, text };
+  }).filter(b => b.text.trim().length > 0);
 }
 
-// Search public gists of the repo owner — no auth needed
-async function findIndexGistPublic() {
-  try {
-    const r = await fetch(`https://api.github.com/users/${REPO_OWNER}/gists?per_page=100`);
-    if (r.ok) {
-      const list = await r.json();
-      const g = list.find(x => x.description === 'EMX_INDEX_V2' && x.files['emx_index.json']);
-      return g ? g.id : null;
-    }
-  } catch(e) {}
-  return null;
-}
-
-async function findIndexGist() {
-  try {
-    const r = await ghFetch('https://api.github.com/gists?per_page=100');
-    if (r.ok) {
-      const list = await r.json();
-      const g = list.find(x => x.description==='EMX_INDEX_V2' && x.files['emx_index.json']);
-      return g ? g.id : null;
-    }
-  } catch(e) {}
-  return null;
-}
-
-async function indexSave() {
-  const content = JSON.stringify(secs);
-  localStorage.setItem('emx_s', content);
-  if (!ghTok) return;
-
-  setSync('spin','SE SALVEAZĂ INDEX...');
-  try {
-    let r;
-    if (INDEX_GIST_ID) {
-      r = await ghFetch(`https://api.github.com/gists/${INDEX_GIST_ID}`, {
-        method:'PATCH',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({files:{'emx_index.json':{content}}})
-      });
-    } else {
-      r = await ghFetch('https://api.github.com/gists', {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({
-          description:'EMX_INDEX_V2', public:true,
-          files:{'emx_index.json':{content}}
-        })
-      });
-    }
-    if (r.ok) {
-      const d = await r.json();
-      INDEX_GIST_ID = d.id;
-      localStorage.setItem('emx_igid', INDEX_GIST_ID);
-      setSync('ok','SALVAT · '+new Date().toLocaleTimeString('ro-RO'));
-    } else {
-      const errText = await r.text();
-      console.error('Index save error:', r.status, errText);
-      setSync('err','EROARE INDEX '+r.status);
-    }
-  } catch(e) { console.error(e); setSync('err','EROARE REȚEA'); }
-}
-
-/* ════════════════════════════════════════
-   FILE STORAGE  (GitHub Repository Contents API)
-   Files stored as base64 in repo, publicly readable via raw.githubusercontent.com
-════════════════════════════════════════ */
-
-// Ensure repo exists — create if missing
-async function ensureRepo() {
-  const r = await ghFetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}`);
-  if (r.status === 404) {
-    const cr = await ghFetch('https://api.github.com/user/repos', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({name:REPO_NAME, private:false, description:'EMX Document Storage', auto_init:true})
-    });
-    if (!cr.ok) {
-      const t = await cr.text();
-      throw new Error('Nu am putut crea repo: '+t);
-    }
-    await new Promise(r=>setTimeout(r,2000)); // wait for init
+async function handleUpload(cat, file, month){
+  const statusEl = document.getElementById('upload-status');
+  if(!file){ statusEl.textContent = 'Alege un fișier PDF.'; return; }
+  statusEl.textContent = 'Se extrage textul din PDF...';
+  try{
+    const text = await extractPdfText(file);
+    const id = uid();
+    await window.storage.set('doc-content:' + id, text, false);
+    const meta = {
+      id, filename: file.name, month: month || '', uploadedAt: new Date().toISOString()
+    };
+    state.docsMeta[cat].unshift(meta);
+    await saveMeta(cat);
+    statusEl.textContent = `Salvat: ${file.name}`;
+    render();
+  }catch(e){
+    console.error(e);
+    statusEl.textContent = 'Eroare la citirea PDF-ului: ' + e.message;
   }
 }
 
-// Upload one file using Git Data API (no size limit)
-// Always reads latest ref fresh before committing — avoids conflicts
-async function uploadFileToRepo(fileObj, onProgress) {
-  const base64 = fileObj.dataUrl.split(',')[1];
-  const ts   = Date.now();
-  const safe = fileObj.name.replace(/[^a-zA-Z0-9._-]/g,'_');
-  const path = `files/${ts}_${safe}`;
-  const base = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}`;
-  const sleep = ms => new Promise(r=>setTimeout(r,ms));
+async function deleteDoc(cat, id){
+  if(!confirm('Ștergi definitiv acest program?')) return;
+  state.docsMeta[cat] = state.docsMeta[cat].filter(d=>d.id!==id);
+  await saveMeta(cat);
+  await window.storage.delete('doc-content:' + id, false).catch(()=>{});
+  if(state.openDocId===id){ state.view='list'; state.openDocId=null; }
+  render();
+}
 
-  if (onProgress) onProgress(10);
+function escapeHtml(s){
+  return s.replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+}
 
-  // Step 1 — Create blob (content stored on GitHub, no size limit)
-  const blobR = await ghFetch(`${base}/git/blobs`, {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ content: base64, encoding: 'base64' })
-  });
-  if (!blobR.ok) {
-    const t = await blobR.text();
-    throw new Error(`Blob failed (${blobR.status}): ${t.slice(0,200)}`);
-  }
-  const { sha: blobSha } = await blobR.json();
-  if (onProgress) onProgress(35);
+function highlight(text, query){
+  if(!query) return escapeHtml(text);
+  const esc = escapeHtml(text);
+  const safeQ = query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  return esc.replace(new RegExp('('+safeQ+')','gi'), '<mark>$1</mark>');
+}
 
-  // Steps 2-6 with retry loop — re-reads ref each time to avoid stale SHA
-  let lastErr = null;
-  for (let attempt = 1; attempt <= 5; attempt++) {
-    try {
-      // Always fetch the very latest ref before building the commit
-      const refR = await ghFetch(`${base}/git/ref/heads/${REPO_BRANCH}`);
-      if (!refR.ok) throw new Error('Ref read failed: '+refR.status);
-      const { object: { sha: latestCommitSha } } = await refR.json();
-      if (onProgress) onProgress(50);
-
-      const commitR = await ghFetch(`${base}/git/commits/${latestCommitSha}`);
-      if (!commitR.ok) throw new Error('Commit read failed');
-      const { tree: { sha: baseTreeSha } } = await commitR.json();
-      if (onProgress) onProgress(60);
-
-      const treeR = await ghFetch(`${base}/git/trees`, {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({
-          base_tree: baseTreeSha,
-          tree: [{ path, mode:'100644', type:'blob', sha: blobSha }]
-        })
-      });
-      if (!treeR.ok) throw new Error('Tree failed: '+treeR.status);
-      const { sha: newTreeSha } = await treeR.json();
-      if (onProgress) onProgress(75);
-
-      const newCommitR = await ghFetch(`${base}/git/commits`, {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({
-          message: `Upload: ${fileObj.name}`,
-          tree: newTreeSha,
-          parents: [latestCommitSha]
-        })
-      });
-      if (!newCommitR.ok) throw new Error('Commit failed: '+newCommitR.status);
-      const { sha: newCommitSha } = await newCommitR.json();
-      if (onProgress) onProgress(90);
-
-      const updateR = await ghFetch(`${base}/git/refs/heads/${REPO_BRANCH}`, {
-        method:'PATCH', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ sha: newCommitSha, force: false })
-      });
-
-      if (updateR.ok) {
-        if (onProgress) onProgress(100);
-        // Wait for GitHub to propagate the new ref before next upload
-        await sleep(1500);
-        const rawUrl = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${REPO_BRANCH}/${path}`;
-        return { path, downloadUrl: rawUrl, name: fileObj.name, size: fileObj.size };
-      }
-
-      // 422 = ref conflict (another commit happened between our read and write)
-      // Just retry — we re-read the ref at top of loop
-      const errTxt = await updateR.text();
-      lastErr = new Error(`Ref update failed (${updateR.status}): ${errTxt.slice(0,100)}`);
-      console.warn(`Attempt ${attempt} ref conflict, retrying...`);
-      await sleep(2000 * attempt);
-
-    } catch(e) {
-      lastErr = e;
-      console.warn(`Attempt ${attempt} error:`, e.message);
-      await sleep(2000 * attempt);
+function dayHeaderHtml(dayHeader, dayQuery){
+  if(!dayHeader) return '';
+  const nums = dayHeader.split(/\s+/).filter(Boolean);
+  const html = nums.map(n=>{
+    if(dayQuery && n === String(parseInt(dayQuery,10))){
+      return `<span class="day-flag">[${n}]</span>`;
     }
-  }
-  throw lastErr || new Error('Upload failed after 5 attempts');
+    return n;
+  }).join(' ');
+  return `<div class="day-header">Antet zile (cap tabel): ${html}</div>`;
 }
 
-// Delete file from repo
-async function deleteFileFromRepo(path) {
-  if (!ghTok || !path) return;
-  try {
-    const r = await ghFetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}`);
-    if (!r.ok) return;
-    const d = await r.json();
-    await ghFetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}`, {
-      method:'DELETE',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({message:`Delete: ${path}`, sha:d.sha, branch:REPO_BRANCH})
-    });
-  } catch(e) { console.warn('Delete file warning:', e); }
-}
+async function renderDetail(cat, doc){
+  const container = document.getElementById('app');
+  let rawText = '';
+  try{
+    const r = await window.storage.get('doc-content:' + doc.id, false);
+    rawText = r ? r.value : '';
+  }catch(e){ rawText = ''; }
 
-/* ════════════════════════════════════════
-   VIEWS
-════════════════════════════════════════ */
-function showPublic(){
-  document.getElementById('vPublic').style.display='block';
-  document.getElementById('vAdmin').style.display='none';
-  renderPub();
-}
-function showAdmin(){
-  document.getElementById('vPublic').style.display='none';
-  document.getElementById('vAdmin').style.display='block';
-  renderAdm();
-}
+  const blocks = splitBlocks(rawText);
 
-/* ════════════════════════════════════════
-   PUBLIC RENDER
-════════════════════════════════════════ */
-function renderPub(){
-  const q=(document.getElementById('srchInp').value||'').toLowerCase().trim();
-  const cont=document.getElementById('pubSecs');
-  const empty=document.getElementById('emptyPub');
-  cont.innerHTML='';
-  const vis=secs.filter(s=>!q||s.title.toLowerCase().includes(q)||
-    (s.files||[]).some(f=>f.name.toLowerCase().includes(q)));
-  if(!vis.length){empty.classList.add('show');return;}
-  empty.classList.remove('show');
-  vis.forEach(sec=>{
-    const files=sec.files||[];
-    const shown=q?files.filter(f=>f.name.toLowerCase().includes(q)||
-      sec.title.toLowerCase().includes(q)):files;
-    const card=document.createElement('div');
-    card.className='sc'+(q?' open':''); card.id='p'+sec.id;
-    card.innerHTML=`
-      <div class="sc-hdr" onclick="togPub('${sec.id}')">
-        <div class="sc-ico">${sec.icon||'📁'}</div>
-        <div class="sc-ttl">${sec.title}</div>
-        <span class="sc-cnt">${files.length} fișier${files.length!==1?'e':''}</span>
-        <span class="chev">▼</span>
+  container.innerHTML = `
+    <span class="back-link" id="back-btn">&larr; înapoi la listă</span>
+    <h2 style="margin:4px 0 2px;">${escapeHtml(doc.filename)}</h2>
+    <div class="doc-meta" style="margin-bottom:16px;">${CATS[cat]} ${doc.month ? '· ' + escapeHtml(doc.month) : ''} · încărcat ${new Date(doc.uploadedAt).toLocaleDateString('ro-RO')}</div>
+
+    <div class="card">
+      <div class="search-bar">
+        <div>
+          <label>Cod (ex. 16565)</label>
+          <input type="text" id="q-code" placeholder="cod / nume" value="${escapeHtml(state.query)}">
+        </div>
+        <div>
+          <label>Zi (1-31, opțional)</label>
+          <input type="text" id="q-day" placeholder="ex. 15" value="${escapeHtml(state.dayQuery)}" style="min-width:80px;">
+        </div>
+        <button class="btn" id="search-btn">Caută</button>
+        <button class="btn ghost" id="clear-btn">Șterge filtrul</button>
       </div>
-      <div class="fl">${shown.map(f=>`
-        <div class="fr" onclick='openFile(${JSON.stringify(f)})'>
-          <span class="fr-ico">${icoMap(f.name)}</span>
-          <span class="fr-name" title="${f.name}">${f.name}</span>
-          <span class="fr-size">${fmt(f.size)}</span>
-          <span class="fr-arr">▶</span>
-        </div>`).join('')}
-      </div>`;
-    cont.appendChild(card);
-  });
-}
-const togPub=id=>{const c=document.getElementById('p'+id);if(c)c.classList.toggle('open');};
-
-/* ════════════════════════════════════════
-   OPEN FILE — fetch from repo raw URL
-════════════════════════════════════════ */
-async function openFile(f) {
-  document.getElementById('povName').textContent = f.name;
-  document.getElementById('povInner').innerHTML =
-    '<div style="display:flex;align-items:center;justify-content:center;flex:1;padding:40px;">' +
-    '<div class="lspin"></div></div>';
-  document.getElementById('pov').classList.add('open');
-  document.body.style.overflow='hidden';
-
-  const ext=(f.name.split('.').pop()||'').toLowerCase();
-  const inner=document.getElementById('povInner');
-  inner.style.cssText='display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;';
-
-  // For PDF: pass URL directly to PDF.js — avoids FileReader truncation
-  if(ext==='pdf'){
-    await renderPDF(f.downloadUrl, inner);
-    return;
-  }
-
-  // For everything else: fetch as blob -> blob URL (no base64 conversion = no truncation)
-  let blobUrl = null;
-  let blob = null;
-  try {
-    const r = await fetch(f.downloadUrl+'?t='+Date.now());
-    if (!r.ok) throw new Error('HTTP '+r.status);
-    blob = await r.blob();
-    blobUrl = URL.createObjectURL(blob);
-  } catch(e) {
-    inner.innerHTML =
-      `<div class="pov-body"><div class="pov-uns"><div class="ui">⚠️</div>
-       <p>NU SE POATE ÎNCĂRCA<br>${e.message}</p>
-       <a class="dl-a" href="${f.downloadUrl}" target="_blank">🔗 DESCHIDE LINK</a></div></div>`;
-    return;
-  }
-
-  if(['jpg','jpeg','png','gif','webp','heic','heif'].includes(ext)){
-    inner.innerHTML=`<div class="pov-body" style="overflow:auto;-webkit-overflow-scrolling:touch;justify-content:center;align-items:flex-start;">
-      <img src="${blobUrl}" style="max-width:100%;display:block;padding:10px;"></div>`;
-  } else if(['mp4','mov','avi'].includes(ext)){
-    inner.innerHTML=`<div class="pov-body" style="background:var(--bg);align-items:center;justify-content:center;">
-      <video src="${blobUrl}" controls style="max-width:100%;max-height:100%;"></video></div>`;
-  } else if(['mp3','wav'].includes(ext)){
-    inner.innerHTML=`<div class="pov-body" style="align-items:center;justify-content:center;">
-      <audio src="${blobUrl}" controls></audio></div>`;
-  } else if(['txt','csv','json'].includes(ext)){
-    const text = await blob.text();
-    const pre=document.createElement('pre');
-    pre.style.cssText='flex:1;overflow:auto;color:var(--txt);font-family:"Share Tech Mono",monospace;font-size:12px;padding:16px;white-space:pre-wrap;word-break:break-word;margin:0;background:var(--bg2);';
-    pre.textContent=text;
-    inner.innerHTML='';
-    inner.appendChild(pre);
-  } else {
-    inner.innerHTML=`<div class="pov-body"><div class="pov-uns"><div class="ui">${icoMap(f.name)}</div>
-      <p>PREVIZUALIZARE INDISPONIBILĂ</p>
-      <a class="dl-a" href="${blobUrl}" download="${f.name}">⬇ DESCARCĂ</a></div></div>`;
-  }
-}
-
-/* ════════════════════════════════════════
-   PDF VIEWER
-════════════════════════════════════════ */
-async function renderPDF(src, inner) {
-  // src can be a URL (from GitHub raw) or a dataUrl
-  inner.innerHTML=`
-    <div class="pdf-tb" id="pdfTb">
-      <button onclick="pdfNav(-1)">◀</button>
-      <span class="pdf-pg" id="pdfPg">...</span>
-      <button onclick="pdfNav(1)">▶</button>
-      <button onclick="pdfZm(-0.3)">－</button>
-      <button onclick="pdfZm(0.3)">＋</button>
-      <div class="pdf-sw">
-        <input type="text" id="pdfQ" placeholder="Caută în PDF..." onkeydown="if(event.key==='Enter')pdfSrch()">
-        <button onclick="pdfSrch()">🔍</button>
-        <button onclick="document.getElementById('pdfQ').value=''">✕</button>
+      <div class="search-note">
+        Ziua căutată este doar evidențiată în antetul de zile al fiecărui bloc (nu poate fi aliniată exact
+        pe coloană, fiindcă PDF-ul nu păstrează poziția coloanelor la extragerea textului) —
+        verifică vizual poziția codului față de ziua marcată.
       </div>
     </div>
-    <div id="pdfCont"></div>`;
 
-  pdfDoc=null; pdfScale=1.0; pdfCurPg=1;  // 1.0 = fit container width
-  try {
-    let pdfSource;
-    if (src.startsWith('data:')) {
-      // dataUrl path (legacy)
-      const b64=src.split(',')[1];
-      const bin=atob(b64);
-      const bytes=new Uint8Array(bin.length);
-      for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
-      pdfSource = {data: bytes};
-    } else {
-      // Direct URL — PDF.js fetches it natively, no size limit
-      pdfSource = {url: src+'?t='+Date.now(), withCredentials: false};
-    }
-    pdfDoc=await pdfjsLib.getDocument(pdfSource).promise;
-    await pdfRenderAll();
-    pdfScrollObserver();
-  } catch(e){
-    document.getElementById('pdfCont').innerHTML=
-      `<div style="padding:24px;color:var(--red);font-family:'Share Tech Mono',monospace;font-size:12px;">EROARE PDF: ${e.message}</div>`;
-  }
-}
+    <div id="blocks-container"></div>
+  `;
 
-async function pdfRenderAll(){
-  if(!pdfDoc) return;
-  const cont = document.getElementById('pdfCont');
-  if(!cont) return;
-  cont.innerHTML = '';
-  document.getElementById('pdfPg').textContent = `${pdfCurPg} / ${pdfDoc.numPages}`;
-
-  const dpr = window.devicePixelRatio || 1;
-  // Render at a fixed high scale — CSS will scale down to fit screen width
-  // This way ALL content is rendered, nothing is cut
-  const RENDER_SCALE = 2.0 * pdfScale;
-
-  for(let i=1; i<=pdfDoc.numPages; i++){
-    const page = await pdfDoc.getPage(i);
-    const vp = page.getViewport({scale: RENDER_SCALE});
-
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width  = Math.round(vp.width  * dpr);
-    canvas.height = Math.round(vp.height * dpr);
-    ctx.scale(dpr, dpr);
-
-    // CSS: stretch width to 100%, height auto = proportional = full content
-    canvas.style.cssText = 'display:block;width:100%;height:auto;';
-
-    const wrap = document.createElement('div');
-    wrap.className = 'pdf-pw';
-    wrap.id = 'ppg' + i;
-    wrap.appendChild(canvas);
-    cont.appendChild(wrap);
-
-    await page.render({canvasContext: ctx, viewport: vp}).promise;
-  }
-}
-
-function pdfScrollObserver(){
-  const cont=document.getElementById('pdfCont');
-  if(!cont||!pdfDoc) return;
-  const obs=new IntersectionObserver(entries=>{
-    entries.forEach(e=>{
-      if(e.isIntersecting&&e.intersectionRatio>0.4){
-        const pg=parseInt(e.target.id.replace('ppg',''));
-        if(pg&&pg!==pdfCurPg){
-          pdfCurPg=pg;
-          const el=document.getElementById('pdfPg');
-          if(el) el.textContent=`${pg} / ${pdfDoc.numPages}`;
-        }
-      }
+  document.getElementById('back-btn').onclick = ()=>{ state.view='list'; state.openDocId=null; render(); };
+  document.getElementById('search-btn').onclick = ()=>{
+    state.query = document.getElementById('q-code').value.trim();
+    state.dayQuery = document.getElementById('q-day').value.trim();
+    renderBlocks(blocks);
+  };
+  document.getElementById('clear-btn').onclick = ()=>{
+    state.query=''; state.dayQuery='';
+    document.getElementById('q-code').value='';
+    document.getElementById('q-day').value='';
+    renderBlocks(blocks);
+  };
+  ['q-code','q-day'].forEach(id=>{
+    document.getElementById(id).addEventListener('keydown', e=>{
+      if(e.key==='Enter') document.getElementById('search-btn').click();
     });
-  },{root:cont,threshold:0.4});
-  for(let i=1;i<=pdfDoc.numPages;i++){
-    const el=document.getElementById('ppg'+i); if(el) obs.observe(el);
+  });
+
+  renderBlocks(blocks);
+}
+
+function renderBlocks(blocks){
+  const holder = document.getElementById('blocks-container');
+  const q = state.query.trim();
+  const dq = state.dayQuery.trim();
+
+  let list = blocks;
+  if(q){
+    list = blocks.filter(b => b.text.toLowerCase().includes(q.toLowerCase()) || b.name.toLowerCase().includes(q.toLowerCase()));
   }
-}
 
-function pdfNav(d){
-  const next=Math.max(1,Math.min(pdfDoc?.numPages||1,pdfCurPg+d));
-  document.getElementById('ppg'+next)?.scrollIntoView({behavior:'smooth'});
-  pdfCurPg=next;
-  const el=document.getElementById('pdfPg');
-  if(el&&pdfDoc) el.textContent=`${pdfCurPg} / ${pdfDoc.numPages}`;
-}
-
-async function pdfZm(d){
-  // pdfScale is zoom multiplier on top of fit-width (1.0 = fit width)
-  pdfScale=Math.max(0.5,Math.min(3.0,pdfScale+d));
-  const pg=pdfCurPg;
-  await pdfRenderAll(); pdfScrollObserver();
-  setTimeout(()=>document.getElementById('ppg'+pg)?.scrollIntoView(),80);
-}
-
-async function pdfSrch(){
-  const q=(document.getElementById('pdfQ')?.value||'').trim().toLowerCase();
-  if(!q||!pdfDoc){toast('Introdu text de căutat.',true);return;}
-  for(let i=1;i<=pdfDoc.numPages;i++){
-    const page=await pdfDoc.getPage(i);
-    const tc=await page.getTextContent();
-    if(tc.items.map(x=>x.str).join(' ').toLowerCase().includes(q)){
-      document.getElementById('ppg'+i)?.scrollIntoView({behavior:'smooth'});
-      pdfCurPg=i;
-      const el=document.getElementById('pdfPg');
-      if(el) el.textContent=`${i} / ${pdfDoc.numPages}`;
-      toast('Găsit la pagina '+i); return;
-    }
-  }
-  toast('Text negăsit.',true);
-}
-
-function closePrev(){
-  document.getElementById('pov').classList.remove('open');
-  document.getElementById('povInner').innerHTML='';
-  document.body.style.overflow='';
-  pdfDoc=null;
-}
-
-/* ════════════════════════════════════════
-   ADMIN RENDER
-════════════════════════════════════════ */
-function renderAdm(){
-  const cont=document.getElementById('admSecs');
-  cont.innerHTML='';
-  if(!secs.length){
-    cont.innerHTML='<div style="text-align:center;padding:50px;font-family:\'Share Tech Mono\',monospace;font-size:12px;color:var(--mut);letter-spacing:3px;">NICIO SECȚIUNE · ADAUGĂ UNA</div>';
+  if(list.length === 0){
+    holder.innerHTML = `<div class="empty">Niciun rezultat pentru „${escapeHtml(q)}”.</div>`;
     return;
   }
-  secs.forEach(sec=>{
-    const d=document.createElement('div'); d.className='as';
-    d.innerHTML=`
-      <div class="as-hdr">
-        <div class="as-ico">${sec.icon||'📁'}</div>
-        <div class="as-ttl" id="at${sec.id}">${sec.title}</div>
-        <div class="as-acts">
-          <button class="ib" onclick="startRen('${sec.id}')">✏️</button>
-          <button class="ib d" onclick="delSec('${sec.id}')">🗑️</button>
+
+  holder.innerHTML = `<div class="section-title">${q ? list.length + ' rezultat(e) găsite' : blocks.length + ' angajați în acest fișier'}</div>` +
+    list.map((b, i)=>`
+      <div class="block ${q ? 'match':''}">
+        <div class="block-head">
+          <div class="block-name">${escapeHtml(b.name)}</div>
+          <div class="block-idx">#${i+1}</div>
+        </div>
+        <div class="block-body">
+          ${dayHeaderHtml(b.dayHeader, dq)}
+          <div class="raw-text">${highlight(b.text, q)}</div>
         </div>
       </div>
-      <div class="as-files">
-        ${(sec.files||[]).map((f,fi)=>`
-          <div class="af">
-            <span>${icoMap(f.name)}</span>
-            <span class="af-name" title="${f.name}">${f.name}</span>
-            <span class="af-size">${fmt(f.size)}</span>
-            <button class="ib d" onclick="delFile('${sec.id}',${fi})">✕</button>
-          </div>`).join('')}
-        <button class="add-f-btn" onclick="openAddFiles('${sec.id}')">＋ ADAUGĂ FIȘIERE</button>
-      </div>`;
-    cont.appendChild(d);
-  });
+    `).join('');
 }
 
-function startRen(id){
-  const el=document.getElementById('at'+id);
-  const inp=document.createElement('input'); inp.className='tei'; inp.value=el.textContent;
-  el.replaceWith(inp); inp.focus(); inp.select();
-  const commit=async()=>{
-    const s=secs.find(x=>x.id===id);
-    if(s&&inp.value.trim()) s.title=inp.value.trim();
-    await indexSave(); renderAdm(); renderPub(); toast('Titlu actualizat!');
-  };
-  inp.addEventListener('blur',commit);
-  inp.addEventListener('keydown',e=>{if(e.key==='Enter')inp.blur();if(e.key==='Escape')renderAdm();});
-}
+function renderList(){
+  const container = document.getElementById('app');
+  const cat = state.category;
+  const docs = state.docsMeta[cat] || [];
 
-async function delSec(id){
-  if(!confirm('Ștergi secțiunea și toate fișierele?'))return;
-  const sec=secs.find(s=>s.id===id);
-  if(sec){
-    setLoader(true,'SE ȘTERGE...',0);
-    for(let i=0;i<sec.files.length;i++){
-      setLoader(true,`SE ȘTERGE ${i+1}/${sec.files.length}...`,Math.round(i/sec.files.length*100));
-      await deleteFileFromRepo(sec.files[i].path);
-    }
-    secs=secs.filter(s=>s.id!==id);
-    await indexSave(); setLoader(false);
-  }
-  renderAdm(); renderPub(); toast('Secțiune ștearsă.',true);
-}
+  container.innerHTML = `
+    <h2 style="margin:0 0 4px;">${CATS[cat]}</h2>
+    <div class="doc-meta" style="margin-bottom:16px;">Fișierele rămân aici până le ștergi tu.</div>
 
-async function delFile(secId,fi){
-  const sec=secs.find(s=>s.id===secId); if(!sec)return;
-  const f=sec.files[fi];
-  setLoader(true,'SE ȘTERGE FIȘIERUL...',0);
-  await deleteFileFromRepo(f.path);
-  sec.files.splice(fi,1);
-  await indexSave(); setLoader(false);
-  renderAdm(); renderPub(); toast('Fișier șters.',true);
-}
+    <div class="card">
+      <div class="row">
+        <div>
+          <label>Fișier PDF</label>
+          <input type="file" id="file-input" accept="application/pdf">
+        </div>
+        <div>
+          <label>Lună / an (etichetă)</label>
+          <input type="text" id="month-input" placeholder="ex. Iulie 2026">
+        </div>
+        <button class="btn" id="upload-btn">Încarcă</button>
+      </div>
+      <div class="hint">Se extrage textul din PDF direct în browser și rămâne salvat aici — nu se re-încarcă fișierul de fiecare dată.</div>
+      <div class="status" id="upload-status"></div>
+    </div>
 
-/* ════════════════════════════════════════
-   UPLOAD
-════════════════════════════════════════ */
-function openNewSec(){
-  editId=null; pend=[];
-  document.getElementById('secMTitle').textContent='＋ SECȚIUNE NOUĂ';
-  document.getElementById('secMSub').textContent='Titlu + fișiere pentru noua secțiune.';
-  document.getElementById('titWrap').style.display='block';
-  document.getElementById('titInp').value='';
-  document.getElementById('secErr').classList.remove('show');
-  rPend(); openM('secModal');
-}
-function openAddFiles(id){
-  editId=id; pend=[];
-  const s=secs.find(x=>x.id===id);
-  document.getElementById('secMTitle').textContent='＋ ADAUGĂ FIȘIERE';
-  document.getElementById('secMSub').textContent='Adaugă la: '+(s?s.title:'');
-  document.getElementById('titWrap').style.display='none';
-  document.getElementById('secErr').classList.remove('show');
-  rPend(); openM('secModal');
-}
-const onFiles=e=>{addF(Array.from(e.target.files));e.target.value='';};
-const dzO=e=>{e.preventDefault();e.currentTarget.classList.add('drag');};
-const dzL=e=>e.currentTarget.classList.remove('drag');
-const dzD=e=>{e.preventDefault();e.currentTarget.classList.remove('drag');addF(Array.from(e.dataTransfer.files));};
-function addF(files){
-  files.forEach(f=>{
-    const r=new FileReader();
-    r.onload=ev=>{pend.push({name:f.name,size:f.size,type:f.type,dataUrl:ev.target.result});rPend();};
-    r.readAsDataURL(f);
-  });
-}
-function rPend(){
-  document.getElementById('plist').innerHTML=pend.map((f,i)=>`
-    <div class="pi">
-      <span>${icoMap(f.name)}</span>
-      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f.name}</span>
-      <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--mut);">${fmt(f.size)}</span>
-      <span class="rm" onclick="pend.splice(${i},1);rPend()">✕</span>
-    </div>`).join('');
-}
-
-async function confSec(){
-  document.getElementById('secErr').classList.remove('show');
-  if(editId){
-    if(!pend.length){showErr('secErr','ADAUGĂ CEL PUȚIN UN FIȘIER.');return;}
-    closeM('secModal');
-    await doUpload(null, editId);
-  } else {
-    const t=document.getElementById('titInp').value.trim();
-    if(!t||!pend.length){showErr('secErr','ADAUGĂ TITLU ȘI CEL PUȚIN UN FIȘIER.');return;}
-    closeM('secModal');
-    await doUpload(t, null);
-  }
-}
-
-async function doUpload(newTitle, secId) {
-  setLoader(true,'SE VERIFICĂ REPO...',0);
-  try {
-    await ensureRepo();
-  } catch(e){
-    setLoader(false);
-    toast('Eroare repo: '+e.message, true);
-    return;
-  }
-
-  let sec;
-  if (secId) {
-    sec = secs.find(x=>x.id===secId);
-  } else {
-    const icons=['📁','📂','📋','📊','📝','🗂️','📑','🗃️'];
-    sec = {id:'s'+Date.now(), title:newTitle, icon:icons[Math.floor(Math.random()*icons.length)], files:[]};
-    secs.push(sec);
-  }
-
-  const errors = [];
-  const sleep = ms => new Promise(r=>setTimeout(r,ms));
-  for(let i=0;i<pend.length;i++){
-    const pct = Math.round(i/pend.length*90);
-    setLoader(true,`SE URCĂ ${i+1}/${pend.length}: ${pend[i].name}`,pct);
-    let uploaded = null;
-    try {
-      uploaded = await uploadFileToRepo(pend[i], p=>
-        setLoader(true,`SE URCĂ ${i+1}/${pend.length}: ${pend[i].name}`,pct+Math.round(p/pend.length*0.9))
-      );
-    } catch(e){
-      console.error('Upload final error for', pend[i].name, e.message);
-      errors.push(pend[i].name);
-    }
-    if(uploaded) sec.files.push(uploaded);
-  }
-
-  setLoader(true,'SE SALVEAZĂ INDEX...',95);
-  await indexSave();
-  setLoader(false,'',100);
-
-  rPend();
-  renderAdm(); renderPub();
-
-  if(errors.length){
-    toast('Erori la: '+errors.join(', '), true);
-  } else {
-    toast(newTitle ? 'Secțiune creată!' : 'Fișiere adăugate!');
-  }
-}
-
-/* ════════════════════════════════════════
-   TOKEN / AUTH
-════════════════════════════════════════ */
-function openTokModal(){
-  if(isAdm){
-    isAdm=false; ghTok=''; localStorage.removeItem('emx_t');
-    document.getElementById('admBtn').classList.remove('show');
-    document.getElementById('tokBtn').className='tok-btn';
-    document.getElementById('tokBtn').innerHTML='🔑 TOKEN';
-    toast('Deconectat.'); showPublic(); return;
-  }
-  document.getElementById('tokErr').classList.remove('show');
-  document.getElementById('tokInp').value=ghTok||'';
-  openM('tokModal');
-  setTimeout(()=>document.getElementById('tokInp').focus(),120);
-}
-
-async function submitTok(){
-  const v=document.getElementById('tokInp').value.trim();
-  if(!v){showErr('tokErr','INTRODU UN TOKEN.');return;}
-  const btn=document.getElementById('tokSub');
-  btn.textContent='SE VERIFICĂ…'; btn.disabled=true;
-  document.getElementById('tokErr').classList.remove('show');
-  try{
-    const r=await fetch('https://api.github.com/user',{
-      headers:{'Authorization':'token '+v,'Accept':'application/vnd.github.v3+json'}
-    });
-    if(r.ok){
-      const u=await r.json();
-      if(!AUTHORIZED.map(x=>x.toLowerCase()).includes((u.login||'').toLowerCase())){
-        showErr('tokErr','CONTUL "'+u.login+'" NU ESTE AUTORIZAT.');
-        btn.textContent='VERIFICĂ'; btn.disabled=false; return;
+    <div class="section-title">Programe salvate</div>
+    <div class="doc-list" id="doc-list">
+      ${docs.length === 0 ? '<div class="empty">Niciun program încărcat încă pentru această categorie.</div>' :
+        docs.map(d=>`
+          <div class="doc-item" data-id="${d.id}">
+            <div>
+              <div class="doc-name">${escapeHtml(d.filename)}</div>
+              <div class="doc-meta">${d.month ? escapeHtml(d.month) + ' · ' : ''}încărcat ${new Date(d.uploadedAt).toLocaleDateString('ro-RO')}</div>
+            </div>
+            <div class="doc-actions">
+              <button class="btn ghost" data-del="${d.id}">Șterge</button>
+            </div>
+          </div>
+        `).join('')
       }
-      ghTok=v; localStorage.setItem('emx_t',v); isAdm=true;
-      closeM('tokModal');
-      document.getElementById('admBtn').classList.add('show');
-      document.getElementById('tokBtn').className='tok-btn on';
-      document.getElementById('tokBtn').innerHTML='🔓 '+u.login.toUpperCase();
-      toast('Bun venit, '+u.login+'!');
-      await indexLoad();
-    } else {
-      showErr('tokErr',r.status===401?'TOKEN INVALID.':'EROARE '+r.status+'.');
-      document.getElementById('tokInp').select();
-    }
-  }catch(e){showErr('tokErr','EROARE REȚEA: '+e.message);}
-  btn.textContent='VERIFICĂ'; btn.disabled=false;
-}
+    </div>
+  `;
 
-async function autoLogin(){
-  if(!ghTok) return;
-  try{
-    const r=await fetch('https://api.github.com/user',{
-      headers:{'Authorization':'token '+ghTok,'Accept':'application/vnd.github.v3+json'}
+  document.getElementById('upload-btn').onclick = ()=>{
+    const file = document.getElementById('file-input').files[0];
+    const month = document.getElementById('month-input').value.trim();
+    handleUpload(cat, file, month);
+  };
+
+  document.querySelectorAll('.doc-item').forEach(el=>{
+    el.addEventListener('click', (e)=>{
+      if(e.target.closest('[data-del]')) return;
+      state.view='detail';
+      state.openDocId = el.dataset.id;
+      state.query=''; state.dayQuery='';
+      render();
     });
-    if(r.ok){
-      const u=await r.json();
-      if(AUTHORIZED.map(x=>x.toLowerCase()).includes((u.login||'').toLowerCase())){
-        isAdm=true;
-        document.getElementById('admBtn').classList.add('show');
-        document.getElementById('tokBtn').className='tok-btn on';
-        document.getElementById('tokBtn').innerHTML='🔓 '+u.login.toUpperCase();
-      } else { localStorage.removeItem('emx_t'); ghTok=''; }
-    } else { localStorage.removeItem('emx_t'); ghTok=''; }
-  }catch(e){}
+  });
+  document.querySelectorAll('[data-del]').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      deleteDoc(cat, btn.dataset.del);
+    });
+  });
 }
 
-/* ════════════════════════════════════════
-   KEYBOARD
-════════════════════════════════════════ */
-document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){['tokModal','secModal'].forEach(closeM);closePrev();}
-  if(e.key==='Enter'&&document.getElementById('tokModal').classList.contains('open')) submitTok();
-});
-document.querySelectorAll('.mov').forEach(ov=>{
-  ov.addEventListener('click',e=>{if(e.target===ov){ov.classList.remove('open');rPend();}});
-});
+async function render(){
+  if(state.view==='detail' && state.openDocId){
+    const doc = (state.docsMeta[state.category]||[]).find(d=>d.id===state.openDocId);
+    if(doc){ await renderDetail(state.category, doc); return; }
+    state.view='list';
+  }
+  renderList();
+}
 
-/* ════════════════════════════════════════
-   INIT
-════════════════════════════════════════ */
-(async()=>{
-  await autoLogin();
-  await indexLoad();
+(async function init(){
+  setTabHandlers();
+  await loadAllMeta();
+  render();
 })();
 </script>
 </body>
