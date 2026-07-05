@@ -5,9 +5,9 @@
       "name": "Bomba",
       "entries": [
         {
-          "id": 214,
-          "amount": -50,
-          "reason": "15"
+          "id": 215,
+          "amount": 50,
+          "reason": "Tt"
         }
       ]
     },
@@ -61,5 +61,5 @@
     }
   ],
   "nextPersonId": 105,
-  "nextEntryId": 215
+  "nextEntryId": 216
 }
