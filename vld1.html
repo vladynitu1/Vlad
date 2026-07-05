@@ -297,20 +297,28 @@ async function extractPdfRows(file){
   const buf = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({data: buf}).promise;
   const allRows = [];
+  const ROW_TOLERANCE = 3;
   for(let p=1;p<=pdf.numPages;p++){
     const page = await pdf.getPage(p);
     const content = await page.getTextContent();
-    const byY = {};
-    content.items.forEach(item=>{
-      const y = Math.round(item.transform[5]);
-      if(!byY[y]) byY[y] = [];
-      const str = item.str.trim();
-      if(str.length) byY[y].push({x: item.transform[4], str});
+    const items = content.items
+      .map(item => ({ x: item.transform[4], y: item.transform[5], str: item.str.trim() }))
+      .filter(i => i.str.length > 0);
+    items.sort((a,b) => b.y - a.y || a.x - b.x);
+    let clusters = [];
+    let current = null;
+    items.forEach(it=>{
+      if(current && Math.abs(it.y - current.refY) <= ROW_TOLERANCE){
+        current.items.push(it);
+      } else {
+        if(current) clusters.push(current);
+        current = { refY: it.y, items: [it] };
+      }
     });
-    const ys = Object.keys(byY).map(Number).sort((a,b)=>b-a);
-    ys.forEach(y=>{
-      const items = byY[y].sort((a,b)=>a.x-b.x);
-      if(items.length) allRows.push({y, items});
+    if(current) clusters.push(current);
+    clusters.forEach(c=>{
+      const sorted = c.items.slice().sort((a,b)=>a.x-b.x);
+      allRows.push({ y: c.refY, items: sorted.map(i=>({x:i.x, str:i.str})) });
     });
   }
   return allRows;
@@ -364,15 +372,22 @@ function splitBlocksStructured(rows){
     // then take the first non-numeric token of the row right after it (firstname row).
     // Using the raw tokens directly (not a regex with \b) avoids mangling
     // Romanian diacritics like ă/â/î/ș/ț and works regardless of ALL-CAPS vs Title Case.
+    const NON_NAME = new Set(['efect','Serv','Prenume','Nume','Data','ore','Total','crt','Nr','Sc','ASC','Reg','Reg.','Auto','Festive','Mecanic','Sef','tren','bilete','V','CO','L','ITS','SSM','SU']);
+    function firstNameToken(tokens){
+      for(const t of tokens){
+        if(/^\d+([:./]\d+)?$/.test(t)) continue;
+        if(NON_NAME.has(t)) continue;
+        return t;
+      }
+      return '';
+    }
     let surname = '', firstname = '';
     for(let i=0;i<b.allRows.length;i++){
-      const items = b.allRows[i].items;
-      if(items.length && items[items.length-1].str === 'Festive'){
-        surname = items[0] ? items[0].str : '';
-        const nextItems = b.allRows[i+1] ? b.allRows[i+1].items : [];
-        let j = 0;
-        while(j < nextItems.length && /^\d+$/.test(nextItems[j].str)) j++;
-        firstname = nextItems[j] ? nextItems[j].str : '';
+      const tokens = b.allRows[i].items.map(it=>it.str);
+      if(tokens.includes('Festive')){
+        surname = firstNameToken(tokens);
+        const nextTokens = b.allRows[i+1] ? b.allRows[i+1].items.map(it=>it.str) : [];
+        firstname = firstNameToken(nextTokens);
         break;
       }
     }
