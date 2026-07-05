@@ -744,7 +744,7 @@ async function runTeamSearch(){
 
     const groupsHtml = codes.map(code=>{
       const seen = new Set();
-      const crew = all.filter(o => o !== m && (o.block.dayCodes[day]||[]).includes(code))
+      const crew = all.filter(o => o !== m && o.block.role !== m.block.role && (o.block.dayCodes[day]||[]).includes(code))
         .map(o => ({ name:o.block.name, role:o.block.role }))
         .filter(c=>{
           const key = c.name + '|' + c.role;
