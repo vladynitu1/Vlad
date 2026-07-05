@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ro">
 <head>
@@ -33,7 +34,6 @@
   }
   h1,h2,h3,.display{font-family:'Oswald',sans-serif; letter-spacing:0.03em; text-transform:uppercase;}
 
-  /* ---- Header: split-flap departure board ---- */
   .board{
     border-bottom:1px solid var(--line);
     background:linear-gradient(180deg, #0d1216, #0a0d10);
@@ -56,10 +56,11 @@
   .tab:last-child{border-right:none;}
   .tab:hover{color:var(--text); background:var(--panel-2);}
   .tab.active{color:#0a0d10; background:var(--amber);}
+  .tab.cross{margin-left:8px; border:1px solid var(--amber-dim); border-radius:4px;}
+  .tab.cross.active{background:var(--green); color:#04140d;}
 
   main{max-width:1100px; margin:0 auto; padding:24px;}
 
-  /* ---- Upload panel ---- */
   .card{
     background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:18px 20px; margin-bottom:18px;
   }
@@ -78,8 +79,8 @@
   .btn:hover{filter:brightness(1.1);}
   .btn.ghost{background:transparent; border:1px solid var(--line); color:var(--muted);}
   .btn.ghost:hover{color:var(--red); border-color:var(--red);}
+  .btn.solid-green{background:var(--green); color:#04140d;}
   .btn:disabled{opacity:.4; cursor:not-allowed;}
-  .file-input-wrap{position:relative;}
   input[type=file]{
     font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted);
     max-width:260px;
@@ -88,7 +89,6 @@
   .hint{color:var(--muted); font-size:11px; margin-top:8px; line-height:1.5;}
   .status{font-size:12px; margin-top:10px; color:var(--amber); min-height:16px;}
 
-  /* ---- Document list ---- */
   .doc-list{display:flex; flex-direction:column; gap:8px;}
   .doc-item{
     display:flex; align-items:center; justify-content:space-between; gap:10px;
@@ -96,17 +96,14 @@
     cursor:pointer; transition:border-color .15s, background .15s;
   }
   .doc-item:hover{border-color:var(--amber-dim); background:var(--panel-2);}
-  .doc-item.selected{border-color:var(--amber);}
   .doc-name{font-weight:500; font-size:13.5px;}
   .doc-meta{color:var(--muted); font-size:11px; margin-top:3px;}
   .doc-actions{display:flex; gap:8px; align-items:center;}
   .empty{color:var(--muted); font-size:13px; padding:20px 4px; text-align:center;}
 
-  /* ---- Search ---- */
   .search-bar{display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;}
   .search-note{font-size:11px; color:var(--muted); margin-top:10px; line-height:1.5; border-left:2px solid var(--amber-dim); padding-left:10px;}
 
-  /* ---- Blocks / results ---- */
   .block{
     background:var(--panel); border:1px solid var(--line); border-radius:6px; margin-bottom:14px; overflow:hidden;
   }
@@ -116,23 +113,31 @@
     padding:10px 16px; background:var(--panel-2); border-bottom:1px solid var(--line);
   }
   .block-name{font-family:'Oswald',sans-serif; font-weight:600; letter-spacing:0.03em; font-size:14px; color:var(--amber);}
+  .block-role{font-size:10.5px; color:var(--green); text-transform:uppercase; letter-spacing:.06em; margin-top:2px;}
   .block-idx{color:var(--muted); font-size:11px;}
   .block-body{padding:12px 16px;}
-  .day-header{
-    font-size:10.5px; color:var(--muted); white-space:pre-wrap; word-break:break-all; margin-bottom:8px;
-    border-bottom:1px dashed var(--line); padding-bottom:8px;
+  .day-hit{
+    display:inline-block; background:#0d1216; border:1px solid var(--amber); color:var(--amber);
+    font-size:11px; padding:3px 8px; border-radius:4px; margin-bottom:8px;
   }
-  .day-header .day-flag{color:var(--amber); font-weight:700;}
   .raw-text{
-    font-size:11.5px; line-height:1.7; white-space:pre-wrap; word-break:break-all; color:#c7d0d6; max-height:260px; overflow:auto;
+    font-size:11.5px; line-height:1.7; white-space:pre-wrap; word-break:break-all; color:#c7d0d6; max-height:220px; overflow:auto;
   }
   .raw-text mark{background:var(--amber); color:#0a0d10; padding:0 2px; border-radius:2px;}
-  .toggle-raw{font-size:10px; color:var(--muted); cursor:pointer; text-decoration:underline; margin-top:8px; display:inline-block;}
 
   .back-link{color:var(--muted); font-size:12px; cursor:pointer; margin-bottom:14px; display:inline-block;}
   .back-link:hover{color:var(--amber);}
 
   .section-title{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; margin:26px 0 10px;}
+
+  .result-card{
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+    background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--green);
+    border-radius:5px; padding:12px 16px; margin-bottom:8px;
+  }
+  .result-name{font-family:'Oswald',sans-serif; font-weight:600; font-size:14px; color:var(--text);}
+  .result-meta{font-size:11px; color:var(--muted); margin-top:3px;}
+  .result-code{font-family:'JetBrains Mono',monospace; color:var(--amber); font-size:13px; font-weight:700;}
 
   ::-webkit-scrollbar{width:8px; height:8px;}
   ::-webkit-scrollbar-thumb{background:var(--line); border-radius:4px;}
@@ -143,11 +148,12 @@
 <div class="board">
   <div class="board-top">
     <div class="board-title"><span class="dot"></span>EMX ARHIVĂ · PROGRAME LUCRU</div>
-    <div class="board-sub">STOCARE PERSISTENTĂ &nbsp;·&nbsp; CĂUTARE PE COD</div>
+    <div class="board-sub">STOCARE PERSISTENTĂ &nbsp;·&nbsp; CĂUTARE PE COD ȘI ZI</div>
   </div>
   <div class="tabs" id="tabs">
     <div class="tab active" data-cat="conductori">Șefi Tren / Vânzători Bilete</div>
     <div class="tab" data-cat="mecanici">Mecanici</div>
+    <div class="tab cross" data-cat="cross">Cine e la trenul X?</div>
   </div>
 </div>
 
@@ -160,11 +166,13 @@ const CATS = {
 };
 let state = {
   category: 'conductori',
-  view: 'list', // 'list' | 'detail'
+  view: 'list',
   openDocId: null,
   docsMeta: { conductori: [], mecanici: [] },
   query: '',
-  dayQuery: ''
+  dayQuery: '',
+  crossDay: '',
+  crossCode: ''
 };
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -179,11 +187,9 @@ async function loadMeta(cat){
     state.docsMeta[cat] = [];
   }
 }
-
 async function saveMeta(cat){
   await window.storage.set('docs-meta:' + cat, JSON.stringify(state.docsMeta[cat]), false);
 }
-
 async function loadAllMeta(){
   await loadMeta('conductori');
   await loadMeta('mecanici');
@@ -192,74 +198,126 @@ async function loadAllMeta(){
 function setTabHandlers(){
   document.querySelectorAll('.tab').forEach(t=>{
     t.onclick = ()=>{
-      state.category = t.dataset.cat;
-      state.view='list'; state.openDocId=null; state.query=''; state.dayQuery='';
       document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
       t.classList.add('active');
+      if(t.dataset.cat === 'cross'){
+        state.view = 'cross';
+        render();
+        return;
+      }
+      state.category = t.dataset.cat;
+      state.view='list'; state.openDocId=null; state.query=''; state.dayQuery='';
       render();
     };
   });
 }
 
-async function extractPdfText(file){
+// ---- Positioned PDF extraction: keeps x per token so day-columns can be reconstructed ----
+async function extractPdfRows(file){
   const buf = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({data: buf}).promise;
-  let full = '';
-  for(let i=1;i<=pdf.numPages;i++){
-    const page = await pdf.getPage(i);
+  const allRows = [];
+  for(let p=1;p<=pdf.numPages;p++){
+    const page = await pdf.getPage(p);
     const content = await page.getTextContent();
-    const lines = {};
+    const byY = {};
     content.items.forEach(item=>{
       const y = Math.round(item.transform[5]);
-      if(!lines[y]) lines[y]=[];
-      lines[y].push(item.str);
+      if(!byY[y]) byY[y] = [];
+      const str = item.str.trim();
+      if(str.length) byY[y].push({x: item.transform[4], str});
     });
-    const ys = Object.keys(lines).map(Number).sort((a,b)=>b-a);
-    ys.forEach(y=>{ full += lines[y].join(' ') + '\n'; });
-    full += '\n';
+    const ys = Object.keys(byY).map(Number).sort((a,b)=>b-a);
+    ys.forEach(y=>{
+      const items = byY[y].sort((a,b)=>a.x-b.x);
+      if(items.length) allRows.push({y, items});
+    });
   }
-  return full;
+  return allRows;
 }
 
-// Split raw text into per-employee blocks using the recurring
-// "Nume Data 1 2 3 ..." header row, or the "Nr Nume Data" variant used
-// in the mecanici sheet.
-function splitBlocks(rawText){
-  const lines = rawText.split('\n');
-  const headerRe = /^(Nr\s+)?Nume\s+Data(\s+\d+){5,}/;
-  const dayRowRe = /^(Nr\s+)?Nume\s+Data\s+((\d+\s*)+)/;
-  let blocks = [];
+function rowsToText(rows){
+  return rows.map(r => r.items.map(i=>i.str).join(' ')).join('\n');
+}
+
+// ---- Split positioned rows into per-employee blocks, with a day->codes map ----
+function splitBlocksStructured(rows){
+  const blocks = [];
   let current = null;
-  lines.forEach(line=>{
-    const trimmed = line.trim();
-    if(headerRe.test(trimmed)){
+
+  function isHeaderRow(items){
+    const strs = items.map(i=>i.str);
+    return strs.includes('Data') && strs.filter(s=>/^\d{1,2}$/.test(s)).length >= 15;
+  }
+  function isTimeRow(items){
+    const timeLike = items.filter(i=>/^\d{1,2}:\d{2}$/.test(i.str) || /^\d::\d{2}$/.test(i.str)).length;
+    return items.length > 0 && (timeLike / items.length) > 0.5;
+  }
+  function isCoStartRow(items){
+    return items.some(i=>i.str === 'inceput') && items.some(i=>i.str === 'luna');
+  }
+
+  rows.forEach(row=>{
+    if(isHeaderRow(row.items)){
       if(current) blocks.push(current);
-      const m = trimmed.match(dayRowRe);
-      current = { dayHeader: m ? m[2].trim() : '', lines: [] };
+      const dayTokens = row.items.filter(i=>/^\d{1,2}$/.test(i.str));
+      current = { headerRow: row, dayTokens, codeRows: [], allRows: [] };
     } else if(current){
-      current.lines.push(line);
+      current.allRows.push(row);
+      if(!isTimeRow(row.items) && !isCoStartRow(row.items)){
+        current.codeRows.push(row);
+      }
     }
   });
   if(current) blocks.push(current);
 
-  // Guess employee name: look for a line ending in "Festive" (surname line),
-  // the line right after it usually holds the first name.
   return blocks.map((b, idx)=>{
-    const text = b.lines.join('\n');
+    const colX = b.dayTokens.map(t=>t.x);
+    const n = colX.length;
+    let gap = n > 1 ? (colX[n-1] - colX[0]) / (n-1) : 20;
+
+    const dayCodes = {};
+    for(let d=1; d<=31; d++) dayCodes[d] = [];
+
+    const allText = rowsToText(b.allRows);
+    const textLines = b.allRows.map(r => r.items.map(i=>i.str).join(' '));
     let surname = '', firstname = '';
-    for(let i=0;i<b.lines.length;i++){
-      if(/Festive\s*$/.test(b.lines[i].trim())){
-        const tok = b.lines[i].trim().match(/^([A-ZĂÂÎȘȚ][A-ZĂÂÎȘȚ\-]{1,})\b/);
+    for(let i=0;i<textLines.length;i++){
+      if(/Festive\s*$/.test(textLines[i].trim())){
+        const tok = textLines[i].trim().match(/^([A-ZĂÂÎȘȚ][A-ZĂÂÎȘȚ\-]{1,})\b/);
         if(tok) surname = tok[1];
-        if(b.lines[i+1]){
-          const tok2 = b.lines[i+1].trim().replace(/^\d+\s+/, '').match(/^([A-ZĂÂÎȘȚ][a-zA-ZĂÂÎȘȚăâîșț\-]{1,})\b/);
+        if(textLines[i+1]){
+          const tok2 = textLines[i+1].trim().replace(/^\d+\s+/, '').match(/^([A-ZĂÂÎȘȚ][a-zA-ZĂÂÎȘȚăâîșț\-]{1,})\b/);
           if(tok2) firstname = tok2[1];
         }
         break;
       }
     }
-    const name = (surname || firstname) ? `${surname} ${firstname}`.trim() : `Bloc ${idx+1} (nume neidentificat)`;
-    return { id: idx, name, dayHeader: b.dayHeader, text };
+    const name = (surname || firstname) ? (surname + ' ' + firstname).trim() : ('Bloc ' + (idx+1) + ' (nume neidentificat)');
+
+    let role = 'Necunoscut';
+    if(/Sef\s*tren/i.test(allText)) role = 'Șef tren';
+    else if(/V\s*bilete\s*II/i.test(allText)) role = 'Vânzător bilete II';
+    else if(/V\s*bilete\s*I\b/i.test(allText)) role = 'Vânzător bilete I';
+    else if(/Mecanic/i.test(allText)) role = 'Mecanic';
+
+    const excludeTokens = new Set([surname, firstname, 'Festive'].filter(Boolean));
+
+    if(n > 1){
+      b.codeRows.forEach(row=>{
+        row.items.forEach(item=>{
+          if(excludeTokens.has(item.str)) return;
+          const x = item.x;
+          if(x < colX[0] - gap*0.6 || x > colX[n-1] + gap*0.6) return;
+          let day = Math.round((x - colX[0]) / gap) + 1;
+          if(day < 1) day = 1;
+          if(day > 31) day = 31;
+          dayCodes[day].push(item.str);
+        });
+      });
+    }
+
+    return { id: idx, name, role, dayCodes, text: allText };
   }).filter(b => b.text.trim().length > 0);
 }
 
@@ -268,15 +326,15 @@ async function handleUpload(cat, file, month){
   if(!file){ statusEl.textContent = 'Alege un fișier PDF.'; return; }
   statusEl.textContent = 'Se extrage textul din PDF...';
   try{
-    const text = await extractPdfText(file);
+    const rows = await extractPdfRows(file);
+    const text = rowsToText(rows);
     const id = uid();
     await window.storage.set('doc-content:' + id, text, false);
-    const meta = {
-      id, filename: file.name, month: month || '', uploadedAt: new Date().toISOString()
-    };
+    await window.storage.set('doc-rows:' + id, JSON.stringify(rows), false);
+    const meta = { id, filename: file.name, month: month || '', uploadedAt: new Date().toISOString() };
     state.docsMeta[cat].unshift(meta);
     await saveMeta(cat);
-    statusEl.textContent = `Salvat: ${file.name}`;
+    statusEl.textContent = 'Salvat: ' + file.name;
     render();
   }catch(e){
     console.error(e);
@@ -289,6 +347,7 @@ async function deleteDoc(cat, id){
   state.docsMeta[cat] = state.docsMeta[cat].filter(d=>d.id!==id);
   await saveMeta(cat);
   await window.storage.delete('doc-content:' + id, false).catch(()=>{});
+  await window.storage.delete('doc-rows:' + id, false).catch(()=>{});
   if(state.openDocId===id){ state.view='list'; state.openDocId=null; }
   render();
 }
@@ -296,7 +355,6 @@ async function deleteDoc(cat, id){
 function escapeHtml(s){
   return s.replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 }
-
 function highlight(text, query){
   if(!query) return escapeHtml(text);
   const esc = escapeHtml(text);
@@ -304,57 +362,36 @@ function highlight(text, query){
   return esc.replace(new RegExp('('+safeQ+')','gi'), '<mark>$1</mark>');
 }
 
-function dayHeaderHtml(dayHeader, dayQuery){
-  if(!dayHeader) return '';
-  const nums = dayHeader.split(/\s+/).filter(Boolean);
-  const html = nums.map(n=>{
-    if(dayQuery && n === String(parseInt(dayQuery,10))){
-      return `<span class="day-flag">[${n}]</span>`;
-    }
-    return n;
-  }).join(' ');
-  return `<div class="day-header">Antet zile (cap tabel): ${html}</div>`;
+async function getBlocksForDoc(id){
+  let rows = [];
+  try{
+    const r = await window.storage.get('doc-rows:' + id, false);
+    rows = r ? JSON.parse(r.value) : [];
+  }catch(e){ rows = []; }
+  if(!rows.length) return [];
+  return splitBlocksStructured(rows);
 }
 
 async function renderDetail(cat, doc){
   const container = document.getElementById('app');
-  let rawText = '';
-  try{
-    const r = await window.storage.get('doc-content:' + doc.id, false);
-    rawText = r ? r.value : '';
-  }catch(e){ rawText = ''; }
-
-  const blocks = splitBlocks(rawText);
-
-  container.innerHTML = `
-    <span class="back-link" id="back-btn">&larr; înapoi la listă</span>
-    <h2 style="margin:4px 0 2px;">${escapeHtml(doc.filename)}</h2>
-    <div class="doc-meta" style="margin-bottom:16px;">${CATS[cat]} ${doc.month ? '· ' + escapeHtml(doc.month) : ''} · încărcat ${new Date(doc.uploadedAt).toLocaleDateString('ro-RO')}</div>
-
-    <div class="card">
-      <div class="search-bar">
-        <div>
-          <label>Cod (ex. 16565)</label>
-          <input type="text" id="q-code" placeholder="cod / nume" value="${escapeHtml(state.query)}">
-        </div>
-        <div>
-          <label>Zi (1-31, opțional)</label>
-          <input type="text" id="q-day" placeholder="ex. 15" value="${escapeHtml(state.dayQuery)}" style="min-width:80px;">
-        </div>
-        <button class="btn" id="search-btn">Caută</button>
-        <button class="btn ghost" id="clear-btn">Șterge filtrul</button>
-      </div>
-      <div class="search-note">
-        Ziua căutată este doar evidențiată în antetul de zile al fiecărui bloc (nu poate fi aliniată exact
-        pe coloană, fiindcă PDF-ul nu păstrează poziția coloanelor la extragerea textului) —
-        verifică vizual poziția codului față de ziua marcată.
-      </div>
-    </div>
-
-    <div id="blocks-container"></div>
-  `;
+  container.innerHTML = '<span class="back-link" id="back-btn">&larr; înapoi la listă</span>' +
+    '<h2 style="margin:4px 0 2px;">' + escapeHtml(doc.filename) + '</h2>' +
+    '<div class="doc-meta" style="margin-bottom:16px;">' + CATS[cat] + (doc.month ? ' · ' + escapeHtml(doc.month) : '') + ' · încărcat ' + new Date(doc.uploadedAt).toLocaleDateString('ro-RO') + '</div>' +
+    '<div class="card">' +
+      '<div class="search-bar">' +
+        '<div><label>Cod (ex. 16565)</label><input type="text" id="q-code" placeholder="cod / nume" value="' + escapeHtml(state.query) + '"></div>' +
+        '<div><label>Zi (1-31, opțional)</label><input type="text" id="q-day" placeholder="ex. 15" value="' + escapeHtml(state.dayQuery) + '" style="min-width:80px;"></div>' +
+        '<button class="btn" id="search-btn">Caută</button>' +
+        '<button class="btn ghost" id="clear-btn">Șterge filtrul</button>' +
+      '</div>' +
+      '<div class="search-note">Dacă pui și ziua, verificăm exact codul din ziua respectivă (poziția e reconstruită din PDF); fără zi, căutăm codul oriunde în program.</div>' +
+    '</div>' +
+    '<div id="blocks-container"><div class="empty">Se procesează...</div></div>';
 
   document.getElementById('back-btn').onclick = ()=>{ state.view='list'; state.openDocId=null; render(); };
+
+  const blocks = await getBlocksForDoc(doc.id);
+
   document.getElementById('search-btn').onclick = ()=>{
     state.query = document.getElementById('q-code').value.trim();
     state.dayQuery = document.getElementById('q-day').value.trim();
@@ -378,31 +415,35 @@ async function renderDetail(cat, doc){
 function renderBlocks(blocks){
   const holder = document.getElementById('blocks-container');
   const q = state.query.trim();
-  const dq = state.dayQuery.trim();
+  const day = parseInt(state.dayQuery.trim(), 10);
+  const hasDay = !isNaN(day) && day >= 1 && day <= 31;
 
   let list = blocks;
-  if(q){
+  let dayHitMap = {};
+
+  if(hasDay && q){
+    list = blocks.filter(b => (b.dayCodes[day]||[]).some(c => c.toLowerCase() === q.toLowerCase() || c.toLowerCase().includes(q.toLowerCase())));
+    list.forEach(b=>{ dayHitMap[b.id] = (b.dayCodes[day]||[]).join(', '); });
+  } else if(q){
     list = blocks.filter(b => b.text.toLowerCase().includes(q.toLowerCase()) || b.name.toLowerCase().includes(q.toLowerCase()));
+  } else if(hasDay){
+    list = blocks.filter(b => (b.dayCodes[day]||[]).length > 0);
+    list.forEach(b=>{ dayHitMap[b.id] = (b.dayCodes[day]||[]).join(', '); });
   }
 
   if(list.length === 0){
-    holder.innerHTML = `<div class="empty">Niciun rezultat pentru „${escapeHtml(q)}”.</div>`;
+    holder.innerHTML = '<div class="empty">Niciun rezultat.</div>';
     return;
   }
 
-  holder.innerHTML = `<div class="section-title">${q ? list.length + ' rezultat(e) găsite' : blocks.length + ' angajați în acest fișier'}</div>` +
-    list.map((b, i)=>`
-      <div class="block ${q ? 'match':''}">
-        <div class="block-head">
-          <div class="block-name">${escapeHtml(b.name)}</div>
-          <div class="block-idx">#${i+1}</div>
-        </div>
-        <div class="block-body">
-          ${dayHeaderHtml(b.dayHeader, dq)}
-          <div class="raw-text">${highlight(b.text, q)}</div>
-        </div>
-      </div>
-    `).join('');
+  holder.innerHTML = '<div class="section-title">' + list.length + ' rezultat(e)</div>' +
+    list.map((b, i) => {
+      const dayHit = dayHitMap[b.id] ? '<div class="day-hit">Ziua ' + day + ': ' + escapeHtml(dayHitMap[b.id]) + '</div>' : '';
+      return '<div class="block ' + (q||hasDay ? 'match':'') + '">' +
+        '<div class="block-head"><div><div class="block-name">' + escapeHtml(b.name) + '</div><div class="block-role">' + escapeHtml(b.role) + '</div></div><div class="block-idx">#' + (i+1) + '</div></div>' +
+        '<div class="block-body">' + dayHit + '<div class="raw-text">' + highlight(b.text, q) + '</div></div>' +
+      '</div>';
+    }).join('');
 }
 
 function renderList(){
@@ -410,50 +451,36 @@ function renderList(){
   const cat = state.category;
   const docs = state.docsMeta[cat] || [];
 
-  container.innerHTML = `
-    <h2 style="margin:0 0 4px;">${CATS[cat]}</h2>
-    <div class="doc-meta" style="margin-bottom:16px;">Fișierele rămân aici până le ștergi tu.</div>
-
-    <div class="card">
-      <div class="row">
-        <div>
-          <label>Fișier PDF</label>
-          <input type="file" id="file-input" accept="application/pdf">
-        </div>
-        <div>
-          <label>Lună / an (etichetă)</label>
-          <input type="text" id="month-input" placeholder="ex. Iulie 2026">
-        </div>
-        <button class="btn" id="upload-btn">Încarcă</button>
-      </div>
-      <div class="hint">Se extrage textul din PDF direct în browser și rămâne salvat aici — nu se re-încarcă fișierul de fiecare dată.</div>
-      <div class="status" id="upload-status"></div>
-    </div>
-
-    <div class="section-title">Programe salvate</div>
-    <div class="doc-list" id="doc-list">
-      ${docs.length === 0 ? '<div class="empty">Niciun program încărcat încă pentru această categorie.</div>' :
-        docs.map(d=>`
-          <div class="doc-item" data-id="${d.id}">
-            <div>
-              <div class="doc-name">${escapeHtml(d.filename)}</div>
-              <div class="doc-meta">${d.month ? escapeHtml(d.month) + ' · ' : ''}încărcat ${new Date(d.uploadedAt).toLocaleDateString('ro-RO')}</div>
-            </div>
-            <div class="doc-actions">
-              <button class="btn ghost" data-del="${d.id}">Șterge</button>
-            </div>
-          </div>
-        `).join('')
-      }
-    </div>
-  `;
+  container.innerHTML =
+    '<h2 style="margin:0 0 4px;">' + CATS[cat] + '</h2>' +
+    '<div class="doc-meta" style="margin-bottom:16px;">Fișierele rămân aici până le ștergi tu.</div>' +
+    '<div class="card">' +
+      '<div class="row">' +
+        '<div><label>Fișier PDF</label><input type="file" id="file-input" accept="application/pdf"></div>' +
+        '<div><label>Lună / an (etichetă)</label><input type="text" id="month-input" placeholder="ex. Iulie 2026"></div>' +
+        '<button class="btn" id="upload-btn">Încarcă</button>' +
+      '</div>' +
+      '<div class="hint">Textul se extrage din PDF direct în browser (păstrând poziția coloanelor pe zile) și rămâne salvat aici.</div>' +
+      '<div class="status" id="upload-status"></div>' +
+    '</div>' +
+    '<div class="section-title">Programe salvate</div>' +
+    '<div class="doc-list" id="doc-list">' +
+      (docs.length === 0 ? '<div class="empty">Niciun program încărcat încă pentru această categorie.</div>' :
+        docs.map(d =>
+          '<div class="doc-item" data-id="' + d.id + '">' +
+            '<div><div class="doc-name">' + escapeHtml(d.filename) + '</div>' +
+            '<div class="doc-meta">' + (d.month ? escapeHtml(d.month) + ' · ' : '') + 'încărcat ' + new Date(d.uploadedAt).toLocaleDateString('ro-RO') + '</div></div>' +
+            '<div class="doc-actions"><button class="btn ghost" data-del="' + d.id + '">Șterge</button></div>' +
+          '</div>'
+        ).join('')
+      ) +
+    '</div>';
 
   document.getElementById('upload-btn').onclick = ()=>{
     const file = document.getElementById('file-input').files[0];
     const month = document.getElementById('month-input').value.trim();
     handleUpload(cat, file, month);
   };
-
   document.querySelectorAll('.doc-item').forEach(el=>{
     el.addEventListener('click', (e)=>{
       if(e.target.closest('[data-del]')) return;
@@ -471,7 +498,75 @@ function renderList(){
   });
 }
 
+async function renderCross(){
+  const container = document.getElementById('app');
+  container.innerHTML =
+    '<h2 style="margin:0 0 4px;">Cine e la trenul X?</h2>' +
+    '<div class="doc-meta" style="margin-bottom:16px;">Caută o zi și un cod de tren — primești toți oamenii (mecanic, șef tren, vânzător bilete) găsiți în ziua respectivă cu codul respectiv, din toate fișierele salvate.</div>' +
+    '<div class="card">' +
+      '<div class="search-bar">' +
+        '<div><label>Zi (1-31)</label><input type="text" id="cross-day" placeholder="ex. 15" value="' + escapeHtml(state.crossDay) + '" style="min-width:80px;"></div>' +
+        '<div><label>Cod tren</label><input type="text" id="cross-code" placeholder="ex. 16565" value="' + escapeHtml(state.crossCode) + '"></div>' +
+        '<button class="btn solid-green" id="cross-btn">Caută trenul</button>' +
+      '</div>' +
+      '<div class="search-note">Se caută în toate fișierele din ambele categorii, folosind poziția reconstruită a coloanelor de zile din fiecare PDF.</div>' +
+    '</div>' +
+    '<div id="cross-results"><div class="empty">Introdu ziua și codul, apoi apasă Caută trenul.</div></div>';
+
+  document.getElementById('cross-btn').onclick = async ()=>{
+    state.crossDay = document.getElementById('cross-day').value.trim();
+    state.crossCode = document.getElementById('cross-code').value.trim();
+    await runCrossSearch();
+  };
+  ['cross-day','cross-code'].forEach(id=>{
+    document.getElementById(id).addEventListener('keydown', e=>{
+      if(e.key==='Enter') document.getElementById('cross-btn').click();
+    });
+  });
+}
+
+async function runCrossSearch(){
+  const holder = document.getElementById('cross-results');
+  const day = parseInt(state.crossDay, 10);
+  const code = state.crossCode.toLowerCase();
+  if(isNaN(day) || day < 1 || day > 31 || !code){
+    holder.innerHTML = '<div class="empty">Completează ziua (1-31) și codul.</div>';
+    return;
+  }
+  holder.innerHTML = '<div class="empty">Se caută în toate fișierele...</div>';
+
+  const results = [];
+  for(const cat of Object.keys(CATS)){
+    const docs = state.docsMeta[cat] || [];
+    for(const d of docs){
+      const blocks = await getBlocksForDoc(d.id);
+      blocks.forEach(b=>{
+        const codes = b.dayCodes[day] || [];
+        const hit = codes.find(c => c.toLowerCase() === code || c.toLowerCase().includes(code));
+        if(hit){
+          results.push({ name: b.name, role: b.role, category: CATS[cat], file: d.filename, code: hit });
+        }
+      });
+    }
+  }
+
+  if(results.length === 0){
+    holder.innerHTML = '<div class="empty">Niciun angajat găsit cu codul „' + escapeHtml(state.crossCode) + '” în ziua ' + day + '.</div>';
+    return;
+  }
+
+  holder.innerHTML = '<div class="section-title">' + results.length + ' găsit(e) — ziua ' + day + ', cod ' + escapeHtml(state.crossCode) + '</div>' +
+    results.map(r =>
+      '<div class="result-card">' +
+        '<div><div class="result-name">' + escapeHtml(r.name) + '</div>' +
+        '<div class="result-meta">' + escapeHtml(r.role) + ' · ' + escapeHtml(r.category) + ' · ' + escapeHtml(r.file) + '</div></div>' +
+        '<div class="result-code">' + escapeHtml(r.code) + '</div>' +
+      '</div>'
+    ).join('');
+}
+
 async function render(){
+  if(state.view === 'cross'){ await renderCross(); return; }
   if(state.view==='detail' && state.openDocId){
     const doc = (state.docsMeta[state.category]||[]).find(d=>d.id===state.openDocId);
     if(doc){ await renderDetail(state.category, doc); return; }
