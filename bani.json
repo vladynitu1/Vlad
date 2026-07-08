@@ -1,17 +1,6 @@
 {
   "people": [
     {
-      "id": 101,
-      "name": "Bomba",
-      "entries": [
-        {
-          "id": 215,
-          "amount": 50,
-          "reason": "Tt"
-        }
-      ]
-    },
-    {
       "id": 102,
       "name": "Gena",
       "entries": [
