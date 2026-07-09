@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>EMX Fluturas</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600;800&display=swap');
+:root{
+  --bg:#07090f;--surf:#0d1117;--surf2:#141b27;--surf3:#1a2236;
+  --bord:#1e3356;--bord2:#2a4070;
+  --acc:#00c8e8;--acc2:rgba(0,200,232,0.14);
+  --grn:#00e5a0;--grn2:rgba(0,229,160,0.10);
+  --yel:#ffc940;--yel2:rgba(255,201,64,0.12);
+  --red:#ff4d6d;--red2:rgba(255,77,109,0.09);
+  --org:#ff8c42;--org2:rgba(255,140,66,0.12);
+  --txt:#d8e8f5;--txtd:#5a7a9a;--txtm:#8aafcc;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--txt);font-family:'Exo 2',sans-serif;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,200,232,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(0,200,232,0.018) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+.app{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:14px 14px 60px}
+
+.hdr{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:22px 24px;background:linear-gradient(135deg,#0a0a1a,#0d1530,#0a1a0a);border:1px solid transparent;border-radius:16px;margin-bottom:14px;position:relative;overflow:hidden;box-shadow:0 0 40px rgba(0,200,255,0.08),0 0 80px rgba(0,255,100,0.04)}
+.hdr::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;border-radius:16px;padding:1px;background:linear-gradient(135deg,var(--acc),transparent,var(--grn),transparent,var(--acc));-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+.hdr::after{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(0,200,255,0.03),transparent);animation:hdrShine 4s infinite;pointer-events:none}
+@keyframes hdrShine{0%{left:-100%}100%{left:200%}}
+.emx-logo{display:flex;align-items:center;gap:0;line-height:1}
+.emx-e{font-family:'Rajdhani',sans-serif;font-size:3rem;font-weight:900;color:var(--acc);letter-spacing:-2px;text-shadow:0 0 30px var(--acc),0 0 60px rgba(0,200,255,0.5)}
+.emx-m{font-family:'Rajdhani',sans-serif;font-size:3rem;font-weight:900;color:#fff;letter-spacing:-2px;text-shadow:0 0 20px rgba(255,255,255,0.4)}
+.emx-x{font-family:'Rajdhani',sans-serif;font-size:3rem;font-weight:900;color:var(--grn);letter-spacing:-2px;text-shadow:0 0 30px var(--grn),0 0 60px rgba(0,255,100,0.5)}
+.emx-dot{font-size:.7rem;color:var(--acc);margin-left:8px;animation:blink 1.5s infinite;align-self:center}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+.emx-tag{font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--txtd);letter-spacing:3px;text-transform:uppercase;margin-top:6px}
+.save-row{display:flex;justify-content:center;align-items:center;gap:10px;margin-top:12px}
+.save-badge{display:inline-flex;align-items:center;gap:5px;font-size:.62rem;font-family:'Share Tech Mono',monospace;color:var(--txtd);padding:4px 12px;background:var(--surf2);border:1px solid var(--bord2);border-radius:20px;letter-spacing:1px;transition:color .3s,border-color .3s}
+.save-badge.saved{color:var(--grn);border-color:rgba(0,229,160,.3)}
+.save-dot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+.btn-reset{padding:4px 14px;background:var(--red2);border:1px solid var(--red);border-radius:20px;color:var(--red);font-family:'Share Tech Mono',monospace;font-size:.62rem;cursor:pointer;letter-spacing:1px;transition:background .2s,color .2s}
+.btn-reset:hover{background:var(--red);color:#fff}
+
+.card{background:var(--surf);border:1px solid var(--bord);border-radius:12px;padding:16px 18px;margin-bottom:12px}
+.card-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.78rem;text-transform:uppercase;letter-spacing:2.5px;color:var(--acc);margin-bottom:12px;padding-bottom:9px;border-bottom:1px solid var(--bord);display:flex;align-items:center;gap:8px}
+.card-title .dot{width:6px;height:6px;border-radius:50%;background:var(--acc);flex-shrink:0}
+.dot-green{background:var(--grn)!important}
+.dot-red{background:var(--red)!important}
+.dot-org{background:var(--org)!important}
+
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:480px){.grid{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:5px}
+label{font-family:'Rajdhani',sans-serif;font-size:.68rem;font-weight:600;color:var(--txtd);letter-spacing:1.3px;text-transform:uppercase;display:flex;align-items:center;flex-wrap:wrap;gap:4px}
+.badge{font-family:'Share Tech Mono',monospace;font-size:0.6rem;padding:1px 5px;border-radius:4px;letter-spacing:.2px}
+.by{background:var(--acc2);color:var(--acc);border:1px solid rgba(0,200,232,.3)}
+.bg{background:var(--grn2);color:var(--grn);border:1px solid rgba(0,229,160,.25)}
+.input-wrap{position:relative}
+.input-unit{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:.68rem;font-family:'Share Tech Mono',monospace;color:var(--txtd);pointer-events:none}
+input[type="number"]{background:var(--surf2);border:1px solid var(--bord2);border-radius:7px;color:var(--txt);font-family:'Share Tech Mono',monospace;font-size:.95rem;padding:8px 42px 8px 11px;width:100%;outline:none;-moz-appearance:textfield;transition:border-color .2s,box-shadow .2s}
+input::-webkit-inner-spin-button,input::-webkit-outer-spin-button{-webkit-appearance:none}
+input:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--acc2)}
+input[readonly]{background:var(--grn2);border-color:rgba(0,229,160,.3);color:var(--grn);cursor:default}
+input[readonly]:focus{border-color:rgba(0,229,160,.4);box-shadow:none}
+.info-box{font-size:.72rem;font-family:'Share Tech Mono',monospace;color:var(--txtm);margin-top:8px;padding:8px 10px;background:var(--surf2);border-radius:6px;border:1px solid var(--bord);border-left:3px solid var(--acc);line-height:1.7}
+.info-box .y{color:var(--acc);font-weight:700}
+.info-box .g{color:var(--grn);font-weight:700}
+
+.breakdown{display:flex;flex-direction:column}
+.brow{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--bord);font-family:'Share Tech Mono',monospace;font-size:.74rem;gap:8px}
+.brow:last-child{border-bottom:none}
+.brow .lbl{color:var(--txtm);flex:1;line-height:1.5;font-family:'Exo 2',sans-serif}
+.brow .val{font-weight:700;white-space:nowrap}
+.brow.sep{border-top:1px solid var(--bord2);margin-top:4px;padding-top:10px;border-bottom:none}
+.brow.sep .lbl{font-family:'Rajdhani',sans-serif;font-size:.72rem;font-weight:700;color:var(--txt);text-transform:uppercase;letter-spacing:1px}
+.brow.sep2{border-top:1px solid rgba(255,77,109,.3);margin-top:4px;padding-top:10px;border-bottom:none}
+.brow.sep2 .lbl{font-family:'Rajdhani',sans-serif;font-size:.72rem;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:1px}
+.brow.grand{border-top:2px solid rgba(0,229,160,.4);margin-top:4px;padding-top:12px;border-bottom:none}
+.brow.grand .lbl{font-family:'Rajdhani',sans-serif;font-size:.8rem;font-weight:700;color:var(--grn);text-transform:uppercase;letter-spacing:1.5px}
+
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:480px){.result-grid{grid-template-columns:1fr}}
+.result-box{border-radius:12px;padding:20px 16px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;position:relative;overflow:hidden}
+.result-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.result-box.avans{background:var(--surf);border:1px solid var(--bord2)}
+.result-box.avans::before{background:var(--red)}
+.result-box.lichidare{background:var(--surf);border:1px solid var(--bord2)}
+.result-box.lichidare::before{background:var(--grn)}
+.rb-label{font-family:'Rajdhani',sans-serif;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:2px}
+.result-box.avans .rb-label{color:var(--red)}
+.result-box.lichidare .rb-label{color:var(--grn)}
+.rb-amount{font-family:'Rajdhani',sans-serif;font-weight:800;font-size:clamp(26px,6vw,38px);line-height:1;letter-spacing:-1px}
+.result-box.avans .rb-amount{color:var(--red)}
+.result-box.lichidare .rb-amount{color:var(--grn)}
+.rb-sub{font-family:'Share Tech Mono',monospace;font-size:.62rem;color:var(--txtd);margin-top:2px;line-height:1.6}
+
+.formula-note{font-size:.7rem;font-family:'Share Tech Mono',monospace;color:var(--txtm);padding:10px 12px;background:var(--surf2);border:1px solid var(--bord);border-left:3px solid var(--grn);border-radius:8px;line-height:1.9}
+.formula-note .g{color:var(--grn)}
+.formula-note .y{color:var(--acc)}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="hdr">
+  <div class="emx-logo">
+    <span class="emx-e">E</span><span class="emx-m">M</span><span class="emx-x">X</span>
+    <span class="emx-dot">●</span>
+  </div>
+  <div class="emx-tag">CALCUL SALARIU</div>
+  <div class="save-row">
+    <span class="save-badge" id="saveBadge"><span class="save-dot"></span><span id="saveText">Se încarcă...</span></span>
+    <button class="btn-reset" onclick="resetDate()">↺ RESET</button>
+  </div>
+</div>
+
+  <!-- SALARIU & NORMA -->
+  <div class="card">
+    <div class="card-title"><span class="dot"></span> Salariu & Normă</div>
+    <div class="grid">
+      <div class="field">
+        <label>Salariu de încadrare</label>
+        <div class="input-wrap">
+          <input type="number" id="salariuBaza" value="6710" min="0" oninput="onChange()">
+          <span class="input-unit">RON</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Normă ore / lună</label>
+        <div class="input-wrap">
+          <input type="number" id="normaOre" value="176" min="1" oninput="onChange()">
+          <span class="input-unit">ore</span>
+        </div>
+      </div>
+    </div>
+    <div class="info-box" id="tarifInfo">—</div>
+  </div>
+
+  <!-- ORE LUCRATE -->
+  <div class="card">
+    <div class="card-title"><span class="dot dot-green"></span> Ore lucrate</div>
+    <div class="grid">
+      <div class="field">
+        <label>Ore normale (realizate)</label>
+        <div class="input-wrap">
+          <input type="number" id="oreNormale" value="160" min="0" oninput="onChange()">
+          <span class="input-unit">ore</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Ore supl. I <span class="badge by">×1.75</span></label>
+        <div class="input-wrap">
+          <input type="number" id="oreSuplI" value="20" min="0" oninput="onChange()">
+          <span class="input-unit">ore</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Festive <span class="badge bg">×1.00</span></label>
+        <div class="input-wrap">
+          <input type="number" id="oreFestive" value="44" min="0" oninput="onChange()">
+          <span class="input-unit">ore</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Noapte 25% <span class="badge by">×0.25</span></label>
+        <div class="input-wrap">
+          <input type="number" id="oreNoapte" value="23" min="0" oninput="onChange()">
+          <span class="input-unit">ore</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Cap Secție <span class="badge by">×0.75</span></label>
+        <div class="input-wrap">
+          <input type="number" id="oreCapSectie" value="61" min="0" oninput="onChange()">
+          <span class="input-unit">ore</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Ore Școală <span class="badge bg">×1.00</span></label>
+        <div class="input-wrap">
+          <input type="number" id="oreScoala" value="6" min="0" oninput="onChange()">
+          <span class="input-unit">ore</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Formator <span class="badge bg">×1.00</span></label>
+        <div class="input-wrap">
+          <input type="number" id="oreFormator" value="0" min="0" oninput="onChange()">
+          <span class="input-unit">ore</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BONURI -->
+  <div class="card">
+    <div class="card-title"><span class="dot dot-green"></span> Bonuri de masă</div>
+    <div class="grid">
+      <div class="field">
+        <label>Nr. bonuri <span class="badge bg">auto ÷ 8</span></label>
+        <div class="input-wrap">
+          <input type="number" id="nrBonuri" readonly>
+          <span class="input-unit">buc</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Valoare / bon</label>
+        <div class="input-wrap">
+          <input type="number" id="valoareBon" value="43" min="0" oninput="onChange()">
+          <span class="input-unit">RON</span>
+        </div>
+      </div>
+    </div>
+    <div class="info-box" id="bonuriInfo">—</div>
+  </div>
+
+  <!-- AVANS -->
+  <div class="card">
+    <div class="card-title"><span class="dot dot-red"></span> Avans</div>
+    <div class="grid">
+      <div class="field">
+        <label>Avans (RON)</label>
+        <div class="input-wrap">
+          <input type="number" id="avansRon" value="2500" min="0" oninput="onChange()">
+          <span class="input-unit">RON</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Alte avansuri</label>
+        <div class="input-wrap">
+          <input type="number" id="alteAvansuri" value="0" min="0" oninput="onChange()">
+          <span class="input-unit">RON</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FORMULA -->
+  <div class="card">
+    <div class="card-title"><span class="dot dot-org"></span> Formula WinMENTOR (verificată)</div>
+    <div class="formula-note">
+      <span class="g">Brut</span> = Salar realizat + Sporuri (fără bonuri)<br>
+      <span class="g">Baza CASS</span> = Brut + Bonuri → CASS 10%<br>
+      <span class="g">Baza CAS</span> = Brut → CAS 25%<br>
+      <span class="g">Net</span> = Brut − CASS − CAS<br>
+      <span class="g">Baza impozit</span> = Net + Bonuri → Impozit 10%<br>
+      <span class="y">Salar net</span> = Net − Impozit<br>
+      <span class="y">Lichidare</span> = Salar net − Avans − Alte avansuri
+    </div>
+  </div>
+
+  <!-- DETALII -->
+  <div class="card">
+    <div class="card-title"><span class="dot dot-org"></span> Detalii calcul complet</div>
+    <div class="breakdown" id="breakdown">
+      <div class="brow"><span class="lbl">Introdu date pentru a vedea detaliile</span><span class="val">—</span></div>
+    </div>
+  </div>
+
+  <!-- REZULTATE -->
+  <div class="result-grid">
+    <div class="result-box avans">
+      <div class="rb-label">Avans</div>
+      <div class="rb-amount" id="rezAvans">0 RON</div>
+      <div class="rb-sub" id="rezAvansInfo">—</div>
+    </div>
+    <div class="result-box lichidare">
+      <div class="rb-label">Lichidare</div>
+      <div class="rb-amount" id="rezLichidare">0 RON</div>
+      <div class="rb-sub" id="rezLichidareInfo">—</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const FIELDS = [
+  'salariuBaza','normaOre','oreNormale','oreSuplI',
+  'oreFestive','oreNoapte','oreCapSectie','oreScoala','oreFormator',
+  'valoareBon','avansRon','alteAvansuri'
+];
+const STORAGE_KEY = 'emx_fluturas_v2';
+const DEFAULTS = {
+  salariuBaza:6710, normaOre:176, oreNormale:160, oreSuplI:20,
+  oreFestive:44, oreNoapte:23, oreCapSectie:61, oreScoala:6,
+  oreFormator:0, valoareBon:43,
+  avansRon:2500, alteAvansuri:0
+};
+
+function salveaza() {
+  const data = {};
+  FIELDS.forEach(id => { data[id] = document.getElementById(id).value; });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  const badge = document.getElementById('saveBadge');
+  badge.classList.add('saved');
+  document.getElementById('saveText').textContent = '✓ Salvat';
+  clearTimeout(window._st);
+  window._st = setTimeout(() => {
+    document.getElementById('saveText').textContent = 'Salvat local';
+  }, 1500);
+}
+
+function incarca() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (raw) {
+    try {
+      const data = JSON.parse(raw);
+      FIELDS.forEach(id => {
+        if (data[id] !== undefined) document.getElementById(id).value = data[id];
+      });
+      document.getElementById('saveBadge').classList.add('saved');
+      document.getElementById('saveText').textContent = 'Salvat local';
+      return;
+    } catch(e) {}
+  }
+  document.getElementById('saveText').textContent = 'Date implicite';
+}
+
+function resetDate() {
+  if (!confirm('Resetezi toate câmpurile la valorile implicite?')) return;
+  FIELDS.forEach(id => { document.getElementById(id).value = DEFAULTS[id]; });
+  localStorage.removeItem(STORAGE_KEY);
+  document.getElementById('saveBadge').classList.remove('saved');
+  document.getElementById('saveText').textContent = 'Resetat';
+  calculeaza();
+}
+
+function onChange() { calculeaza(); salveaza(); }
+
+function fmt(n){return n.toLocaleString('ro-RO',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fmtInt(n){return Math.round(n).toLocaleString('ro-RO');}
+function v(id){return parseFloat(document.getElementById(id).value)||0;}
+
+function calculeaza() {
+  const salBaza        = v('salariuBaza');
+  const normaOre       = v('normaOre')||1;
+  const oreNormale     = v('oreNormale');
+  const oreSuplI       = v('oreSuplI');
+  const oreFestive     = v('oreFestive');
+  const oreNoapte      = v('oreNoapte');
+  const oreCapSectie   = v('oreCapSectie');
+  const oreScoala      = v('oreScoala');
+  const oreFormator    = v('oreFormator');
+  const valoareBon     = v('valoareBon');
+  const avansRon       = v('avansRon');
+  const alteAvansuri   = v('alteAvansuri');
+
+  // Bonuri automat: 1 bon / 8 ore normale
+  const nrBonuri = Math.floor(oreNormale / 8);
+  document.getElementById('nrBonuri').value = nrBonuri;
+
+  const t = Math.round(salBaza / normaOre * 100) / 100;
+  document.getElementById('tarifInfo').innerHTML =
+    `Tarif orar: <span class="y">${fmt(t)} RON/oră</span> &nbsp;(${fmt(salBaza)} RON ÷ ${normaOre} ore)`;
+
+  const salReal     = Math.round(salBaza * (oreNormale / normaOre));
+  const plataSuplI  = Math.round(oreSuplI     * t * 1.75);
+  const plataFest   = Math.round(oreFestive   * t * 1.00);
+  const plataNoapte = Math.round(oreNoapte    * t * 0.25);
+  const plataCapS   = Math.round(oreCapSectie * t * 0.75);
+  const plataScoala = Math.round(oreScoala    * t * 1.00);
+  const plataForm   = Math.round(oreFormator  * t * 1.00);
+
+  const totalBrut = salReal + plataSuplI + plataFest + plataNoapte + plataCapS + plataScoala + plataForm;
+  const totalBonuri = nrBonuri * valoareBon;
+
+  document.getElementById('bonuriInfo').innerHTML =
+    `<span class="g">${oreNormale} ore ÷ 8 = ${nrBonuri} bonuri</span> × ${fmt(valoareBon)} RON = <span class="y">${fmt(totalBonuri)} RON</span>`;
+
+  const bazaCASS = totalBrut + totalBonuri;
+  const bazaCAS  = totalBrut;
+  const CASS = Math.round(bazaCASS * 0.10);
+  const CAS  = Math.round(bazaCAS  * 0.25);
+  const net  = totalBrut - CASS - CAS;
+  const bazaImpozit = Math.max(0, net + totalBonuri);
+  const impozit  = Math.round(bazaImpozit * 0.10);
+  const salarNet = net - impozit;
+  const lichidare = salarNet - avansRon - alteAvansuri;
+
+  let html = '';
+  const rows = [
+    {show:true,           col:'var(--txt)',   lbl:`Salar realizat — ${oreNormale} ore / ${normaOre} normă`,  val:salReal},
+    {show:oreSuplI>0,     col:'var(--acc)', lbl:`Ore supl. I — ${oreSuplI} ore × ${fmt(t)} × 1.75`,        val:plataSuplI},
+    {show:oreFestive>0,   col:'var(--txt)',   lbl:`Festive — ${oreFestive} ore × ${fmt(t)}`,                 val:plataFest},
+    {show:oreNoapte>0,    col:'var(--acc)', lbl:`Noapte 25% — ${oreNoapte} ore × ${fmt(t*0.25)}`,          val:plataNoapte},
+    {show:oreCapSectie>0, col:'var(--acc)', lbl:`Cap Secție 75% — ${oreCapSectie} ore × ${fmt(t*0.75)}`,   val:plataCapS},
+    {show:oreScoala>0,    col:'var(--txt)',   lbl:`Ore Școală — ${oreScoala} ore × ${fmt(t)}`,               val:plataScoala},
+    {show:oreFormator>0,  col:'var(--txt)',   lbl:`Formator — ${oreFormator} ore × ${fmt(t)}`,               val:plataForm},
+  ];
+
+  rows.filter(r=>r.show).forEach(r=>{
+    html+=`<div class="brow"><span class="lbl">${r.lbl}</span><span class="val" style="color:${r.col}">${fmtInt(r.val)} RON</span></div>`;
+  });
+  html+=`<div class="brow sep"><span class="lbl">Venit BRUT (fără bonuri)</span><span class="val" style="color:var(--acc);font-size:15px;">${fmtInt(totalBrut)} RON</span></div>`;
+  if(totalBonuri>0){
+    html+=`<div class="brow"><span class="lbl" style="color:var(--grn)">+ Bonuri masă — ${nrBonuri} × ${fmt(valoareBon)} RON</span><span class="val" style="color:var(--grn)">+ ${fmtInt(totalBonuri)} RON</span></div>`;
+  }
+  html+=`<div class="brow sep2"><span class="lbl">Rețineri</span><span class="val"></span></div>`;
+  html+=`<div class="brow"><span class="lbl" style="color:var(--red)">CASS 10% din ${fmtInt(bazaCASS)} (brut+bonuri)</span><span class="val" style="color:var(--red)">− ${fmtInt(CASS)} RON</span></div>`;
+  html+=`<div class="brow"><span class="lbl" style="color:var(--red)">CAS 25% din ${fmtInt(bazaCAS)} (brut)</span><span class="val" style="color:var(--red)">− ${fmtInt(CAS)} RON</span></div>`;
+  html+=`<div class="brow sep"><span class="lbl">Venit net (Brut − CASS − CAS)</span><span class="val" style="color:var(--acc);font-size:14px;">${fmtInt(net)} RON</span></div>`;
+  html+=`<div class="brow"><span class="lbl" style="color:var(--org)">Baza impozit = net + bonuri = ${fmtInt(bazaImpozit)} RON</span><span class="val"></span></div>`;
+  html+=`<div class="brow"><span class="lbl" style="color:var(--red)">Impozit 10% din ${fmtInt(bazaImpozit)}</span><span class="val" style="color:var(--red)">− ${fmtInt(impozit)} RON</span></div>`;
+  html+=`<div class="brow grand"><span class="lbl">Salar net</span><span class="val" style="color:var(--grn);font-size:16px;">${fmtInt(salarNet)} RON</span></div>`;
+
+  document.getElementById('breakdown').innerHTML = html;
+  document.getElementById('rezAvans').textContent         = fmtInt(avansRon)+' RON';
+  document.getElementById('rezLichidare').textContent     = fmtInt(lichidare)+' RON';
+  document.getElementById('rezAvansInfo').textContent     = `Avans: ${fmtInt(avansRon)} RON`;
+  document.getElementById('rezLichidareInfo').textContent = `Din salar net ${fmtInt(salarNet)} RON`;
+}
+
+// Pornire
+incarca();
+calculeaza();
+</script>
+</body>
+</html>
