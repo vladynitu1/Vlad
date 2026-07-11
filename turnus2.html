@@ -20,7 +20,6 @@
 body{background:var(--bg);color:var(--tx);font-family:var(--fn);min-height:100vh;overflow-x:hidden}
 body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,200,232,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(0,200,232,0.018) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
 
-/* BANNER */
 .banner{
   position:sticky;top:0;z-index:100;
   display:flex;align-items:center;justify-content:space-between;
@@ -48,7 +47,6 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .bnav{display:flex;align-items:center;gap:6px;position:relative;z-index:1}
 .bacts{display:flex;gap:6px;flex-shrink:0;position:relative;z-index:1;flex-wrap:wrap}
 
-/* MODE TOGGLE BUTTON */
 .btn-mode{
   display:inline-flex;align-items:center;gap:5px;
   padding:6px 14px;border-radius:7px;border:1px solid;
@@ -62,7 +60,6 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .btn-mode.active-edit{background:rgba(255,201,64,0.15);border-color:var(--am);color:var(--am);box-shadow:0 0 10px rgba(255,201,64,0.2)}
 .btn-mode.active-edit:hover{background:rgba(255,201,64,0.25)}
 
-/* BUTTONS */
 .btn{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:7px;border:1px solid;font-family:var(--fd);font-size:0.72rem;font-weight:600;letter-spacing:1px;cursor:pointer;transition:all .16s;white-space:nowrap;text-transform:uppercase}
 .btn svg{width:11px;height:11px;flex-shrink:0}
 .btn-g{background:transparent;border-color:var(--b2);color:var(--tx2)}
@@ -71,24 +68,22 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .btn-ac:hover{background:rgba(0,200,232,.22);box-shadow:0 0 12px var(--acg)}
 .btn-gr{background:var(--grd);border-color:var(--gr);color:var(--gr)}
 .btn-gr:hover{background:rgba(0,229,160,.2);box-shadow:0 0 10px rgba(0,229,160,.3)}
-.btn-pu{background:var(--pud);border-color:var(--pu);color:var(--pu)}
-.btn-pu:hover{background:rgba(168,85,247,.22);box-shadow:0 0 10px rgba(168,85,247,.3)}
 .btn-rd{background:var(--rdd);border-color:var(--rd);color:var(--rd);padding:3px 7px;font-size:9px}
 .btn-rd:hover{background:rgba(255,77,109,.22)}
 .btn-sm{padding:4px 8px;font-size:0.68rem}
-.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-pu{background:var(--pud);border-color:var(--pu);color:var(--pu)}
+.btn-pu:hover{background:rgba(168,85,247,.24);box-shadow:0 0 10px rgba(168,85,247,.3)}
+.btn:disabled{opacity:.45;cursor:not-allowed;filter:grayscale(.3)}
 
-/* MODES */
 #editActions{display:none;gap:6px;flex-wrap:wrap}
 #editActions.visible{display:flex}
 
-/* TOKEN MODAL */
 .overlay{display:none;position:fixed;inset:0;background:rgba(7,9,15,0.92);z-index:300;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(5px)}
 .overlay.open{display:flex}
-.modal{background:var(--s2);border:1px solid var(--b2);border-radius:14px;padding:22px;width:100%;max-width:460px;position:relative;max-height:90vh;overflow-y:auto}
+.modal{background:var(--s2);border:1px solid var(--b2);border-radius:14px;padding:22px;width:100%;max-width:460px;position:relative}
+.modal.wide{max-width:680px}
 .modal::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gr),var(--ac),transparent);border-radius:14px 14px 0 0}
 .modal h2{font-family:var(--fd);font-size:1.1rem;font-weight:700;letter-spacing:2px;color:var(--gr);text-transform:uppercase;margin-bottom:12px}
-.modal.upload-modal h2{color:var(--pu)}
 .mclose{position:absolute;top:10px;right:12px;background:none;border:none;color:var(--tx3);font-size:1.1rem;cursor:pointer;font-family:var(--fd)}
 .mclose:hover{color:var(--rd)}
 .tok-field{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
@@ -101,84 +96,41 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .tok-actions{display:flex;flex-direction:column;gap:6px}
 .tok-actions .btn{width:100%;justify-content:center}
 
-/* UPLOAD MODAL SPECIFIC */
-.drop-zone{
-  border:2px dashed var(--b2);border-radius:10px;padding:24px 14px;
-  text-align:center;cursor:pointer;transition:all .18s;margin-bottom:12px;
-  background:rgba(168,85,247,0.03);
-}
-.drop-zone:hover,.drop-zone.dragover{border-color:var(--pu);background:rgba(168,85,247,0.08)}
-.drop-zone .dz-ico{font-size:30px;margin-bottom:8px;opacity:.6}
-.drop-zone .dz-txt{font-family:var(--fd);font-size:13px;color:var(--tx2);letter-spacing:1px;font-weight:600}
-.drop-zone .dz-sub{font-size:10px;color:var(--tx3);margin-top:4px}
-#fileInput{display:none}
-.file-chip{
-  display:flex;align-items:center;gap:8px;background:var(--s3);border:1px solid var(--b2);
-  border-radius:7px;padding:7px 10px;margin-bottom:6px;font-size:11px;
-}
-.file-chip .fc-name{flex:1;color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.file-chip .fc-size{color:var(--tx3);font-size:9px;font-family:var(--fm)}
-.file-chip .fc-del{background:none;border:none;color:var(--tx3);cursor:pointer;font-size:12px;padding:0 2px}
-.file-chip .fc-del:hover{color:var(--rd)}
-.upload-status{
-  font-family:var(--fm);font-size:.72rem;min-height:18px;margin:8px 0;color:var(--tx2);
-  display:flex;align-items:center;gap:8px;
-}
-.spinner{
-  width:13px;height:13px;border:2px solid var(--b2);border-top-color:var(--pu);
-  border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0;
-}
+/* IMPORT MODAL */
+.imp-drop{border:1.5px dashed var(--b2);border-radius:10px;padding:22px 14px;text-align:center;cursor:pointer;transition:all .15s;margin-bottom:12px;background:rgba(0,200,232,0.02)}
+.imp-drop:hover{border-color:var(--ac);background:var(--acd)}
+.imp-drop.hasfile{border-color:var(--gr);background:var(--grd)}
+.imp-drop-ico{font-size:26px;margin-bottom:6px;opacity:.7}
+.imp-drop-txt{font-family:var(--fd);font-size:12px;letter-spacing:1px;color:var(--tx2);text-transform:uppercase}
+.imp-drop-sub{font-size:10px;color:var(--tx3);margin-top:3px}
+.imp-status{font-family:var(--fm);font-size:.75rem;min-height:18px;margin-bottom:8px;color:var(--am);display:flex;align-items:center;gap:7px}
+.imp-spin{width:11px;height:11px;border:2px solid var(--b2);border-top-color:var(--am);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
 @keyframes spin{to{transform:rotate(360deg)}}
-.preview-list{margin-top:10px;display:flex;flex-direction:column;gap:6px;max-height:240px;overflow-y:auto}
-.preview-item{
-  background:var(--s3);border:1px solid var(--b2);border-radius:7px;padding:8px 10px;
-  font-size:11px;display:flex;align-items:center;justify-content:space-between;gap:8px;
-}
-.preview-item .pi-info{display:flex;flex-direction:column;gap:2px;overflow:hidden}
-.preview-item .pi-title{font-family:var(--fd);font-weight:600;color:var(--ac2);letter-spacing:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.preview-item .pi-meta{font-size:9px;color:var(--tx3);font-family:var(--fm)}
+.imp-preview{display:none;flex-direction:column;gap:6px;margin-top:6px}
+.imp-preview.visible{display:flex}
+.imp-preview label{font-family:var(--fd);font-size:0.62rem;letter-spacing:2px;color:var(--tx3);text-transform:uppercase}
+.imp-ta{background:var(--bg);border:1px solid var(--b2);color:var(--tx);font-family:var(--fm);font-size:.72rem;padding:10px;border-radius:7px;outline:none;width:100%;min-height:220px;resize:vertical;line-height:1.55}
+.imp-ta:focus{border-color:var(--gr)}
+.imp-count{font-size:10px;color:var(--tx3);text-align:right}
 
-/* MAIN */
 main{position:relative;z-index:1;max-width:940px;margin:0 auto;padding:20px 16px 80px}
 .tlist{display:flex;flex-direction:column;gap:16px}
 
-/* ── VIEW MODE CARDS (compact) ── */
-.vcard{
-  background:var(--s1);border:1px solid var(--b1);border-radius:12px;
-  overflow:hidden;position:relative;
-  animation:ci .22s ease;
-}
+/* VIEW CARDS */
+.vcard{background:var(--s1);border:1px solid var(--b1);border-radius:12px;overflow:hidden;position:relative;animation:ci .22s ease}
 @keyframes ci{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .vcard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--ac),var(--gr))}
-.vcard.new-card::before{background:linear-gradient(90deg,var(--pu),var(--ac))}
-.vhead{
-  display:flex;align-items:center;gap:10px;
-  padding:8px 14px;background:var(--s2);
-  border-bottom:1px solid var(--b1);
-}
+.vhead{display:flex;align-items:center;gap:10px;padding:8px 14px;background:var(--s2);border-bottom:1px solid var(--b1)}
 .vnum{font-family:var(--fd);font-size:15px;font-weight:700;color:var(--ac2);letter-spacing:2px;flex-shrink:0}
 .vtitle{font-family:var(--fd);font-size:14px;font-weight:600;color:var(--tx);letter-spacing:1px;flex:1}
 .vtitle-empty{color:var(--tx3);font-style:italic}
-.vbadge-new{
-  font-family:var(--fd);font-size:8px;letter-spacing:1.5px;font-weight:700;color:var(--pu);
-  background:var(--pud);border:1px solid rgba(168,85,247,.3);border-radius:5px;padding:2px 6px;
-}
 
-/* COMPACT BODY */
 .vbody{padding:8px 14px 10px}
 .vgrupa{margin-bottom:4px}
 .vgrupa:last-child{margin-bottom:0}
 
-/* COMPACT TIMELINE ROW */
-.vtimeline{
-  display:flex;align-items:stretch;gap:0;
-  border:1px solid var(--b2);border-radius:8px;overflow:hidden;
-  background:var(--s3);margin-bottom:3px;
-}
-.vt-block{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:5px 8px;gap:1px;min-width:52px;flex-shrink:0;
-}
+.vtimeline{display:flex;align-items:stretch;gap:0;border:1px solid var(--b2);border-radius:8px;overflow:hidden;background:var(--s3);margin-bottom:3px}
+.vt-block{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5px 8px;gap:1px;min-width:52px;flex-shrink:0}
 .vt-block.pr-blk{background:rgba(0,229,160,0.07);border-right:1px solid var(--b2)}
 .vt-block.ie-blk{background:rgba(255,201,64,0.07);border-left:1px solid var(--b2)}
 .vt-lbl{font-family:var(--fd);font-size:8px;letter-spacing:1.5px;text-transform:uppercase;font-weight:700}
@@ -187,36 +139,28 @@ main{position:relative;z-index:1;max-width:940px;margin:0 auto;padding:20px 16px
 .vt-time{font-family:var(--fm);font-size:13px;font-weight:600;color:var(--tx)}
 .vt-time.empty-time{color:var(--tx3);font-size:10px}
 .vt-trenuri{flex:1;display:flex;align-items:center;padding:4px 8px;gap:5px;flex-wrap:wrap}
-.vtren-chip{
-  display:inline-flex;align-items:center;gap:4px;
-  background:rgba(0,200,232,0.08);border:1px solid rgba(0,200,232,0.2);
-  border-radius:5px;padding:3px 7px;
-}
+.vtren-chip{display:inline-flex;align-items:center;gap:4px;background:rgba(0,200,232,0.08);border:1px solid rgba(0,200,232,0.2);border-radius:5px;padding:3px 7px}
 .vtren-nr{font-family:var(--fm);font-size:11px;color:var(--ac2);font-weight:600}
 .vtren-times{font-family:var(--fm);font-size:10px;color:var(--tx3)}
 .vtren-dot{color:var(--tx3);font-size:9px}
 .vtren-desc{font-size:9px;color:var(--tx3);font-family:var(--fn);font-style:italic}
 .vno-tren{font-family:var(--fd);font-size:10px;color:var(--tx3);letter-spacing:1px;padding:2px 0}
 
-/* DORM COMPACT */
-.vdorm{
-  display:flex;align-items:center;gap:7px;
-  background:var(--pud);border:1px solid rgba(168,85,247,.2);
-  border-radius:6px;padding:4px 10px;margin:3px 0;font-size:10px;color:var(--pu);
-}
-.vdorm span{font-family:var(--fm)}
+/* DORM VIEW */
+.vdorm{display:flex;flex-direction:column;gap:3px;background:var(--pud);border:1px solid rgba(168,85,247,.2);border-radius:6px;padding:5px 10px;margin:3px 0;font-size:10px;color:var(--pu)}
+.vdorm-row{display:flex;align-items:center;gap:7px}
+.vdorm-row span{font-family:var(--fm)}
+.vdorm-note{font-size:9px;color:rgba(168,85,247,0.7);font-style:italic;padding-left:2px;line-height:1.5}
 
 /* EDIT CARD */
 .tcard{background:var(--s1);border:1px solid var(--b1);border-radius:12px;overflow:hidden;animation:ci .22s ease;position:relative}
 .tcard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--ac),var(--gr))}
-.tcard.new-card::before{background:linear-gradient(90deg,var(--pu),var(--ac))}
 .thead{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--b1);background:var(--s2)}
 .tnum{font-family:var(--fd);font-size:17px;font-weight:700;color:var(--ac2);letter-spacing:2px;text-shadow:0 0 10px var(--acg);flex-shrink:0}
 .ttitle{flex:1;background:transparent;border:none;font-family:var(--fd);font-size:15px;font-weight:600;color:var(--tx);outline:none;letter-spacing:1px}
 .ttitle::placeholder{color:var(--tx3)}
 .tbody{padding:12px 16px;display:flex;flex-direction:column}
 
-/* SEGMENTS */
 .seg{border-left:2px solid var(--b1);padding:10px 0 10px 16px;margin-left:9px;position:relative}
 .seg:last-child{border-left-color:transparent}
 .dot{position:absolute;left:-7px;top:14px;width:12px;height:12px;border-radius:50%;border:2px solid var(--s1)}
@@ -232,7 +176,17 @@ main{position:relative;z-index:1;max-width:940px;margin:0 auto;padding:20px 16px
 .tl{font-family:var(--fd);font-size:9px;color:var(--tx3);letter-spacing:1px;flex-shrink:0;text-transform:uppercase}
 .ti{background:var(--s3);border:1px solid var(--b2);color:var(--tx);font-family:var(--fm);font-size:12px;font-weight:500;padding:5px 9px;border-radius:5px;outline:none;width:66px;text-align:center;transition:border-color .16s,box-shadow .16s}
 .ti:focus{border-color:var(--ac);box-shadow:0 0 0 2px var(--acd)}
-.dbox{background:var(--pud);border:1px solid rgba(168,85,247,.22);border-radius:6px;padding:7px 12px;font-size:11px;color:var(--pu);display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+
+/* DORM EDIT BOX */
+.dbox{background:var(--pud);border:1px solid rgba(168,85,247,.22);border-radius:6px;padding:7px 12px;font-size:11px;color:var(--pu);display:flex;flex-direction:column;gap:6px}
+.dbox-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.dbox-desc-wrap{display:flex;flex-direction:column;gap:3px}
+.btn-desc{background:none;border:none;color:rgba(168,85,247,0.55);font-family:var(--fd);font-size:9px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;padding:1px 4px;transition:color .15s;align-self:flex-start}
+.btn-desc:hover{color:var(--pu)}
+.dbox-ta{background:rgba(168,85,247,0.07);border:1px solid rgba(168,85,247,.25);border-radius:5px;color:rgba(168,85,247,0.9);font-family:var(--fn);font-size:11px;padding:4px 8px;resize:none;outline:none;width:100%;transition:border-color .15s;line-height:1.5;min-height:28px;overflow:hidden}
+.dbox-ta:focus{border-color:var(--pu);background:rgba(168,85,247,0.12);color:var(--tx)}
+.dbox-ta::placeholder{color:rgba(168,85,247,0.35);font-size:10px}
+
 .arow{display:flex;align-items:center;gap:7px;padding:3px 0;flex-wrap:wrap}
 
 /* TREN COMPACT */
@@ -250,8 +204,8 @@ main{position:relative;z-index:1;max-width:940px;margin:0 auto;padding:20px 16px
 .tc-desc-ta{background:rgba(0,200,232,0.04);border:1px solid var(--b2);border-radius:5px;color:var(--tx2);font-family:var(--fn);font-size:11px;padding:4px 8px;resize:none;outline:none;width:100%;transition:border-color .15s;line-height:1.5;min-height:28px;overflow:hidden}
 .tc-desc-ta:focus{border-color:var(--ac);background:rgba(0,200,232,0.07);color:var(--tx)}
 .tc-desc-ta::placeholder{color:var(--tx3);font-size:10px}
-.btn-desc{background:none;border:none;color:var(--tx3);font-family:var(--fd);font-size:9px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;padding:1px 4px;transition:color .15s;align-self:flex-start}
-.btn-desc:hover{color:var(--ac2)}
+.btn-desc-tr{background:none;border:none;color:var(--tx3);font-family:var(--fd);font-size:9px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;padding:1px 4px;transition:color .15s;align-self:flex-start}
+.btn-desc-tr:hover{color:var(--ac2)}
 
 .empty{text-align:center;padding:60px 20px;color:var(--tx3)}
 .eico{font-size:40px;margin-bottom:12px;opacity:.45}
@@ -298,10 +252,6 @@ main{position:relative;z-index:1;max-width:940px;margin:0 auto;padding:20px 16px
   </div>
 
   <div class="bacts" id="editActions">
-    <button class="btn btn-pu" onclick="openUploadModal()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-      Upload AI
-    </button>
     <button class="btn btn-g" onclick="openTokenModal()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
       Token
@@ -309,6 +259,10 @@ main{position:relative;z-index:1;max-width:940px;margin:0 auto;padding:20px 16px
     <button class="btn btn-gr" onclick="saveGH()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v14a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
       Salvează
+    </button>
+    <button class="btn btn-pu" onclick="openImportModal()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Import
     </button>
     <button class="btn btn-ac" onclick="addTurnus()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
@@ -320,11 +274,11 @@ main{position:relative;z-index:1;max-width:940px;margin:0 auto;padding:20px 16px
 <div class="overlay" id="tokenOverlay">
   <div class="modal">
     <button class="mclose" onclick="closeTokenModal()">✕</button>
-    <h2>🔑 GitHub Token</h2>
+    <h2>🔑 Config</h2>
     <div class="tok-hint">
       Sincronizare automată pe toate dispozitivele.<br>
       Repo: <strong>vladynitu1/Vlad</strong> · Fișier: <strong>turnusuri.json</strong><br><br>
-      <strong>Cum obții tokenul:</strong><br>
+      <strong>Cum obții tokenul GitHub:</strong><br>
       1. Mergi pe <a href="https://github.com/settings/tokens/new" target="_blank">github.com/settings/tokens/new</a><br>
       2. Bifează permisiunea <strong>repo</strong><br>
       3. Click <strong>Generate token</strong> și copiază-l
@@ -332,6 +286,10 @@ main{position:relative;z-index:1;max-width:940px;margin:0 auto;padding:20px 16px
     <div class="tok-field">
       <label>Personal Access Token</label>
       <input id="ghTok" class="tok-input" type="password" placeholder="ghp_xxxxxxxxxxxxxxxx" oninput="saveCfg()">
+    </div>
+    <div class="tok-field">
+      <label>Worker URL (proxy Anthropic API — pentru Import)</label>
+      <input id="workerUrl" class="tok-input" type="text" placeholder="https://xxxxx.workers.dev" oninput="saveCfg()">
     </div>
     <div id="tokStatus" style="font-family:var(--fm);font-size:.7rem;min-height:18px;margin-bottom:8px;color:var(--gr)"></div>
     <div class="tok-actions">
@@ -348,34 +306,35 @@ main{position:relative;z-index:1;max-width:940px;margin:0 auto;padding:20px 16px
   </div>
 </div>
 
-<div class="overlay" id="uploadOverlay">
-  <div class="modal upload-modal">
-    <button class="mclose" onclick="closeUploadModal()">✕</button>
-    <h2>🤖 Import Turnusuri (AI)</h2>
+<div class="overlay" id="importOverlay">
+  <div class="modal wide">
+    <button class="mclose" onclick="closeImportModal()">✕</button>
+    <h2>📥 Import Turnus (Poză / PDF)</h2>
     <div class="tok-hint">
-      Încarcă <strong>PDF</strong>-uri sau <strong>poze</strong> cu turnusuri. AI-ul va extrage automat
-      programul (prezentare, trenuri, ieșire, dormitor) și va adăuga turnusurile noi în continuare,
-      numerotate automat ca turnusuri noi. Poți șterge manual turnusurile vechi după aceea.
+      Încarcă o poză sau un PDF cu turnusul (ex. cel de la Ploiești). Claude va extrage prezentările, trenurile, ieșirile și dormitoarele, iar tu poți verifica/corecta rezultatul mai jos înainte să-l adaugi în listă.
     </div>
-    <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
-      <div class="dz-ico">📎</div>
-      <div class="dz-txt">Apasă sau trage fișiere aici</div>
-      <div class="dz-sub">PDF, JPG, PNG — pot fi mai multe fișiere deodată</div>
+
+    <input type="file" id="importFileInput" accept="image/*,.pdf,application/pdf" style="display:none" onchange="onImportFileChange(event)">
+    <div class="imp-drop" id="impDrop" onclick="document.getElementById('importFileInput').click()">
+      <div class="imp-drop-ico">🖼️ / 📄</div>
+      <div class="imp-drop-txt" id="impDropTxt">Alege poză sau PDF</div>
+      <div class="imp-drop-sub">JPG, PNG sau PDF cu tabelul turnusului</div>
     </div>
-    <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg,.webp" multiple onchange="handleFiles(this.files)">
-    <div id="fileChips"></div>
-    <div class="upload-status" id="uploadStatus"></div>
-    <div class="preview-list" id="previewList"></div>
+
+    <div class="imp-status" id="impStatus"></div>
+
+    <div class="imp-preview" id="impPreview">
+      <label>Turnus(uri) extrase — verifică și corectează dacă e nevoie (format JSON)</label>
+      <textarea class="imp-ta" id="impTa" spellcheck="false"></textarea>
+      <div class="imp-count" id="impCount"></div>
+    </div>
+
     <div class="tok-actions" style="margin-top:10px">
-      <button class="btn btn-pu" id="btnExtract" onclick="extractTurnusuri()" disabled>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-        Extrage cu AI
+      <button class="btn btn-gr" id="impConfirmBtn" style="display:none" onclick="confirmImport()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+        Adaugă în listă
       </button>
-      <button class="btn btn-gr" id="btnConfirm" onclick="confirmImport()" style="display:none">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-        Adaugă în Turnusuri
-      </button>
-      <button class="btn btn-g" onclick="closeUploadModal()">Anulează</button>
+      <button class="btn btn-ac" onclick="closeImportModal()">Închide</button>
     </div>
   </div>
 </div>
@@ -396,19 +355,20 @@ main{position:relative;z-index:1;max-width:940px;margin:0 auto;padding:20px 16px
 <script>
 let D=[];
 let editMode=false;
-let newlyAddedIds=new Set();
-let pendingFiles=[];
-let pendingExtracted=null;
 const $=id=>document.getElementById(id);
 
 const GH_USER='vladynitu1';
 const GH_REPO='Vlad';
 const GH_FILE='turnusuri.json';
 let ghToken=localStorage.getItem('gh_token')||'';
+let workerUrl=localStorage.getItem('worker_url')||'';
 
 function ghHeaders(){return{'Authorization':'token '+ghToken,'Accept':'application/vnd.github+json','Content-Type':'application/json'}}
-function saveCfg(){ghToken=$('ghTok').value.trim();localStorage.setItem('gh_token',ghToken)}
-function loadCfg(){$('ghTok').value=ghToken}
+function saveCfg(){
+  ghToken=$('ghTok').value.trim();localStorage.setItem('gh_token',ghToken);
+  workerUrl=$('workerUrl').value.trim();localStorage.setItem('worker_url',workerUrl);
+}
+function loadCfg(){$('ghTok').value=ghToken;$('workerUrl').value=workerUrl}
 function openTokenModal(){$('tokenOverlay').classList.add('open')}
 function closeTokenModal(){$('tokenOverlay').classList.remove('open')}
 
@@ -421,7 +381,8 @@ function showToast(msg,type='ok'){
 
 function uid(){return Math.random().toString(36).slice(2,9)}
 function newTren(){return{id:uid(),n:'',p:'',s:'',desc:''}}
-function newGrupa(){return{id:uid(),pt:'',trenuri:[],it:''}}
+// grupe now store dormitor desc on the group (applies to dorm BEFORE this group, gi>0)
+function newGrupa(){return{id:uid(),pt:'',trenuri:[],it:'',dormDesc:''}}
 function newTurnus(){return{id:uid(),titlu:'',grupe:[newGrupa()]}}
 
 function dur(a,b){
@@ -432,12 +393,9 @@ function dur(a,b){
   return`${Math.floor(m/60)}h${(m%60).toString().padStart(2,'0')}m`;
 }
 function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}
-function mu(){
-  const s='NESALVAT ●';$('stxt').textContent=s;
-}
+function mu(){$('stxt').textContent='NESALVAT ●'}
 function setSaved(){$('stxt').textContent='SALVAT ✓'}
 
-/* ── MODE TOGGLE ── */
 function toggleMode(){
   editMode=!editMode;
   const btn=$('btnMode');
@@ -458,7 +416,6 @@ function toggleMode(){
   render();
 }
 
-/* ── RENDER ── */
 function render(){
   $('empty').style.display=D.length?'none':'block';
   const list=$('tlist');
@@ -470,17 +427,15 @@ function render(){
   }
 }
 
-/* ── VIEW CARD (compact) ── */
+/* ── VIEW CARD ── */
 function buildViewCard(t,ti){
   const card=document.createElement('div');
-  const isNew=newlyAddedIds.has(t.id);
-  card.className='vcard'+(isNew?' new-card':'');
+  card.className='vcard';
   const hasTitle=t.titlu&&t.titlu.trim();
   card.innerHTML=`
     <div class="vhead">
       <span class="vnum">T${ti+1}</span>
       <span class="vtitle ${hasTitle?'':'vtitle-empty'}">${hasTitle?esc(t.titlu):`Turnus ${ti+1}`}</span>
-      ${isNew?'<span class="vbadge-new">NOU</span>':''}
     </div>
     <div class="vbody" id="vbody-${ti}"></div>`;
   const vbody=card.querySelector(`#vbody-${ti}`);
@@ -489,22 +444,21 @@ function buildViewCard(t,ti){
       const ie=t.grupe[gi-1].it||'—';
       const pr=g.pt||'—';
       const d=dur(t.grupe[gi-1].it,g.pt);
+      const dormNote=g.dormDesc&&g.dormDesc.trim();
       const dv=document.createElement('div');
       dv.className='vdorm';
-      dv.innerHTML=`<span>🌙</span><span>${ie} → ${pr}</span>${d?`<span style="margin-left:auto;font-size:9px;opacity:.6">${d}</span>`:''}`;
+      dv.innerHTML=`<div class="vdorm-row"><span>🌙</span><span>${ie} → ${pr}</span>${d?`<span style="margin-left:auto;font-size:9px;opacity:.6">${d}</span>`:''}</div>`+
+        (dormNote?`<div class="vdorm-note">${esc(dormNote)}</div>`:'');
       vbody.appendChild(dv);
     }
     const gv=document.createElement('div');
     gv.className='vgrupa';
-    // Timeline row
     const tl=document.createElement('div');
     tl.className='vtimeline';
-    // Prezentare block
     const pb=document.createElement('div');
     pb.className='vt-block pr-blk';
     pb.innerHTML=`<span class="vt-lbl pr-lbl">PREZ</span><span class="vt-time ${g.pt?'':'empty-time'}">${g.pt||'--:--'}</span>`;
     tl.appendChild(pb);
-    // Trenuri
     const trBlk=document.createElement('div');
     trBlk.className='vt-trenuri';
     if(g.trenuri.length===0){
@@ -523,7 +477,6 @@ function buildViewCard(t,ti){
       });
     }
     tl.appendChild(trBlk);
-    // Iesire block
     const ib=document.createElement('div');
     ib.className='vt-block ie-blk';
     ib.innerHTML=`<span class="vt-lbl ie-lbl">IEȘ</span><span class="vt-time ${g.it?'':'empty-time'}">${g.it||'--:--'}</span>`;
@@ -534,17 +487,15 @@ function buildViewCard(t,ti){
   return card;
 }
 
-/* ── EDIT CARD (full) ── */
+/* ── EDIT CARD ── */
 function buildEditCard(t,ti){
   const card=document.createElement('div');
-  const isNew=newlyAddedIds.has(t.id);
-  card.className='tcard'+(isNew?' new-card':'');
+  card.className='tcard';
   card.innerHTML=`
     <div class="thead">
       <div class="tnum">T${ti+1}</div>
       <input class="ttitle" placeholder="Turnus ${ti+1} — denumire opțională" value="${esc(t.titlu)}"
         oninput="D[${ti}].titlu=this.value;mu()">
-      ${isNew?'<span class="vbadge-new">NOU</span>':''}
       <button class="btn btn-rd" onclick="delTurnus(${ti})">✕ Șterge</button>
     </div>
     <div class="tbody" id="body-${ti}"></div>`;
@@ -628,7 +579,7 @@ function buildTren(ti,gi,tr,tri){
   inner.appendChild(row);
   const descWrap=document.createElement('div');descWrap.className='tc-desc-wrap';
   const hasDesc=!!(tr.desc&&tr.desc.trim());
-  const btnDesc=document.createElement('button');btnDesc.className='btn-desc';btnDesc.textContent=hasDesc?'✎ descriere':'+ descriere';
+  const btnDesc=document.createElement('button');btnDesc.className='btn-desc-tr';btnDesc.textContent=hasDesc?'✎ descriere':'+ descriere';
   const ta=document.createElement('textarea');ta.className='tc-desc-ta';ta.placeholder='notă opțională...';ta.rows=1;ta.value=tr.desc||'';ta.style.display=hasDesc?'block':'none';
   const resize=()=>{ta.style.height='0';ta.style.height=ta.scrollHeight+'px'};
   ta.addEventListener('input',function(){D[ti].grupe[gi].trenuri[tri].desc=this.value;btnDesc.textContent=this.value.trim()?'✎ descriere':'+ descriere';resize();mu()});
@@ -640,10 +591,49 @@ function buildTren(ti,gi,tr,tri){
   return seg;
 }
 
+/* ── DORMITOR with description ── */
 function buildDorm(t,ti,gi){
-  const ie=t.grupe[gi-1].it||'—';const pr=t.grupe[gi].pt||'—';const d=dur(t.grupe[gi-1].it,t.grupe[gi].pt);
-  const s=mkSeg('do',`<div class="slbl slbl-do">🌙 DORMITOR</div>
-    <div class="dbox" id="dorm-${ti}-${gi}"><span>🌙</span><span>Ieșire <strong>${ie}</strong> → Prezentare <strong>${pr}</strong></span>${d?`<span style="margin-left:auto;font-size:10px;opacity:.65">${d}</span>`:''}</div>`);
+  const ie=t.grupe[gi-1].it||'—';
+  const pr=t.grupe[gi].pt||'—';
+  const d=dur(t.grupe[gi-1].it,t.grupe[gi].pt);
+  const dormDesc=t.grupe[gi].dormDesc||'';
+  const hasDesc=!!(dormDesc.trim());
+
+  const s=mkSeg('do','');
+  s.querySelector('div:last-child').innerHTML=`
+    <div class="slbl slbl-do">🌙 DORMITOR</div>
+    <div class="dbox" id="dbox-${ti}-${gi}">
+      <div class="dbox-row">
+        <span>🌙</span>
+        <span>Ieșire <strong>${ie}</strong> → Prezentare <strong>${pr}</strong></span>
+        ${d?`<span style="margin-left:auto;font-size:10px;opacity:.65">${d}</span>`:''}
+      </div>
+      <div class="dbox-desc-wrap">
+        <button class="btn-desc" id="dorm-desc-btn-${ti}-${gi}">${hasDesc?'✎ notă':'+ notă'}</button>
+        <textarea class="dbox-ta" id="dorm-desc-ta-${ti}-${gi}" placeholder="ex: hotel Sinaia, camera 204..." rows="1">${esc(dormDesc)}</textarea>
+      </div>
+    </div>`;
+
+  // wire up after DOM insertion (use setTimeout to let it render)
+  setTimeout(()=>{
+    const btn=document.getElementById(`dorm-desc-btn-${ti}-${gi}`);
+    const ta=document.getElementById(`dorm-desc-ta-${ti}-${gi}`);
+    if(!btn||!ta)return;
+    const resize=()=>{ta.style.height='0';ta.style.height=ta.scrollHeight+'px'};
+    ta.style.display=hasDesc?'block':'none';
+    if(hasDesc)resize();
+    ta.addEventListener('input',function(){
+      D[ti].grupe[gi].dormDesc=this.value;
+      btn.textContent=this.value.trim()?'✎ notă':'+ notă';
+      resize();mu();
+    });
+    btn.addEventListener('click',function(){
+      const visible=ta.style.display!=='none';
+      ta.style.display=visible?'none':'block';
+      if(!visible){ta.focus();resize();}
+    });
+  },0);
+
   return s;
 }
 
@@ -661,14 +651,15 @@ function updDorm(ti){
   const t=D[ti];
   t.grupe.forEach((g,gi)=>{
     if(gi===0)return;
-    const el=document.getElementById(`dorm-${ti}-${gi}`);if(!el)return;
+    const el=document.getElementById(`dbox-${ti}-${gi}`);if(!el)return;
     const ie=t.grupe[gi-1].it||'—';const pr=g.pt||'—';const d=dur(t.grupe[gi-1].it,g.pt);
-    el.innerHTML=`<span>🌙</span><span>Ieșire <strong>${ie}</strong> → Prezentare <strong>${pr}</strong></span>${d?`<span style="margin-left:auto;font-size:10px;opacity:.65">${d}</span>`:''}`;
+    const row=el.querySelector('.dbox-row');
+    if(row)row.innerHTML=`<span>🌙</span><span>Ieșire <strong>${ie}</strong> → Prezentare <strong>${pr}</strong></span>${d?`<span style="margin-left:auto;font-size:10px;opacity:.65">${d}</span>`:''}`;
   });
 }
 
 function addTurnus(){D.push(newTurnus());render();mu()}
-function delTurnus(ti){if(!confirm('Ștergi turnusul?'))return;newlyAddedIds.delete(D[ti].id);D.splice(ti,1);render();mu()}
+function delTurnus(ti){if(!confirm('Ștergi turnusul?'))return;D.splice(ti,1);render();mu()}
 function addGrupa(ti){D[ti].grupe.push(newGrupa());render();mu()}
 function delGrupa(ti,gi){if(D[ti].grupe.length<=1)return;D[ti].grupe.splice(gi,1);render();mu()}
 function addTren(ti,gi){D[ti].grupe[gi].trenuri.push(newTren());render();mu()}
@@ -727,226 +718,161 @@ async function autoSync(){
   }catch(e){}
 }
 
-/* ══════════════════════════════════════════════
-   AI UPLOAD / EXTRACTION
-   ══════════════════════════════════════════════ */
+/* ══════════════════ IMPORT (poză / PDF → AI → turnus JSON) ══════════════════ */
 
-function openUploadModal(){
-  pendingFiles=[];pendingExtracted=null;
-  $('fileInput').value='';
-  $('fileChips').innerHTML='';
-  $('previewList').innerHTML='';
-  $('uploadStatus').innerHTML='';
-  $('btnExtract').style.display='inline-flex';
-  $('btnExtract').disabled=true;
-  $('btnConfirm').style.display='none';
-  $('uploadOverlay').classList.add('open');
+const IMPORT_SYSTEM_PROMPT = `Ești un asistent care extrage date dintr-un tabel de turnus (grafic de lucru) pentru mecanici de locomotivă din România (CFR/operator feroviar privat).
+
+Structura tabelului sursă (poză sau PDF scanat):
+- Antet cu titlul turnusului (ex: "TURNUS MECANICI BUCUREȘTI NORD - BRAȘOV") și perioada de circulație (ex: "CIRCULĂ L-S").
+- Coloane numerotate (echipe), fiecare coloană reprezentând o zi/instanță de rulaj a aceleiași echipe/turnus.
+- Rânduri cu nume de stații (ex: Brașov, Ploiești, Grivița, Brașov Triaj, Băneasa, București Nord) — fiecare celulă e o oră de trecere/oprire a unui tren prin acea stație, pe coloana respectivă.
+- Rândul "Numar trenuri" (sau similar) listează numerele de tren corespunzătoare fiecărei coloane/secvențe.
+- Rândul "Prezentare" = ora la care mecanicul se prezintă la serviciu (începutul unui bloc de lucru).
+- Rândurile "Schimb st." / "Iesire P.C." / "Intrare P.C." / "Remizare" marchează sfârșitul unui bloc de lucru activ (folosește cea mai relevantă oră de final de bloc drept "ieșire").
+- Perioadele dintre ieșirea unui bloc și prezentarea următorului bloc (de multe ori peste noapte, cu ore de odihnă) reprezintă DORMITOR.
+
+Sarcina ta: pentru FIECARE coloană/echipă din tabel, construiește un obiect "turnus" cu această schemă JSON exactă:
+
+{
+  "titlu": "string scurt descriptiv, ex: T1 Mecanici Brașov - Echipa 3",
+  "grupe": [
+    {
+      "pt": "HH:MM (ora Prezentare a acestui bloc, sau gol dacă nu există)",
+      "it": "HH:MM (ora Ieșire/Schimb/Remizare a acestui bloc, sau gol)",
+      "dormDesc": "gol pe prima grupă; notă opțională despre dormitor înaintea acestei grupe (poate rămâne gol)",
+      "trenuri": [
+        {"n": "numărul trenului ca text, ex: 16576", "p": "HH:MM plecare", "s": "HH:MM sosire", "desc": "gol sau notă scurtă (stații parcurse), opțional"}
+      ]
+    }
+  ]
 }
-function closeUploadModal(){$('uploadOverlay').classList.remove('open')}
 
-const dropZone=document.getElementById('dropZone');
-dropZone.addEventListener('dragover',e=>{e.preventDefault();dropZone.classList.add('dragover')});
-dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('dragover'));
-dropZone.addEventListener('drop',e=>{
-  e.preventDefault();dropZone.classList.remove('dragover');
-  handleFiles(e.dataTransfer.files);
-});
+Reguli:
+- Fiecare "grupă" e un bloc de lucru activ: începe la Prezentare (pt) și se termină la Ieșire (it), și conține trenurile conduse în acel bloc, în ordine cronologică.
+- Dacă între ieșirea unei grupe și prezentarea următoarei există o pauză (de obicei cu "Ore odihna" completate), creează o grupă nouă — asta reprezintă un dormitor.
+- Nu inventa ore sau trenuri care nu apar clar în tabel. Dacă un câmp nu poate fi determinat cu certitudine, lasă-l gol ("").
+- Ordonează trenurile după ora de plecare.
+- Returnează UN SINGUR obiect JSON cu cheia "turnusuri" care este un array de obiecte turnus (schema de mai sus), câte unul pentru fiecare coloană/echipă distinctă găsită în tabel.
+- Răspunde DOAR cu JSON valid, fără text explicativ, fără backticks, fără markdown.`;
 
-function handleFiles(files){
-  for(const f of files){
-    if(pendingFiles.length>=8){showToast('Maxim 8 fișiere','err');break}
-    pendingFiles.push(f);
+function openImportModal(){
+  if(!workerUrl){
+    $('importOverlay').classList.add('open');
+    $('impStatus').innerHTML='⚠️ Setează mai întâi <strong>Worker URL</strong> în Config (butonul Token).';
+    return;
   }
-  renderFileChips();
+  $('importOverlay').classList.add('open');
+  resetImportUI();
 }
-
-function renderFileChips(){
-  const wrap=$('fileChips');
-  wrap.innerHTML='';
-  pendingFiles.forEach((f,i)=>{
-    const chip=document.createElement('div');
-    chip.className='file-chip';
-    const sizeKb=(f.size/1024).toFixed(0);
-    chip.innerHTML=`<span class="fc-name">${esc(f.name)}</span><span class="fc-size">${sizeKb} KB</span><button class="fc-del" onclick="removeFile(${i})">✕</button>`;
-    wrap.appendChild(chip);
-  });
-  $('btnExtract').disabled=pendingFiles.length===0;
+function closeImportModal(){$('importOverlay').classList.remove('open');resetImportUI()}
+function resetImportUI(){
+  $('impStatus').innerHTML='';
+  $('impPreview').classList.remove('visible');
+  $('impConfirmBtn').style.display='none';
+  $('impDrop').classList.remove('hasfile');
+  $('impDropTxt').textContent='Alege poză sau PDF';
+  $('importFileInput').value='';
 }
-function removeFile(i){pendingFiles.splice(i,1);renderFileChips()}
 
 function fileToBase64(file){
-  return new Promise((res,rej)=>{
+  return new Promise((resolve,reject)=>{
     const r=new FileReader();
-    r.onload=()=>res(r.result.split(',')[1]);
-    r.onerror=()=>rej(new Error('Read failed'));
+    r.onload=()=>resolve(r.result.split(',')[1]);
+    r.onerror=()=>reject(new Error('Citire fișier eșuată'));
     r.readAsDataURL(file);
   });
 }
 
-function mediaTypeFor(file){
-  if(file.type)return file.type;
-  const ext=file.name.split('.').pop().toLowerCase();
-  if(ext==='pdf')return'application/pdf';
-  if(ext==='png')return'image/png';
-  if(ext==='jpg'||ext==='jpeg')return'image/jpeg';
-  if(ext==='webp')return'image/webp';
-  return'application/octet-stream';
-}
-
-const EXTRACTION_PROMPT=`Ești un asistent specializat în citirea turnusurilor pentru mecanici de locomotivă (foi de serviciu CFR/TFC din România).
-
-Analizează imaginile/PDF-urile primite (fișe de turnus). Fiecare fișă poate conține MAI MULTE turnusuri (coloane separate, ex. echipa 1, 2, 3, 4...) — fiecare coloană/echipă este un TURNUS SEPARAT.
-
-Pentru FIECARE turnus (= fiecare echipă/coloană din tabel), extrage structura astfel:
-
-Un turnus are un titlu opțional (ex: "T1 Mecanici Brașov" sau gol) și o listă de "grupe". Fiecare grupă reprezintă o secvență: Prezentare (ora) → listă de trenuri (cu plecare/sosire) → Ieșire P.C. (ora). Între două grupe consecutive există un DORMITOR (perioada dintre Ieșirea din grupa anterioară și Prezentarea din grupa următoare — marcat de obicei cu un triunghi ▲ pe grafic, sau dedus din rândul "Ore odihnă").
-
-Pentru fiecare tren extrage: numărul trenului (n), ora de plecare din stația de start (p), ora de sosire/predare (s), și opțional o descriere scurtă (desc) cu denumirea stațiilor relevante (ex: "Brașov → Predeal") dacă se pot deduce.
-
-Reguli:
-- O grupă nouă se creează DOAR când există o nouă secțiune Prezentare/Ieșire P.C. (adică o pauză de odihnă/dormitor). Trenurile consecutive fără pauză de odihnă rămân în aceeași grupă.
-- Orele trebuie în format "HH:MM" (24h). Dacă o oră nu există/nu se poate citi, pune string gol "".
-- Dacă o coloană e marcată doar cu "L" (liber/odihnă, fără program), NU o include ca turnus separat.
-- Ignoră rândurile de totaluri (Total ore, SCML, TCEL, Ore regie etc.) — folosește-le doar ca să confirmi structura, nu le include direct în output.
-- Titlul turnusului poate include numărul de turnus și relația (ex. "T1 — București Nord - Brașov, Echipa 1") dacă se poate deduce din antet, altfel lasă gol.
-
-Răspunde STRICT cu JSON valid, fără text înainte sau după, fără code fences markdown, în acest format exact:
-
-{
-  "turnusuri": [
-    {
-      "titlu": "string (poate fi gol)",
-      "grupe": [
-        {
-          "pt": "HH:MM sau gol",
-          "trenuri": [
-            {"n": "numar tren", "p": "HH:MM sau gol", "s": "HH:MM sau gol", "desc": "string opțional, poate fi gol"}
-          ],
-          "it": "HH:MM sau gol"
-        }
-      ]
-    }
-  ]
-}`;
-
-async function extractTurnusuri(){
-  if(pendingFiles.length===0)return;
-  const btn=$('btnExtract');
-  btn.disabled=true;
-  $('uploadStatus').innerHTML=`<div class="spinner"></div><span>Se citesc fișierele...</span>`;
-  $('previewList').innerHTML='';
+async function onImportFileChange(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  if(!workerUrl){showToast('Setează Worker URL în Config!','err');return}
+  $('impDrop').classList.add('hasfile');
+  $('impDropTxt').textContent=file.name;
+  $('impPreview').classList.remove('visible');
+  $('impConfirmBtn').style.display='none';
+  $('impStatus').innerHTML='<div class="imp-spin"></div> Se citește fișierul...';
 
   try{
-    const content=[];
-    for(const f of pendingFiles){
-      const b64=await fileToBase64(f);
-      const mt=mediaTypeFor(f);
-      if(mt==='application/pdf'){
-        content.push({type:'document',source:{type:'base64',media_type:'application/pdf',data:b64}});
-      } else {
-        content.push({type:'image',source:{type:'base64',media_type:mt,data:b64}});
-      }
+    const b64=await fileToBase64(file);
+    const isPdf=file.type==='application/pdf'||file.name.toLowerCase().endsWith('.pdf');
+    const mediaType=isPdf?'application/pdf':(file.type||'image/jpeg');
+    const contentBlock=isPdf
+      ?{type:'document',source:{type:'base64',media_type:'application/pdf',data:b64}}
+      :{type:'image',source:{type:'base64',media_type:mediaType,data:b64}};
+
+    $('impStatus').innerHTML='<div class="imp-spin"></div> Claude analizează turnusul...';
+
+    const payload={
+      model:'claude-sonnet-4-6',
+      max_tokens:4096,
+      system:IMPORT_SYSTEM_PROMPT,
+      messages:[{
+        role:'user',
+        content:[
+          contentBlock,
+          {type:'text',text:'Extrage toate turnusurile/echipele din acest tabel conform schemei cerute. Răspunde doar cu JSON.'}
+        ]
+      }]
+    };
+
+    const r=await fetch(workerUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    if(!r.ok){
+      const t=await r.text().catch(()=>'');
+      throw new Error(`Worker a răspuns cu ${r.status}: ${t.slice(0,200)}`);
     }
-    content.push({type:'text',text:EXTRACTION_PROMPT});
-
-    $('uploadStatus').innerHTML=`<div class="spinner"></div><span>AI analizează turnusurile...</span>`;
-
-    const response=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-6',
-        max_tokens:8000,
-        messages:[{role:'user',content}]
-      })
-    });
-
-    if(!response.ok){
-      const errTxt=await response.text().catch(()=>'');
-      throw new Error('API '+response.status+' '+errTxt.slice(0,200));
-    }
-
-    const data=await response.json();
-    const textBlocks=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text);
-    let raw=textBlocks.join('\n').trim();
-    raw=raw.replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
+    const data=await r.json();
+    const textBlocks=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
+    let clean=textBlocks.replace(/```json/gi,'').replace(/```/g,'').trim();
 
     let parsed;
-    try{
-      parsed=JSON.parse(raw);
-    }catch(e){
-      const m=raw.match(/\{[\s\S]*\}/);
-      if(m)parsed=JSON.parse(m[0]);
-      else throw new Error('Răspunsul AI nu e JSON valid');
-    }
+    try{parsed=JSON.parse(clean)}
+    catch(e){throw new Error('Răspunsul nu a fost JSON valid — verifică manual mai jos.')}
 
-    const turnusuri=parsed.turnusuri||[];
-    if(turnusuri.length===0)throw new Error('Niciun turnus găsit în fișiere');
-
-    // Normalize into internal data structure
-    pendingExtracted=turnusuri.map(t=>({
+    const turnusuri=Array.isArray(parsed.turnusuri)?parsed.turnusuri:(Array.isArray(parsed)?parsed:[parsed]);
+    const normalized=turnusuri.map(t=>({
       id:uid(),
       titlu:t.titlu||'',
-      grupe:(t.grupe&&t.grupe.length?t.grupe:[{pt:'',trenuri:[],it:''}]).map(g=>({
+      grupe:(Array.isArray(t.grupe)&&t.grupe.length?t.grupe:[{}]).map(g=>({
         id:uid(),
         pt:g.pt||'',
         it:g.it||'',
-        trenuri:(g.trenuri||[]).map(tr=>({
-          id:uid(),
-          n:tr.n||'',
-          p:tr.p||'',
-          s:tr.s||'',
-          desc:tr.desc||''
+        dormDesc:g.dormDesc||'',
+        trenuri:(Array.isArray(g.trenuri)?g.trenuri:[]).map(tr=>({
+          id:uid(),n:tr.n||'',p:tr.p||'',s:tr.s||'',desc:tr.desc||''
         }))
       }))
     }));
 
-    $('uploadStatus').innerHTML=`<span style="color:var(--gr)">✓ Găsite ${pendingExtracted.length} turnus(uri). Vor fi numerotate T${D.length+1}–T${D.length+pendingExtracted.length}.</span>`;
-    renderPreview();
-    $('btnExtract').style.display='none';
-    $('btnConfirm').style.display='inline-flex';
-
-  }catch(e){
-    $('uploadStatus').innerHTML=`<span style="color:var(--rd)">✗ Eroare: ${esc(e.message)}</span>`;
-    btn.disabled=false;
+    $('impTa').value=JSON.stringify(normalized,null,2);
+    $('impCount').textContent=`${normalized.length} turnus(uri) găsite — poți edita JSON-ul înainte de a adăuga`;
+    $('impPreview').classList.add('visible');
+    $('impConfirmBtn').style.display='inline-flex';
+    $('impStatus').innerHTML='✅ Extras cu succes. Verifică datele mai jos.';
+  }catch(err){
+    $('impStatus').innerHTML='❌ '+esc(err.message);
+    showToast('Eroare la import: '+err.message,'err');
   }
-}
-
-function renderPreview(){
-  const wrap=$('previewList');
-  wrap.innerHTML='';
-  pendingExtracted.forEach((t,i)=>{
-    const nrTrenuri=t.grupe.reduce((s,g)=>s+g.trenuri.length,0);
-    const nrGrupe=t.grupe.length;
-    const item=document.createElement('div');
-    item.className='preview-item';
-    const title=t.titlu&&t.titlu.trim()?t.titlu:`Turnus ${D.length+i+1}`;
-    item.innerHTML=`
-      <div class="pi-info">
-        <span class="pi-title">T${D.length+i+1} — ${esc(title)}</span>
-        <span class="pi-meta">${nrGrupe} bloc(uri) · ${nrTrenuri} tren(uri)</span>
-      </div>`;
-    wrap.appendChild(item);
-  });
 }
 
 function confirmImport(){
-  if(!pendingExtracted||pendingExtracted.length===0)return;
-  pendingExtracted.forEach(t=>{
-    D.push(t);
-    newlyAddedIds.add(t.id);
+  let parsed;
+  try{parsed=JSON.parse($('impTa').value)}
+  catch(e){showToast('JSON invalid — corectează înainte de a adăuga.','err');return}
+  if(!Array.isArray(parsed)){showToast('Trebuie să fie un array de turnusuri.','err');return}
+  parsed.forEach(t=>{
+    D.push({
+      id:uid(),
+      titlu:t.titlu||'',
+      grupe:(t.grupe||[]).map(g=>({
+        id:uid(),pt:g.pt||'',it:g.it||'',dormDesc:g.dormDesc||'',
+        trenuri:(g.trenuri||[]).map(tr=>({id:uid(),n:tr.n||'',p:tr.p||'',s:tr.s||'',desc:tr.desc||''}))
+      }))
+    });
   });
-  mu();
-  render();
-  showToast(`✓ ${pendingExtracted.length} turnus(uri) adăugate (T${D.length-pendingExtracted.length+1}–T${D.length})`);
-  closeUploadModal();
-  if(!editMode){
-    // ensure user sees results - switch to edit mode? No, view mode is fine; just scroll
-    setTimeout(()=>{
-      const list=$('tlist');
-      if(list.lastElementChild)list.lastElementChild.scrollIntoView({behavior:'smooth',block:'center'});
-    },150);
-  }
+  mu();render();
+  closeImportModal();
+  showToast(`${parsed.length} turnus(uri) adăugate! ✓`);
 }
 
 loadCfg();render();
