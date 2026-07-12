@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>EMX</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600;800&display=swap');
+:root{
+  --bg:#07090f;--surf:#0d1117;--surf2:#141b27;--surf3:#1a2236;
+  --bord:#1e3356;--bord2:#2a4070;
+  --acc:#00c8e8;--acc2:rgba(0,200,232,0.14);
+  --grn:#00e5a0;--grn2:rgba(0,229,160,0.10);
+  --yel:#ffc940;--yel2:rgba(255,201,64,0.12);
+  --red:#ff4d6d;--red2:rgba(255,77,109,0.09);
+  --org:#ff8c42;--org2:rgba(255,140,66,0.12);
+  --txt:#d8e8f5;--txtd:#5a7a9a;--txtm:#8aafcc;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:'Exo 2',sans-serif;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,200,232,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(0,200,232,0.018) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+.app{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:14px 14px 60px}
+
+.hdr{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:22px 24px;background:linear-gradient(135deg,#0a0a1a,#0d1530,#0a1a0a);border:1px solid transparent;border-radius:16px;margin-bottom:14px;position:relative;overflow:hidden;box-shadow:0 0 40px rgba(0,200,255,0.08),0 0 80px rgba(0,255,100,0.04)}
+.hdr::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;border-radius:16px;padding:1px;background:linear-gradient(135deg,var(--acc),transparent,var(--grn),transparent,var(--acc));-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+.hdr::after{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(0,200,255,0.03),transparent);animation:hdrShine 4s infinite;pointer-events:none}
+@keyframes hdrShine{0%{left:-100%}100%{left:200%}}
+.emx-logo{display:flex;align-items:center;gap:0;line-height:1}
+.emx-e{font-family:'Rajdhani',sans-serif;font-size:3rem;font-weight:900;color:var(--acc);letter-spacing:-2px;text-shadow:0 0 30px var(--acc),0 0 60px rgba(0,200,255,0.5)}
+.emx-m{font-family:'Rajdhani',sans-serif;font-size:3rem;font-weight:900;color:#fff;letter-spacing:-2px;text-shadow:0 0 20px rgba(255,255,255,0.4)}
+.emx-x{font-family:'Rajdhani',sans-serif;font-size:3rem;font-weight:900;color:var(--grn);letter-spacing:-2px;text-shadow:0 0 30px var(--grn),0 0 60px rgba(0,255,100,0.5)}
+.emx-dot{font-size:.7rem;color:var(--acc);margin-left:8px;animation:blink 1.5s infinite;align-self:center}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+.emx-tag{font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--txtd);letter-spacing:3px;text-transform:uppercase;margin-top:6px}
+.gh-status{font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:1px;margin-top:8px;min-height:14px}
+
+.hdr-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:14px;position:relative;z-index:1}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;font-family:'Rajdhani',sans-serif;font-size:.85rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;border:none;cursor:pointer;transition:filter .15s,background .15s}
+.btn:hover{filter:brightness(1.12)}
+.btn-p{background:var(--acc);color:#07090f}
+.btn-g{background:var(--grn);color:#07090f}
+.btn-s{background:var(--surf3);color:var(--txt);border:1px solid var(--bord2)}
+.btn-s:hover{border-color:var(--acc);color:var(--acc);filter:none}
+.btn-r{background:var(--red2);color:var(--red);border:1px solid var(--red)}
+.btn-r:hover{background:var(--red);color:#fff;filter:none}
+
+.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:14px}
+.scard{background:var(--surf);border:1px solid var(--bord);border-radius:10px;padding:12px 14px;position:relative;overflow:hidden}
+.scard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.scard.b::before{background:var(--acc)}.scard.y::before{background:var(--yel)}.scard.r::before{background:var(--red)}.scard.g::before{background:var(--grn)}
+.scard lbl{display:block;font-family:'Rajdhani',sans-serif;font-weight:600;font-size:.6rem;text-transform:uppercase;letter-spacing:1.8px;color:var(--txtd);margin-bottom:4px}
+.scard .sv{font-family:'Share Tech Mono',monospace;font-size:1.3rem;font-weight:700}
+.scard.b .sv{color:var(--acc)}.scard.y .sv{color:var(--yel)}.scard.r .sv{color:var(--red)}.scard.g .sv{color:var(--grn)}
+
+.list{display:flex;flex-direction:column;gap:10px}
+.empty{color:var(--txtd);font-size:.85rem;text-align:center;padding:30px 10px;font-family:'Share Tech Mono',monospace}
+
+.item{background:var(--surf);border:1px solid var(--bord);border-radius:10px;padding:14px 16px;position:relative;overflow:hidden}
+.item::before{content:'';position:absolute;top:0;left:0;bottom:0;width:3px}
+.item.ok::before{background:var(--grn)}
+.item.mid::before{background:var(--yel)}
+.item.bad::before{background:var(--red)}
+.item-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.item-tren{font-family:'Rajdhani',sans-serif;font-weight:800;font-size:1.15rem;color:var(--acc)}
+.item-data{font-family:'Share Tech Mono',monospace;font-size:.7rem;color:var(--txtd);margin-top:2px}
+.item-delay{font-family:'Share Tech Mono',monospace;font-weight:700;font-size:1.05rem;white-space:nowrap}
+.item.ok .item-delay{color:var(--grn)}
+.item.mid .item-delay{color:var(--yel)}
+.item.bad .item-delay{color:var(--red)}
+.item-times{display:flex;gap:16px;margin-top:10px;font-family:'Share Tech Mono',monospace;font-size:.78rem;color:var(--txtm);flex-wrap:wrap}
+.item-times b{color:var(--txt);font-weight:700}
+.item-desc{margin-top:8px;font-size:.8rem;color:var(--txtm);line-height:1.5}
+.item-del{position:absolute;top:10px;right:10px;background:var(--red2);border:1px solid var(--red);color:var(--red);border-radius:6px;padding:3px 8px;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.75rem;cursor:pointer}
+.item-del:hover{background:var(--red);color:#fff}
+
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(7,9,15,0.92);z-index:300;align-items:flex-start;justify-content:center;overflow-y:auto;padding:16px;backdrop-filter:blur(5px)}
+.overlay.open{display:flex}
+.modal{background:var(--surf2);border:1px solid var(--bord2);border-radius:14px;padding:20px;width:100%;max-width:520px;position:relative;margin:auto}
+.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--acc),var(--grn),transparent)}
+.modal h2{font-family:'Rajdhani',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:2px;color:var(--acc);text-transform:uppercase;margin-bottom:14px}
+.mclose{position:absolute;top:10px;right:12px;background:none;border:none;color:var(--txtd);font-size:1.2rem;cursor:pointer}
+.mclose:hover{color:var(--red)}
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.field label{font-family:'Rajdhani',sans-serif;font-size:.68rem;font-weight:600;color:var(--txtd);letter-spacing:1.3px;text-transform:uppercase}
+.field input,.field textarea{background:var(--surf);border:1px solid var(--bord2);border-radius:7px;color:var(--txt);font-family:'Share Tech Mono',monospace;font-size:.85rem;padding:9px 10px;width:100%;outline:none}
+.field textarea{font-family:'Exo 2',sans-serif;resize:vertical;min-height:64px}
+.field input:focus,.field textarea:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--acc2)}
+.fields-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:480px){.fields-row{grid-template-columns:1fr}}
+.calc-preview{font-family:'Share Tech Mono',monospace;font-size:.72rem;color:var(--grn);margin:-2px 0 12px}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="hdr">
+  <div class="emx-logo">
+    <span class="emx-e">E</span><span class="emx-m">M</span><span class="emx-x">X</span>
+    <span class="emx-dot">●</span>
+  </div>
+  <div class="emx-tag">TRENURI ÎNTÂRZIATE</div>
+  <div class="gh-status" id="ghStatus"></div>
+  <div class="hdr-actions">
+    <button class="btn btn-p" onclick="openAddModal()">+ Adaugă întârziere</button>
+    <button class="btn btn-g" onclick="ghSave()">☁ Salvează</button>
+    <button class="btn btn-s" onclick="openGhModal()">🔑 Token</button>
+  </div>
+</div>
+
+<div class="summary" id="summary"></div>
+
+<div class="list" id="list"></div>
+
+</div>
+
+<!-- MODAL ADAUGA -->
+<div class="overlay" id="addOverlay">
+<div class="modal">
+  <button class="mclose" onclick="closeAddModal()">✕</button>
+  <h2>+ Adaugă întârziere</h2>
+  <div class="fields-row">
+    <div class="field">
+      <label>Data</label>
+      <input type="date" id="fData">
+    </div>
+    <div class="field">
+      <label>Tren</label>
+      <input type="text" id="fTren" placeholder="ex. 10232">
+    </div>
+  </div>
+  <div class="fields-row">
+    <div class="field">
+      <label>Sosire conform livret</label>
+      <input type="text" id="fLivret" placeholder="ex. 14:35" oninput="previewDelay()">
+    </div>
+    <div class="field">
+      <label>Sosire reală</label>
+      <input type="text" id="fReal" placeholder="ex. 15:10" oninput="previewDelay()">
+    </div>
+  </div>
+  <div class="calc-preview" id="fPreview"></div>
+  <div class="field">
+    <label>Descriere</label>
+    <textarea id="fDesc" placeholder="motiv, observații..."></textarea>
+  </div>
+  <button class="btn btn-g" style="width:100%" onclick="saveEntry()">💾 Salvează întârzierea</button>
+</div>
+</div>
+
+<!-- MODAL TOKEN -->
+<div class="overlay" id="ghOverlay">
+<div class="modal" style="max-width:460px">
+  <button class="mclose" onclick="closeGhModal()">✕</button>
+  <h2 style="color:var(--grn)">🔑 GitHub Token</h2>
+  <p style="font-size:.8rem;color:var(--txtm);margin-bottom:12px;line-height:1.6">
+    Introdu Personal Access Token-ul GitHub ca să se sincronizeze datele pe toate dispozitivele.<br><br>
+    <strong style="color:var(--acc)">Cum obții tokenul:</strong><br>
+    1. Mergi pe <a href="https://github.com/settings/tokens/new" target="_blank" style="color:var(--grn)">github.com/settings/tokens/new</a><br>
+    2. Bifează permisiunea <b>repo</b><br>
+    3. Click <b>Generate token</b> și copiază-l
+  </p>
+  <input id="ghTokenInput" type="password" placeholder="ghp_xxxxxxxxxxxx"
+    style="width:100%;background:var(--surf);border:1px solid var(--bord2);border-radius:7px;color:var(--txt);font-family:'Share Tech Mono',monospace;font-size:.85rem;padding:9px 10px;margin-bottom:10px;box-sizing:border-box">
+  <button class="btn btn-g" style="width:100%" onclick="saveToken()">✓ Salvează Token</button>
+  <button class="btn btn-s" style="width:100%;margin-top:8px" onclick="testConnection()">🔌 Testează Conexiunea</button>
+</div>
+</div>
+
+<script>
+// ── TIME UTILS ──
+function p2m(s){
+  if(!s)return -1;
+  s=String(s).trim();
+  const r=s.match(/^(\d{1,2}):(\d{2})$/);
+  if(r)return parseInt(r[1])*60+parseInt(r[2]);
+  return -1;
+}
+function diffm(a,b){
+  const s=p2m(a),e=p2m(b);
+  if(s<0||e<0)return null;
+  let d=e-s; if(d<0)d+=1440;
+  return d;
+}
+function fmtDelay(mins){
+  if(mins===null)return '—';
+  if(mins===0)return 'la timp';
+  const h=Math.floor(mins/60), m=mins%60;
+  return '+'+(h>0?h+'h ':'')+m+'min';
+}
+function fmtData(iso){
+  if(!iso)return '';
+  const [y,m,d]=iso.split('-');
+  return d+'.'+m+'.'+y;
+}
+
+// ── STATE ──
+let entries = [];
+const GH_USER='vladynitu1';
+const GH_REPO='Vlad';
+const GH_FILE='intarzieri.json';
+let ghToken = localStorage.getItem('gh_token_intarzieri') || localStorage.getItem('gh_token') || '';
+
+// ── LOCAL SAVE/LOAD ──
+function saveLocal(){
+  try{ localStorage.setItem('emx_intarzieri', JSON.stringify(entries)); }catch(e){}
+}
+function loadLocal(){
+  try{
+    const s = localStorage.getItem('emx_intarzieri');
+    entries = s ? JSON.parse(s) : [];
+  }catch(e){ entries = []; }
+}
+
+// ── GITHUB SYNC ──
+function ghHeaders(){
+  return {'Authorization':'token '+ghToken,'Content-Type':'application/json','Accept':'application/vnd.github.v3+json'};
+}
+async function ghLoad(){
+  if(!ghToken)return false;
+  try{
+    const r=await fetch(`https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_FILE}?t=${Date.now()}`,{headers:ghHeaders(),cache:'no-store'});
+    if(!r.ok)return false;
+    const j=await r.json();
+    const raw=atob(j.content.replace(/\s/g,''));
+    const bytes2=new Uint8Array(raw.length);
+    for(let i=0;i<raw.length;i++)bytes2[i]=raw.charCodeAt(i);
+    const data=JSON.parse(new TextDecoder().decode(bytes2));
+    if(Array.isArray(data))entries=data;
+    saveLocal();
+    return true;
+  }catch(e){return false;}
+}
+async function ghSave(){
+  if(!ghToken){alert('Introdu mai întâi tokenul GitHub!');openGhModal();return;}
+  showGhStatus('⏳ Se salvează...','var(--yel)');
+  saveLocal();
+  try{
+    const payload=JSON.stringify(entries);
+    const bytes=new TextEncoder().encode(payload);
+    let binary='';
+    bytes.forEach(b=>binary+=String.fromCharCode(b));
+    const encoded=btoa(binary);
+
+    let sha='';
+    const check=await fetch(
+      `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_FILE}?_=${Date.now()}`,
+      {headers:ghHeaders()}
+    );
+    if(check.ok){
+      const j=await check.json();
+      sha=j.sha||'';
+    } else if(check.status!==404){
+      showGhStatus('❌ Nu pot citi SHA: '+check.status,'var(--red)');
+      return;
+    }
+
+    const body={
+      message:'EMX Întârzieri '+new Date().toISOString().slice(0,16).replace('T',' '),
+      content:encoded
+    };
+    if(sha)body.sha=sha;
+
+    const r=await fetch(
+      `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${GH_FILE}`,
+      {method:'PUT',headers:ghHeaders(),body:JSON.stringify(body)}
+    );
+    if(r.ok){
+      showGhStatus('✅ Salvat!','var(--grn)');
+    } else {
+      const err=await r.json().catch(()=>({}));
+      if(r.status===409||r.status===422){
+        showGhStatus('⚠️ Reîncerc...','var(--yel)');
+        setTimeout(ghSave,1500);
+      } else {
+        showGhStatus('❌ '+(err.message||r.status),'var(--red)');
+      }
+    }
+  }catch(e){
+    showGhStatus('❌ '+e.name+': '+e.message,'var(--red)');
+    console.error('ghSave:',e);
+  }
+}
+function showGhStatus(msg,color){
+  const el=document.getElementById('ghStatus');
+  if(el){el.textContent=msg;el.style.color=color;setTimeout(()=>{if(el.textContent===msg)el.textContent='';},4000);}
+}
+function openGhModal(){document.getElementById('ghOverlay').classList.add('open');}
+function closeGhModal(){document.getElementById('ghOverlay').classList.remove('open');}
+function saveToken(){
+  const t=document.getElementById('ghTokenInput').value.trim();
+  if(!t){alert('Introdu tokenul!');return;}
+  ghToken=t;
+  localStorage.setItem('gh_token_intarzieri',t);
+  closeGhModal();
+  showGhStatus('🔑 Token salvat!','var(--grn)');
+  ghLoadAndRefresh();
+}
+async function testConnection(){
+  if(!ghToken){showGhStatus('❌ Token lipsă','var(--red)');return;}
+  showGhStatus('⏳ Test conexiune...','var(--yel)');
+  try{
+    const r=await fetch('https://api.github.com/user',{headers:ghHeaders(),cache:'no-store',mode:'cors'});
+    if(r.ok){
+      const u=await r.json();
+      showGhStatus('✅ Conectat ca: '+u.login,'var(--grn)');
+    } else {
+      showGhStatus('❌ Status: '+r.status,'var(--red)');
+    }
+  }catch(e){
+    showGhStatus('❌ '+e.name+': '+e.message,'var(--red)');
+  }
+}
+async function ghLoadAndRefresh(){
+  showGhStatus('⏳ Se încarcă datele...','var(--yel)');
+  const ok=await ghLoad();
+  if(ok){render();showGhStatus('✅ Date sincronizate!','var(--grn)');}
+  else{showGhStatus('⚠️ Nu s-au găsit date pe GitHub','var(--yel)');}
+}
+
+// ── MODAL ADAUGA ──
+function openAddModal(){
+  document.getElementById('fData').value = new Date().toISOString().slice(0,10);
+  document.getElementById('fTren').value = '';
+  document.getElementById('fLivret').value = '';
+  document.getElementById('fReal').value = '';
+  document.getElementById('fDesc').value = '';
+  document.getElementById('fPreview').textContent = '';
+  document.getElementById('addOverlay').classList.add('open');
+}
+function closeAddModal(){document.getElementById('addOverlay').classList.remove('open');}
+function previewDelay(){
+  const l=document.getElementById('fLivret').value.trim();
+  const r=document.getElementById('fReal').value.trim();
+  const d=diffm(l,r);
+  document.getElementById('fPreview').textContent = d===null ? '' : ('Întârziere calculată: ' + fmtDelay(d));
+}
+function saveEntry(){
+  const data=document.getElementById('fData').value;
+  const tren=document.getElementById('fTren').value.trim();
+  const livret=document.getElementById('fLivret').value.trim();
+  const real=document.getElementById('fReal').value.trim();
+  const desc=document.getElementById('fDesc').value.trim();
+  if(!data||!tren||!livret||!real){alert('Completează data, trenul, sosirea conform livret și sosirea reală!');return;}
+  entries.unshift({
+    id:'e'+Date.now()+Math.random().toString(36).slice(2,6),
+    data, tren, livret, real, desc,
+    delay: diffm(livret,real)
+  });
+  saveLocal();
+  render();
+  closeAddModal();
+  ghSave();
+}
+function deleteEntry(id){
+  if(!confirm('Ștergi această întârziere?'))return;
+  entries = entries.filter(e=>e.id!==id);
+  saveLocal();
+  render();
+  ghSave();
+}
+
+// ── RENDER ──
+function classFor(mins){
+  if(mins===null)return '';
+  if(mins<=5)return 'ok';
+  if(mins<=20)return 'mid';
+  return 'bad';
+}
+function renderSummary(){
+  const el=document.getElementById('summary');
+  const total=entries.length;
+  const valid=entries.filter(e=>typeof e.delay==='number');
+  const avg=valid.length ? Math.round(valid.reduce((s,e)=>s+e.delay,0)/valid.length) : 0;
+  const max=valid.length ? Math.max(...valid.map(e=>e.delay)) : 0;
+  const onTime=valid.filter(e=>e.delay<=5).length;
+  el.innerHTML = `
+    <div class="scard b"><lbl>Total înregistrări</lbl><div class="sv">${total}</div></div>
+    <div class="scard y"><lbl>Întârziere medie</lbl><div class="sv">${fmtDelay(avg)}</div></div>
+    <div class="scard r"><lbl>Întârziere maximă</lbl><div class="sv">${fmtDelay(max)}</div></div>
+    <div class="scard g"><lbl>La timp (≤5min)</lbl><div class="sv">${onTime}</div></div>
+  `;
+}
+function render(){
+  renderSummary();
+  const el=document.getElementById('list');
+  if(entries.length===0){
+    el.innerHTML = '<div class="empty">Nicio întârziere înregistrată încă.</div>';
+    return;
+  }
+  const sorted = entries.slice().sort((a,b)=> (b.data||'').localeCompare(a.data||''));
+  el.innerHTML = sorted.map(e=>{
+    const cls = classFor(e.delay);
+    return `<div class="item ${cls}">
+      <button class="item-del" onclick="deleteEntry('${e.id}')">✕</button>
+      <div class="item-top">
+        <div>
+          <div class="item-tren">Tren ${escapeHtml(e.tren)}</div>
+          <div class="item-data">${fmtData(e.data)}</div>
+        </div>
+        <div class="item-delay">${fmtDelay(e.delay)}</div>
+      </div>
+      <div class="item-times">
+        <span>Livret: <b>${escapeHtml(e.livret)}</b></span>
+        <span>Real: <b>${escapeHtml(e.real)}</b></span>
+      </div>
+      ${e.desc ? `<div class="item-desc">${escapeHtml(e.desc)}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+function escapeHtml(s){
+  return String(s||'').replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+}
+
+// ── INIT ──
+(async function init(){
+  loadLocal();
+  render();
+  if(ghToken){ await ghLoadAndRefresh(); }
+  document.addEventListener('visibilitychange', function(){
+    if(document.visibilityState==='visible' && ghToken){ ghLoadAndRefresh(); }
+  });
+})();
+</script>
+</body>
+</html>
